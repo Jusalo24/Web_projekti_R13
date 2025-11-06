@@ -1,0 +1,18 @@
+# Node modules
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Build output (rakennetaan kuitenkin uudelleen Dockerissa)
+dist
+
+# Git
+.git
+.gitignore
+
+# IDE / editor
+.vscode
+.DS_Store
+
+# Environment files
+.env
