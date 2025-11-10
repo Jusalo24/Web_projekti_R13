@@ -6,7 +6,8 @@ import navbar from './components/navbar'
 import Home from './pages/Home'
 import Movies from './pages/Movies'
 import Groups from './pages/Groups'
-import Movies from './pages/Movies'
+
+
 
 
 
