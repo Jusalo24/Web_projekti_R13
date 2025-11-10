@@ -20,8 +20,8 @@ body {
 
 main {
     margin: 0 auto;
-    width: auto;
-    height: 100px;
+    width: 75rem;
+    height: 200rem;
     font-family: 'Poppins', sans-serif;
     color: black;
     border: 1px;
@@ -31,7 +31,7 @@ main {
 
 .navbar {
     width: auto;
-    height: 30px;
+    height: 70px;
     padding: 1rem;
     font-family: 'Poppins', sans-serif;
     color: white;
