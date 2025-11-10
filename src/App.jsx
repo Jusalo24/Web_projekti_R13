@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react'
 import { Routes, Route } from "react-router-dom"
 import './App.css'
 import axios from 'axios'
-import navbar from './components/Navbar'
+import navbar from './components/navbar'
 import Home from './pages/Home'
 import Movies from './pages/Movies'
 import Groups from './pages/Groups'
-import Movies from './pages/Movies'
+
+
 
 
 
