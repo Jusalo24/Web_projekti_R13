@@ -3,14 +3,17 @@ import { Routes, Route } from "react-router-dom"
 import './App.css'
 import axios from 'axios'
 import navbar from './components/Navbar'
-
+import Home from './pages/Home'
+import Movies from './pages/Movies'
+import Groups from './pages/Groups'
+import Movies from './pages/Movies'
 
 
 
 function App() {
   const [count, setCount] = useState(0)
   return (
-    <>
+    <Router>
       <nav className= "Navbar">
 
 
@@ -23,7 +26,7 @@ function App() {
       </main>
 
       
-    </>
+    </Router>
   )
 }
 
