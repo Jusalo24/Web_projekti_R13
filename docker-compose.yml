@@ -30,14 +30,14 @@ services:
 
   client:
     build:
-      context: .
+      context: ./client
       dockerfile: Dockerfile
     ports:
       - "5173:5173"
     depends_on:
       - server
     volumes:
-      - ./:/app
+      - ./client:/app
       - /app/node_modules
 
 volumes:
