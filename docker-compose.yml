@@ -20,23 +20,24 @@ services:
       - "3001:3001"
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/moviedb
+      - DATABASE_URL=DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     depends_on:
       - db
     volumes:
       - ./server:/app
+      - /app/node_modules
     working_dir: /app
 
   client:
     build:
-      context: .
+      context: ./client
       dockerfile: Dockerfile
     ports:
       - "5173:5173"
     depends_on:
       - server
     volumes:
-      - ./:/app
+      - ./client:/app
       - /app/node_modules
 
 volumes:
