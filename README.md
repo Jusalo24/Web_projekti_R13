@@ -434,3 +434,13 @@ This project is created for educational purposes as part of a web development co
 **Last Updated:** November 11, 2025
 
 For questions or issues, please create an issue on the GitHub repository or refer to the [Contributing Guide](./CONTRIBUTING.md).
+
+ER_kaavio
+
+<img width="855" height="771" alt="image" src="https://github.com/user-attachments/assets/ae9d8636-b424-4235-95f0-07a0e5bb5268" />
+
+Wireframe
+
+<img width="478" height="761" alt="image" src="https://github.com/user-attachments/assets/8c255e9a-42ca-4582-bf83-00d2f8deba88" />
+
+
