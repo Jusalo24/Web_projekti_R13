@@ -9,6 +9,7 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - pgdata:/var/lib/postgresql
+      - ./init_moviedb.sql:/docker-entrypoint-initdb.d/init_moviedb.sql
     ports:
       - "5432:5432"
 
