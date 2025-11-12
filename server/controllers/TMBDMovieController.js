@@ -30,7 +30,7 @@ export const getMovieById = async (req, res) => {
 
 /**
  * Hae elokuvia kategorian perusteella (popular, now_playing, jne.)
- * GET /api/movies/category/:searchType?page=1&region=US
+ * GET /api/movies/category/:searchType?page=1&region=FI
  */
 export const getMoviesByType = async (req, res) => {
     try {
