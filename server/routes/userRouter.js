@@ -5,7 +5,7 @@ import { auth } from '../helpers/auth.js'
 const userRouter = Router()
 
 // Register a new user
-userRouter.post('/users/createUser', createUser)
+userRouter.post('/users/register', createUser)
 
 // User login
 userRouter.post('/users/login', userLogin)
@@ -14,6 +14,6 @@ userRouter.post('/users/login', userLogin)
 userRouter.get('/users/:id', auth, getUserById)
 
 // Update user information
-userRouter.put('/users/updateUser/:id', auth, updateUser)
+userRouter.put('/users/:id', auth, updateUser)
 
 export default userRouter
