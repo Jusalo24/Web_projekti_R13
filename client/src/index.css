@@ -1,0 +1,110 @@
+/* Nollaa oletustyylit ja aseta pohja */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Poppins", sans-serif;
+  background-color: #2f2f2f; /* tummanharmaa tausta */
+  color: #222;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+
+/* Navbar */
+
+.navbar {
+  width: 100%;
+  background-color: #000; /* musta yläpalkki */
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 3rem;
+  position: sticky;
+  top: 0;
+  margin: 0 auto;
+  border-radius: 7px 7px 0 0;
+}
+
+.logo1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-right: 1rem;
+}
+
+.links {
+  list-style: none;
+  display: flex;
+  gap: 2rem;
+}
+
+.links li a {
+  background-color: #222;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.links li a:hover {
+  background-color: #555;
+}
+
+/*
+.links a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.links a:hover {
+  text-decoration: underline;
+}
+*/
+
+/* Main area */
+
+main {
+  background-color: white;
+  width: 100%;
+  max-width: 1200px;
+  min-height: 80vh;
+  margin: 0 auto;
+  margin-top: 0rem;
+  border-radius: 0 0 7px 7px;
+  padding: 2rem;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+
+h2 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.movie-box {
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 2rem;
+  background-color: #f9f9f9;
+}
+
+.top-movies {
+  display: flex;
+  overflow-x: auto;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+/* Scrollbar */
+.top-movies::-webkit-scrollbar {
+  display: none;
+}
