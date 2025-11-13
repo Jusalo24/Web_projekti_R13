@@ -15,7 +15,7 @@ services:
   server:
     build:
       context: ./server
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     ports:
       - "3001:3001"
     env_file:
@@ -33,7 +33,7 @@ services:
   client:
     build:
       context: ./client
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     ports:
       - "5173:5173"
     depends_on:
@@ -41,6 +41,9 @@ services:
     volumes:
       - ./client:/app
       - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true  # Pakottaa Vite seuraamaan tiedostoja
+    command: npm run dev -- --host 0.0.0.0
 
 volumes:
   pgdata:

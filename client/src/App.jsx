@@ -1,33 +1,24 @@
 import { useState, useEffect } from 'react'
 import { Routes, Route } from "react-router-dom"
-import './App.css'
+import './styles/App.css'
 import axios from 'axios'
-import navbar from './components/navbar'
-import Home from './pages/Home'
-import Movies from './pages/Movies'
-import Groups from './pages/Groups'
-
-
-
-
+import Navbar from "./components/navbar"
+import Home from "./pages/Home"
+import Movies from "./pages/Movies"
+import Groups from "./pages/Groups"
+import Account from "./pages/Account"
 
 function App() {
-  const [count, setCount] = useState(0)
   return (
-    <Router>
-      <nav className= "Navbar">
-
-
-
-      </nav>
-
-      <main>
-
-
-      </main>
-
-      
-    </Router>
+    <>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/movies" element={<Movies />} />
+        <Route path="/groups" element={<Groups />} />
+        <Route path="/account" element={<Account />} />
+      </Routes>
+    </>
   )
 }
 
