@@ -1,15 +1,14 @@
-version: "3.9"
-
 services:
   db:
     image: postgres:16
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: moviedb
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql
+      - ./init_moviedb.sql:/docker-entrypoint-initdb.d/init_moviedb.sql
     ports:
       - "5432:5432"
 
@@ -19,14 +18,17 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3001:3001"
+    env_file:
+      - ./.env
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/appdb
+      - DATABASE_URL=DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     depends_on:
       - db
     volumes:
       - ./server:/app
       - /app/node_modules
+    working_dir: /app
 
   client:
     build:

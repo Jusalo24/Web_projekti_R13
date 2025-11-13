@@ -1,8 +1,14 @@
-import express from 'express';
-import moviesRouter from './routes/movies.js';
+import express from 'express'
+import cors from 'cors'
+import movieRouter from './routes/movieRouter.js'
+import userRouter from './routes/userRouter.js'
 
+const app = express()
+app.use(cors())
+app.use(express.json())
 
-const app = express();
-app.use('/movies', moviesRouter);
+app.use('/api', movieRouter)
+app.use('/api', userRouter)
 
-app.listen(3001, () => console.log('Serveri käynnissä portissa 3001'));
+const PORT = process.env.PORT || 3001
+app.listen(PORT, () => console.log(`Server running on port http://localhost:${PORT}/`))
