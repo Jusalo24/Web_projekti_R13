@@ -1,9 +1,12 @@
+import "../styles/home.css";
+import GetNowPlayingMovies from "../components/GetMovies";
+
 export default function Home() {
   return (
     <main className="content">
-      <h2>Now Playing</h2>
+      <h2>Now Playing in Finland</h2>
       <div className="movie-box">
-        <p>🎬 Movie Name | 🕒 Time | 📍 Location</p>
+        <GetNowPlayingMovies region="FI" page={1} imageSize="w500"/>
       </div>
 
       <h2>Top 10 Movies</h2>
