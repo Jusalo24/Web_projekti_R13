@@ -1,4 +1,9 @@
 import { Pool } from 'pg'
+import dotenv from 'dotenv'
+
+const environment = process.env.NODE_ENV || 'development'
+
+dotenv.config()
 
 const pool = new Pool({
     host: process.env.POSTGRES_HOST,

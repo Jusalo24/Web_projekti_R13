@@ -251,7 +251,7 @@ http://localhost:3001/api
 ### Planned Endpoints
 
 #### Movies
-- `GET /api/movies` - Get popular movies
+- `GET /api/movies/now_playing` - Get now playing in theater movies
 - `GET /api/movies/:id` - Get movie details
 - `GET /api/movies/search?q=query` - Search movies
 
