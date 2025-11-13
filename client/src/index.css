@@ -15,9 +15,9 @@ body {
   align-items: center;
 }
 
-/* -------------------------- */
-/* NAVBAR */
-/* -------------------------- */
+
+/* Navbar */
+
 .navbar {
   width: 100%;
   background-color: #000; /* musta yläpalkki */
@@ -28,11 +28,14 @@ body {
   padding: 1rem 3rem;
   position: sticky;
   top: 0;
+  margin: 0 auto;
+  border-radius: 7px 7px 0 0;
 }
 
 .logo1 {
   font-size: 1.5rem;
   font-weight: 600;
+  margin-right: 1rem;
 }
 
 .links {
@@ -41,6 +44,21 @@ body {
   gap: 2rem;
 }
 
+.links li a {
+  background-color: #222;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.links li a:hover {
+  background-color: #555;
+}
+
+/*
 .links a {
   color: white;
   text-decoration: none;
@@ -50,16 +68,18 @@ body {
 .links a:hover {
   text-decoration: underline;
 }
+*/
 
-/* -------------------------- */
-/* MAIN CONTENT AREA */
-/* -------------------------- */
-.content {
+/* Main area */
+
+main {
   background-color: white;
-  width: 80%;
+  width: 100%;
+  max-width: 1200px;
   min-height: 80vh;
-  margin-top: 2rem;
-  border-radius: 8px;
+  margin: 0 auto;
+  margin-top: 0rem;
+  border-radius: 0 0 7px 7px;
   padding: 2rem;
   box-shadow: 0 0 10px rgba(0,0,0,0.2);
 }
@@ -84,7 +104,7 @@ h2 {
   padding: 1rem 0;
 }
 
-/* Scrollbar piiloon siistin näköiseksi */
+/* Scrollbar */
 .top-movies::-webkit-scrollbar {
   display: none;
 }
