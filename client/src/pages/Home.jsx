@@ -5,7 +5,7 @@ export default function Home() {
     <main className="content">
       <h2>Now Playing in Finland</h2>
       <div className="movie-box">
-        <GetNowPlayingMovies region="FI" page={1} />
+        <GetNowPlayingMovies region="FI" page={1} imageSize="w500"/>
       </div>
 
       <h2>Top 10 Movies</h2>

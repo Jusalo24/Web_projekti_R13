@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 
-export default function GetNowPlayingMovies({ region = "FI", page = 1 }) {
+export default function GetNowPlayingMovies({ region = "FI", page = 1, imageSize = "w500" }) { // Image sizes from API w780, w500, w342, w185, w154, w92, original
     const [movies, setMovies] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
@@ -32,7 +32,7 @@ export default function GetNowPlayingMovies({ region = "FI", page = 1 }) {
             {movies.map((movie) => (
                 <div key={movie.id} className="movie-box">
                     <img
-                        src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                        src={`https://image.tmdb.org/t/p/${imageSize}${movie.poster_path}`}
                         alt={movie.title}
                         style={{ width: "150px", borderRadius: "8px" }}
                     />
