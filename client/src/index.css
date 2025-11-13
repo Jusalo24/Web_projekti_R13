@@ -1,75 +1,90 @@
+/* Nollaa oletustyylit ja aseta pohja */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-    display: flex;
-    padding: 2rem;
-    min-height: 100vh;
-    font-family: 'Poppins', sans-serif;
-    color: white;
-    line-height: 1.5;
-    background-color:grey;
-    justify-content: center;
-    align-items: flex-start;
-    
-    
+  font-family: "Poppins", sans-serif;
+  background-color: #2f2f2f; /* tummanharmaa tausta */
+  color: #222;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-main {
-    margin: 0 auto;
-    width: 75rem;
-    height: 200rem;
-    font-family: 'Poppins', sans-serif;
-    color: black;
-    border: 1px;
-    background-color: white;
-
-}
-
+/* -------------------------- */
+/* NAVBAR */
+/* -------------------------- */
 .navbar {
-    width: auto;
-    height: 70px;
-    padding: 1rem;
-    font-family: 'Poppins', sans-serif;
-    color: white;
-    background-color: black;
-    border: 2px;
-
+  width: 100%;
+  background-color: #000; /* musta yläpalkki */
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 3rem;
+  position: sticky;
+  top: 0;
 }
 
-a {
-    color:black;
-    text-decoration: none;
-
+.logo1 {
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 
-a:hover {
-    text-decoration: underline;
-
+.links {
+  list-style: none;
+  display: flex;
+  gap: 2rem;
 }
 
-h1, h2, h3 {
-    margin-bottom: 1rem;
-    color: #f1f1f1;
-    font-weight: 600;
-
+.links a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
 }
 
-button {
-    padding: 0.5rem 1rem;
-    color:brown;
-    font-weight: 400;
-    border: none;
-    background-color:white;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.2s ease-in-out;
-
+.links a:hover {
+  text-decoration: underline;
 }
 
-button-hover {
-    background-color: darkgrey;
+/* -------------------------- */
+/* MAIN CONTENT AREA */
+/* -------------------------- */
+.content {
+  background-color: white;
+  width: 80%;
+  min-height: 80vh;
+  margin-top: 2rem;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+
+h2 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.movie-box {
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 2rem;
+  background-color: #f9f9f9;
+}
+
+.top-movies {
+  display: flex;
+  overflow-x: auto;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+/* Scrollbar piiloon siistin näköiseksi */
+.top-movies::-webkit-scrollbar {
+  display: none;
 }
