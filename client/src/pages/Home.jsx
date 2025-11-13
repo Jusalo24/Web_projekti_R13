@@ -1,4 +1,5 @@
-import GetNowPlayingMovies from "../components/GetMovies"
+import "../styles/home.css";
+import GetNowPlayingMovies from "../components/GetMovies";
 
 export default function Home() {
   return (

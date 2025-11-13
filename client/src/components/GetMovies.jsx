@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import GetImage from "./GetImage";
 
 export default function GetNowPlayingMovies({ region = "FI", page = 1, imageSize = "w500" }) { // Image sizes from API w780, w500, w342, w185, w154, w92, original
     const [movies, setMovies] = useState([])
@@ -31,11 +32,7 @@ export default function GetNowPlayingMovies({ region = "FI", page = 1, imageSize
         <div className="movie-list">
             {movies.map((movie) => (
                 <div key={movie.id} className="movie-box">
-                    <img
-                        src={`https://image.tmdb.org/t/p/${imageSize}${movie.poster_path}`}
-                        alt={movie.title}
-                        style={{ width: "150px", borderRadius: "8px" }}
-                    />
+                    <GetImage path={movie.poster_path} title={movie.title} size={imageSize} />
                     <h4>{movie.title}</h4>
                     <p>⭐ {movie.vote_average.toFixed(1)}</p>
                     <p>📅 {movie.release_date}</p>

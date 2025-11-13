@@ -1,4 +1,3 @@
-/* Nollaa oletustyylit ja aseta pohja */
 * {
   margin: 0;
   padding: 0;
@@ -15,9 +14,7 @@ body {
   align-items: center;
 }
 
-
 /* Navbar */
-
 .navbar {
   width: 100%;
   background-color: #000; /* musta yläpalkki */
@@ -56,55 +53,4 @@ body {
 
 .links li a:hover {
   background-color: #555;
-}
-
-/*
-.links a {
-  color: white;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.links a:hover {
-  text-decoration: underline;
-}
-*/
-
-/* Main area */
-
-main {
-  background-color: white;
-  width: 100%;
-  max-width: 1200px;
-  min-height: 80vh;
-  margin: 0 auto;
-  margin-top: 0rem;
-  border-radius: 0 0 7px 7px;
-  padding: 2rem;
-  box-shadow: 0 0 10px rgba(0,0,0,0.2);
-}
-
-h2 {
-  margin-bottom: 1rem;
-  color: #333;
-}
-
-.movie-box {
-  border: 1px solid #ddd;
-  padding: 1rem;
-  border-radius: 6px;
-  margin-bottom: 2rem;
-  background-color: #f9f9f9;
-}
-
-.top-movies {
-  display: flex;
-  overflow-x: auto;
-  gap: 1rem;
-  padding: 1rem 0;
-}
-
-/* Scrollbar */
-.top-movies::-webkit-scrollbar {
-  display: none;
 }
