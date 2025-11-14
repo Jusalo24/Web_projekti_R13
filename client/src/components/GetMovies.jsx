@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import GetImage from "./GetImage";
 
-export default function GetNowPlayingMovies({ region = "FI", page = 1, imageSize = "w500" }) { // Image sizes from API w780, w500, w342, w185, w154, w92, original
+export default function GetMovies({ region = "FI", page = 1, imageSize = "w500", type = "now_playing", limit = null }) { // Image sizes from API w780, w500, w342, w185, w154, w92, original
     const [movies, setMovies] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
@@ -9,10 +9,12 @@ export default function GetNowPlayingMovies({ region = "FI", page = 1, imageSize
     useEffect(() => {
         const fetchMovies = async () => {
             try {
-                const response = await fetch(`http://localhost:3001/api/movies/now_playing?region=${region}&page=${page}`)
+                const response = await fetch(`http://localhost:3001/api/movies/${type}?region=${region}&page=${page}`)
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
                 const data = await response.json()
-                setMovies(data.results || [])
+                let results = data.results || []
+                if (limit) results = results.slice(0, limit)
+                setMovies(results)
             } catch (err) {
                 console.error("Error fetching movies:", err)
                 setError(err.message)
@@ -22,7 +24,7 @@ export default function GetNowPlayingMovies({ region = "FI", page = 1, imageSize
         }
 
         fetchMovies()
-    }, [region, page])
+    }, [region, page, type])
 
     if (loading) return <p>Loading movies...</p>
     if (error) return <p>Error: {error}</p>
