@@ -166,6 +166,15 @@ docker-compose exec db psql -U postgres -d moviedb
 
 You should see tables like `users`, `groups`, `reviews`, `favorite_lists`, etc.
 
+Three containers should be running. To verify:
+
+```powershell
+# Lists running containers on your system.
+docker ps
+```
+
+You should see containers with names like `web_projekti_r13-client-1`, `web_projekti_r13-server-1` and `web_projekti_r13-db-1`.
+
 ### Stop the Application
 
 ```powershell
