@@ -1,17 +1,17 @@
 import "../styles/home.css";
-import GetNowPlayingMovies from "../components/GetMovies";
+import GetMovies from "../components/GetMovies";
 
 export default function Home() {
   return (
     <main className="content">
       <h2>Now Playing in Finland</h2>
       <div className="movie-box">
-        <GetNowPlayingMovies region="FI" page={1} imageSize="w500"/>
+        <GetMovies type="now_playing" region="FI" page={1} imageSize="w500"/>
       </div>
 
       <h2>Top 10 Movies</h2>
       <div className="top-movies">
-        <p>Coming soon...</p>
+        <GetMovies type="top_rated" page={1} imageSize="w500" limit={10}/>
       </div>
     </main>
   )
