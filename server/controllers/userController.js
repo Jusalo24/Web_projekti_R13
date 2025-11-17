@@ -3,9 +3,18 @@ import { registerUser, loginUser, getUserProfile, updateUserProfile } from '../s
 export const createUser = async (req, res) => {
     try {
         const { email, username, password } = req.body
+
+        // Validate required fields
+        if (!email || !username || !password) {
+            return res.status(400).json({ 
+                error: 'Email, username, and password are required' 
+            })
+        }
+
         const newUser = await registerUser(email, username, password)
         res.status(201).json(newUser)
     } catch (err) {
+        // Return proper error object
         res.status(400).json({ error: err.message })
     }
 }
@@ -13,9 +22,18 @@ export const createUser = async (req, res) => {
 export const userLogin = async (req, res) => {
     try {
         const { email, password } = req.body
+
+        // Validate required fields
+        if (!email || !password) {
+            return res.status(400).json({ 
+                error: 'Email and password are required' 
+            })
+        }
+
         const data = await loginUser(email, password)
         res.status(200).json(data)
     } catch (err) {
+        // Return proper error object with 401 for authentication failures
         res.status(401).json({ error: err.message })
     }
 }
@@ -23,6 +41,11 @@ export const userLogin = async (req, res) => {
 export const getUserById = async (req, res) => {
     try {
         const { id } = req.params
+
+        if (!id) {
+            return res.status(400).json({ error: 'User ID is required' })
+        }
+
         const user = await getUserProfile(id)
         res.status(200).json(user)
     } catch (err) {
@@ -34,6 +57,15 @@ export const updateUser = async (req, res) => {
     try {
         const { id } = req.params
         const updates = req.body
+
+        if (!id) {
+            return res.status(400).json({ error: 'User ID is required' })
+        }
+
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).json({ error: 'No fields to update' })
+        }
+
         const updated = await updateUserProfile(id, updates)
         res.status(200).json(updated)
     } catch (err) {
