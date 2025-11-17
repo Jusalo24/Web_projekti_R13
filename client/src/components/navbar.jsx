@@ -7,23 +7,35 @@ export default function Navbar() {
 
   const handleSearch = (query) => {
     if (!query) return;
-
-    // ohjaa search-parametrilla varustetulle sivulle
     navigate(`/SearchResult?search=${encodeURIComponent(query)}`);
   };
 
   return (
     <nav className="navbar">
-      <h1 className="logo1">Movie Project</h1>
+      <div className="navbar__container">
+        <Link to="/" className="navbar__logo">
+          <h1>Movie Project</h1>
+        </Link>
 
-      <ul className="links">
-        <li><Link to="/">Home</Link></li>
-        <li><Link to="/movies">Movies</Link></li>
-        <li><Link to="/groups">Groups</Link></li>
-        <li><Link to="/account">Account</Link></li>
-      </ul>
+        <ul className="navbar__links">
+          <li className="navbar__link-item">
+            <Link to="/" className="navbar__link">Home</Link>
+          </li>
+          <li className="navbar__link-item">
+            <Link to="/movies" className="navbar__link">Movies</Link>
+          </li>
+          <li className="navbar__link-item">
+            <Link to="/groups" className="navbar__link">Groups</Link>
+          </li>
+          <li className="navbar__link-item">
+            <Link to="/account" className="navbar__link">Account</Link>
+          </li>
+        </ul>
 
-      <SearchBar onSearch={handleSearch} />
+        <div className="navbar__search">
+          <SearchBar onSearch={handleSearch} />
+        </div>
+      </div>
     </nav>
   );
 }

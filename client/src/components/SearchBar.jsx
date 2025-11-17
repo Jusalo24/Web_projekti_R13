@@ -15,6 +15,7 @@ export default function SearchBar({ onSearch }) {
       setResults([]);
       return;
     }
+
     try {
       const res = await fetch(
         `http://localhost:3001/api/movies/search?q=${encodeURIComponent(search)}&page=1`
@@ -47,11 +48,9 @@ export default function SearchBar({ onSearch }) {
     setQuery(movie.title);
     setShowDropdown(false);
     setResults([]);
-
     navigate(`/SearchResult?search=${encodeURIComponent(movie.title)}`);
   };
 
-  // sulje dropdown klikatessa ulkopuolelta
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
@@ -64,26 +63,29 @@ export default function SearchBar({ onSearch }) {
   }, []);
 
   return (
-    <div ref={containerRef} className="search-wrapper">
-      <form className="search-bar" onSubmit={handleSubmit}>
+    <div ref={containerRef} className="search">
+      <form className="search__form" onSubmit={handleSubmit}>
         <input
           type="text"
           placeholder="Search movies..."
           value={query}
           onChange={handleChange}
+          className="search__input"
         />
-        <button type="submit">Search</button>
+        <button type="submit" className="search__button">
+          Search
+        </button>
       </form>
 
       {showDropdown && (
-        <ul className="search-dropdown">
+        <ul className="search__dropdown">
           {results.length === 0 ? (
-            <li className="dropdown-empty">No results</li>
+            <li className="search__dropdown-empty">No results</li>
           ) : (
             results.map((movie) => (
               <li
                 key={movie.id}
-                className="dropdown-item"
+                className="search__dropdown-item"
                 onClick={() => handleSelect(movie)}
               >
                 <img
@@ -93,9 +95,9 @@ export default function SearchBar({ onSearch }) {
                       : "/placeholder.png"
                   }
                   alt={movie.title}
-                  className="dropdown-thumb"
+                  className="search__dropdown-thumb"
                 />
-                <span>{movie.title}</span>
+                <span className="search__dropdown-title">{movie.title}</span>
               </li>
             ))
           )}

@@ -1,7 +1,14 @@
 import { useEffect, useState } from "react";
 import GetImage from "./GetImage";
 
-export default function GetMovies({ query = "", region = "", page = 1, imageSize = "w500", type = "now_playing", limit = null }) {
+export default function GetMovies({
+    query = "",
+    region = "",
+    page = 1,
+    imageSize = "w500",
+    type = "now_playing",
+    limit = null
+}) {
     const [movies, setMovies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -10,7 +17,6 @@ export default function GetMovies({ query = "", region = "", page = 1, imageSize
         const fetchMovies = async () => {
             try {
                 setLoading(true);
-
                 const url = query
                     ? `http://localhost:3001/api/movies/search?q=${encodeURIComponent(query)}&page=${page}`
                     : `http://localhost:3001/api/movies/${type}?region=${region}&page=${page}`;
@@ -30,21 +36,36 @@ export default function GetMovies({ query = "", region = "", page = 1, imageSize
                 setLoading(false);
             }
         };
-        fetchMovies();
-    }, [query, region, page, type]);
 
-    if (loading) return <p>Loading movies...</p>;
-    if (error) return <p>Error: {error}</p>;
-    if (movies.length === 0) return <p>No movies found.</p>;
+        fetchMovies();
+    }, [query, region, page, type, limit]);
+
+    if (loading) return <div className="movies-loading">Loading movies...</div>;
+    if (error) return <div className="movies-error">Error: {error}</div>;
+    if (movies.length === 0) return <div className="movies-empty">No movies found.</div>;
 
     return (
-        <div className="movie-list">
+        <div className="movies-grid">
             {movies.map((movie) => (
-                <div key={movie.id} className="movie-box">
-                    <GetImage path={movie.poster_path} title={movie.title} size={imageSize} />
-                    <h4>{movie.title}</h4>
-                    <p>⭐ {movie.vote_average?.toFixed(1)}</p>
-                    <p>📅 {movie.release_date}</p>
+                <div key={movie.id} className="movie-card">
+                    <div className="movie-card__poster">
+                        <GetImage
+                            path={movie.poster_path}
+                            title={movie.title}
+                            size={imageSize}
+                        />
+                    </div>
+                    <div className="movie-card__info">
+                        <h3 className="movie-card__title">{movie.title}</h3>
+                        <div className="movie-card__meta">
+                            <span className="movie-card__rating">
+                                ⭐ {movie.vote_average?.toFixed(1)}
+                            </span>
+                            <span className="movie-card__date">
+                                📅 {movie.release_date}
+                            </span>
+                        </div>
+                    </div>
                 </div>
             ))}
         </div>
