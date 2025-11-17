@@ -28,7 +28,7 @@ movieRouter.get('/movies/discover', discoverMovies)
 // Get movies by category (popular, now_playing, top_rated, upcoming)
 // Add ?region=FI to get movies now playing in Finland
 // GET /api/movies/list/:searchType?page=1&region=FI
-movieRouter.get('/movies/list/:searchType', getMoviesByType)
+movieRouter.get('/movies/:searchType', getMoviesByType)
 
 // Get movie credits (cast and crew)
 // GET /api/movies/:id/credits
