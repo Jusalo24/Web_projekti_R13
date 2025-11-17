@@ -6,15 +6,15 @@ export default function GetMovies({
     page = 1,
     imageSize = "w500",
     limit = null,
-    query = "",                   // search query                    // release year for search
-    ...discoverParams              // esim. with_genres, primary_release_year, vote_average_gte, with_cast
+    query = "",
+    ...discoverParams
     
 }) {
     const [movies, setMovies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const baseURL = "http://localhost:3001";
+    const baseURL = import.meta.env.VITE_API_BASE_URL;
 
     useEffect(() => {
         const fetchMovies = async () => {

@@ -17,10 +17,12 @@ export default function SearchBar({ onSearch }) {
       return;
     }
 
+    const baseURL = import.meta.env.VITE_API_BASE_URL;
+
     try {
       setLoading(true);
       const res = await fetch(
-        `http://localhost:3001/api/movies/search?q=${encodeURIComponent(search)}&page=1`
+        `${baseURL}/api/movies/search?q=${encodeURIComponent(search)}&page=1`
       );
       const data = await res.json();
       setResults((data?.results || []).slice(0, 5)); // Limit to 5 results
