@@ -8,8 +8,8 @@ export const multiSearch = async (req, res) => {
     try {
         const { q, page } = req.query
 
-        if (!q) {
-            return res.status(400).json({ error: 'Query parameter "q" is required' })
+        if (!q || q.trim() === '') {
+            return res.status(400).json({ error: 'Query parameter "q" is required and cannot be empty' })
         }
 
         const pageNum = page ? parseInt(page, 10) : 1
@@ -40,8 +40,8 @@ export const searchPerson = async (req, res) => {
     try {
         const { q, page } = req.query
 
-        if (!q) {
-            return res.status(400).json({ error: 'Query parameter "q" is required' })
+        if (!q || q.trim() === '') {
+            return res.status(400).json({ error: 'Query parameter "q" is required and cannot be empty' })
         }
 
         const pageNum = page ? parseInt(page, 10) : 1
@@ -76,6 +76,10 @@ export const getPersonById = async (req, res) => {
             return res.status(400).json({ error: 'Person ID is required' })
         }
 
+        if (isNaN(id)) {
+            return res.status(400).json({ error: 'Person ID must be a number' })
+        }
+
         const personData = await tmdbRequest(`/person/${id}`, {
             language: 'en-US'
         })
@@ -83,6 +87,11 @@ export const getPersonById = async (req, res) => {
         res.status(200).json(personData)
     } catch (err) {
         console.error('Error fetching person:', err.message)
+        
+        if (err.response && err.response.status === 404) {
+            return res.status(404).json({ error: 'Person not found' })
+        }
+        
         res.status(500).json({ error: 'Failed to fetch person data' })
     }
 }
@@ -99,6 +108,10 @@ export const getPersonMovieCredits = async (req, res) => {
             return res.status(400).json({ error: 'Person ID is required' })
         }
 
+        if (isNaN(id)) {
+            return res.status(400).json({ error: 'Person ID must be a number' })
+        }
+
         const creditsData = await tmdbRequest(`/person/${id}/movie_credits`, {
             language: 'en-US'
         })
@@ -106,6 +119,11 @@ export const getPersonMovieCredits = async (req, res) => {
         res.status(200).json(creditsData)
     } catch (err) {
         console.error('Error fetching person movie credits:', err.message)
+        
+        if (err.response && err.response.status === 404) {
+            return res.status(404).json({ error: 'Person not found' })
+        }
+        
         res.status(500).json({ error: 'Failed to fetch person movie credits' })
     }
 }
@@ -122,6 +140,10 @@ export const getPersonTVCredits = async (req, res) => {
             return res.status(400).json({ error: 'Person ID is required' })
         }
 
+        if (isNaN(id)) {
+            return res.status(400).json({ error: 'Person ID must be a number' })
+        }
+
         const creditsData = await tmdbRequest(`/person/${id}/tv_credits`, {
             language: 'en-US'
         })
@@ -129,6 +151,11 @@ export const getPersonTVCredits = async (req, res) => {
         res.status(200).json(creditsData)
     } catch (err) {
         console.error('Error fetching person TV credits:', err.message)
+        
+        if (err.response && err.response.status === 404) {
+            return res.status(404).json({ error: 'Person not found' })
+        }
+        
         res.status(500).json({ error: 'Failed to fetch person TV credits' })
     }
 }

@@ -9,15 +9,17 @@ export const createReview = async (req, res) => {
     try {
         const { user_id, movie_external_id, rating, review_text } = req.body
 
+        // Validate required fields
         if (!user_id || !movie_external_id || !rating) {
-            return res.status(400).json({ 
-                error: 'user_id, movie_external_id, and rating are required' 
+            return res.status(400).json({
+                error: 'user_id, movie_external_id, and rating are required'
             })
         }
 
+        // Validate rating range
         if (rating < 1 || rating > 5) {
-            return res.status(400).json({ 
-                error: 'Rating must be between 1 and 5' 
+            return res.status(400).json({
+                error: 'Rating must be between 1 and 5'
             })
         }
 
@@ -30,9 +32,10 @@ export const createReview = async (req, res) => {
 
         res.status(201).json(result.rows[0])
     } catch (err) {
-        if (err.code === '23505') { // Unique constraint violation
-            return res.status(409).json({ 
-                error: 'You have already reviewed this movie' 
+        // Handle unique constraint violation (duplicate review)
+        if (err.code === '23505') {
+            return res.status(409).json({
+                error: 'You have already reviewed this movie'
             })
         }
         console.error('Error creating review:', err.message)
@@ -53,8 +56,8 @@ export const getReviewsByMovieId = async (req, res) => {
         const limitNum = parseInt(limit, 10)
 
         if (isNaN(pageNum) || pageNum < 1 || isNaN(limitNum) || limitNum < 1) {
-            return res.status(400).json({ 
-                error: 'Page and limit must be positive integers' 
+            return res.status(400).json({
+                error: 'Page and limit must be positive integers'
             })
         }
 
@@ -62,12 +65,12 @@ export const getReviewsByMovieId = async (req, res) => {
 
         // Get reviews with user information
         const result = await pool.query(
-            `SELECT 
-                r.id, 
-                r.user_id, 
-                r.movie_external_id, 
-                r.rating, 
-                r.review_text, 
+            `SELECT
+                r.id,
+                r.user_id,
+                r.movie_external_id,
+                r.rating,
+                r.review_text,
                 r.created_at,
                 u.username
              FROM reviews r
@@ -115,20 +118,20 @@ export const getReviewsByUserId = async (req, res) => {
         const limitNum = parseInt(limit, 10)
 
         if (isNaN(pageNum) || pageNum < 1 || isNaN(limitNum) || limitNum < 1) {
-            return res.status(400).json({ 
-                error: 'Page and limit must be positive integers' 
+            return res.status(400).json({
+                error: 'Page and limit must be positive integers'
             })
         }
 
         const offset = (pageNum - 1) * limitNum
 
         const result = await pool.query(
-            `SELECT 
-                id, 
-                user_id, 
-                movie_external_id, 
-                rating, 
-                review_text, 
+            `SELECT
+                id,
+                user_id,
+                movie_external_id,
+                rating,
+                review_text,
                 created_at
              FROM reviews
              WHERE user_id = $1
@@ -170,9 +173,10 @@ export const updateReview = async (req, res) => {
         const { id } = req.params
         const { rating, review_text } = req.body
 
-        if (rating && (rating < 1 || rating > 5)) {
-            return res.status(400).json({ 
-                error: 'Rating must be between 1 and 5' 
+        // Validate rating if provided
+        if (rating !== undefined && (rating < 1 || rating > 5)) {
+            return res.status(400).json({
+                error: 'Rating must be between 1 and 5'
             })
         }
 
@@ -191,15 +195,15 @@ export const updateReview = async (req, res) => {
         }
 
         if (updates.length === 0) {
-            return res.status(400).json({ 
-                error: 'No fields to update' 
+            return res.status(400).json({
+                error: 'No fields to update'
             })
         }
 
         values.push(id)
 
         const result = await pool.query(
-            `UPDATE reviews 
+            `UPDATE reviews
              SET ${updates.join(', ')}
              WHERE id = $${paramCount}
              RETURNING id, user_id, movie_external_id, rating, review_text, created_at`,
@@ -225,6 +229,10 @@ export const deleteReview = async (req, res) => {
     try {
         const { id } = req.params
 
+        if (!id) {
+            return res.status(400).json({ error: 'Review ID is required' })
+        }
+
         const result = await pool.query(
             'DELETE FROM reviews WHERE id = $1 RETURNING id',
             [id]
@@ -234,9 +242,9 @@ export const deleteReview = async (req, res) => {
             return res.status(404).json({ error: 'Review not found' })
         }
 
-        res.status(200).json({ 
+        res.status(200).json({
             message: 'Review deleted successfully',
-            id: result.rows[0].id 
+            id: result.rows[0].id
         })
     } catch (err) {
         console.error('Error deleting review:', err.message)
@@ -252,8 +260,12 @@ export const getMovieAverageRating = async (req, res) => {
     try {
         const { movieId } = req.params
 
+        if (!movieId) {
+            return res.status(400).json({ error: 'Movie ID is required' })
+        }
+
         const result = await pool.query(
-            `SELECT 
+            `SELECT
                 AVG(rating)::NUMERIC(10,2) as average_rating,
                 COUNT(*) as total_reviews
              FROM reviews
@@ -263,7 +275,7 @@ export const getMovieAverageRating = async (req, res) => {
 
         res.status(200).json({
             movie_external_id: movieId,
-            average_rating: result.rows[0].average_rating || 0,
+            average_rating: parseFloat(result.rows[0].average_rating) || 0,
             total_reviews: parseInt(result.rows[0].total_reviews, 10)
         })
     } catch (err) {

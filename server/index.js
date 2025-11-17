@@ -20,9 +20,15 @@ app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
+// Request logging middleware (optional, helpful for debugging)
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`)
+    next()
+})
+
 // Health check endpoint
 app.get('/health', (req, res) => {
-    res.status(200).json({ 
+    res.status(200).json({
         status: 'OK',
         timestamp: new Date().toISOString(),
         environment: process.env.NODE_ENV || 'development'
@@ -37,21 +43,22 @@ app.use('/api', searchRouter)
 app.use('/api', reviewRouter)
 app.use('/api', genreRouter)
 
-// 404 handler
+// 404 handler - Must come after all routes
 app.use((req, res) => {
-    res.status(404).json({ 
+    res.status(404).json({
         error: 'Route not found',
         path: req.originalUrl,
-        method: req.method
+        method: req.method,
+        message: 'The requested endpoint does not exist'
     })
 })
 
-// Global error handler
+// Global error handler - Must be last
 app.use((err, req, res, next) => {
     console.error('Unhandled error:', err)
-    res.status(500).json({ 
+    res.status(500).json({
         error: 'Internal server error',
-        message: process.env.NODE_ENV === 'development' ? err.message : undefined
+        message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
     })
 })
 
@@ -61,6 +68,7 @@ app.listen(PORT, () => {
     console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`)
     console.log(`🎬 TMDB API: ${process.env.TMDB_API_KEY ? 'Configured ✓' : 'Missing ✗'}`)
     console.log(`🗄️  Database: ${process.env.POSTGRES_HOST}:${process.env.POSTGRES_PORT}/${process.env.POSTGRES_DB}`)
+    console.log(`🔗 Health check: http://localhost:${PORT}/health`)
 })
 
 export default app
