@@ -2,8 +2,10 @@
   "name": "server",
   "version": "1.0.0",
   "main": "index.js",
-  "type":"module",
+  "type": "module",
   "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "devStart": "nodemon index.js"
   },
@@ -16,9 +18,12 @@
     "mocha": "^11.7.5"
   },
   "dependencies": {
+    "axios": "^1.13.2",
     "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "nodemon": "^3.1.10",
-    "pg": "^8.16.3"
+    "pg": "^8.16.3",
+    "react-router-dom": "^7.9.5"
   }
 }
