@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Routes, Route } from "react-router-dom"
-import './App.css'
+import './styles/App.css'
 import axios from 'axios'
 import Navbar from "./components/navbar"
 import Home from "./pages/Home"
@@ -23,4 +23,3 @@ function App() {
 }
 
 export default App
-

@@ -1,0 +1,43 @@
+main {
+  background-color: white;
+  width: 100%;
+  max-width: 1200px;
+  min-height: 80vh;
+  margin: 0 auto;
+  margin-top: 0rem;
+  border-radius: 0 0 7px 7px;
+  padding: 2rem;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+
+h2 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.movie-list {
+  display: flex;
+  overflow-x: auto;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.movie-box {
+  flex: 0 0 auto; 
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  text-align: center;
+}
+
+.movie-list {
+  -ms-overflow-style: none; /* IE ja Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.movie-box img {
+  width: 150px;
+  border-radius: 8px;
+  object-fit: cover;
+}
