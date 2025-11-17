@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Routes, Route } from "react-router-dom"
-import './styles/App.css'
-import axios from 'axios'
-import Navbar from "./components/navbar"
+import './styles/app.css'
+import Navbar from "./components/Navbar"
 import Home from "./pages/Home"
 import Movies from "./pages/Movies"
 import Groups from "./pages/Groups"

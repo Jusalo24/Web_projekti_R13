@@ -1,6 +1,6 @@
 import { useLocation } from "react-router-dom";
 import GetMovies from "../components/GetMovies";
-import "../styles/searchResult.css";
+import "../styles/search-result.css";
 
 export default function SearchResult() {
   const location = useLocation();
