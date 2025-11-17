@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/index.css";
 
 export default function SearchBar({ onSearch }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
-  let debounceTimer;
+  const debounceTimer = useRef(null);
+  const containerRef = useRef(null);
+  const navigate = useNavigate();
 
   const fetchResults = async (search) => {
     if (!search) {
@@ -13,7 +16,9 @@ export default function SearchBar({ onSearch }) {
       return;
     }
     try {
-      const res = await fetch(`/api/movies/search?q=${search}&page=1`);
+      const res = await fetch(
+        `http://localhost:3001/api/movies/search?q=${encodeURIComponent(search)}&page=1`
+      );
       const data = await res.json();
       setResults(data?.results || []);
     } catch (err) {
@@ -24,27 +29,42 @@ export default function SearchBar({ onSearch }) {
   const handleChange = (e) => {
     const value = e.target.value;
     setQuery(value);
-    setShowDropdown(true);
 
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => fetchResults(value), 400);
+    clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      fetchResults(value);
+      if (value.length > 0) setShowDropdown(true);
+    }, 300);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setShowDropdown(false);
     if (onSearch) onSearch(query);
+    setShowDropdown(false);
   };
 
-  const handleSelect = (title) => {
-    setQuery(title);
+  const handleSelect = (movie) => {
+    setQuery(movie.title);
     setShowDropdown(false);
-    if (onSearch) onSearch(title);
+    setResults([]);
+
+    navigate(`/SearchResult?search=${encodeURIComponent(movie.title)}`);
   };
+
+  // sulje dropdown klikatessa ulkopuolelta
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
 
   return (
-    <div className="search-wrapper">
-    <div className="search-container">
+    <div ref={containerRef} className="search-wrapper">
       <form className="search-bar" onSubmit={handleSubmit}>
         <input
           type="text"
@@ -55,21 +75,32 @@ export default function SearchBar({ onSearch }) {
         <button type="submit">Search</button>
       </form>
 
-      {showDropdown && results.length > 0 && (
+      {showDropdown && (
         <ul className="search-dropdown">
-          {results.map((movie) => (
-            <li key={movie.id} className="dropdown-item" onClick={() => handleSelect(movie.title)}>
-              <img
-                src={`https://image.tmdb.org/t/p/w92${movie.poster_path}`}
-                alt={movie.title}
-                className="dropdown-thumb"
-              />
-              <span>{movie.title}</span>
-            </li>
-          ))}
+          {results.length === 0 ? (
+            <li className="dropdown-empty">No results</li>
+          ) : (
+            results.map((movie) => (
+              <li
+                key={movie.id}
+                className="dropdown-item"
+                onClick={() => handleSelect(movie)}
+              >
+                <img
+                  src={
+                    movie.poster_path
+                      ? `https://image.tmdb.org/t/p/w92${movie.poster_path}`
+                      : "/placeholder.png"
+                  }
+                  alt={movie.title}
+                  className="dropdown-thumb"
+                />
+                <span>{movie.title}</span>
+              </li>
+            ))
+          )}
         </ul>
       )}
-          </div>
     </div>
   );
 }

@@ -7,6 +7,7 @@ import Home from "./pages/Home"
 import Movies from "./pages/Movies"
 import Groups from "./pages/Groups"
 import Account from "./pages/Account"
+import SearchResult from "./pages/SearchResult"
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/movies" element={<Movies />} />
         <Route path="/groups" element={<Groups />} />
         <Route path="/account" element={<Account />} />
+        <Route path="/SearchResult" element={<SearchResult />} />
       </Routes>
     </>
   )

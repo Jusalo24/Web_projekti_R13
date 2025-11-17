@@ -1,12 +1,16 @@
-import { Link } from "react-router-dom"
-import SearchBar from "./SearchBar"
+import { Link, useNavigate } from "react-router-dom";
+import SearchBar from "./SearchBar";
 import "../styles/index.css";
 
 export default function Navbar() {
+  const navigate = useNavigate();
+
   const handleSearch = (query) => {
-    console.log("Search query:", query)
-    // tänne: navigate(`/movies?search=${query}`)
-  }
+    if (!query) return;
+
+    // ohjaa search-parametrilla varustetulle sivulle
+    navigate(`/SearchResult?search=${encodeURIComponent(query)}`);
+  };
 
   return (
     <nav className="navbar">
@@ -21,5 +25,5 @@ export default function Navbar() {
 
       <SearchBar onSearch={handleSearch} />
     </nav>
-  )
+  );
 }

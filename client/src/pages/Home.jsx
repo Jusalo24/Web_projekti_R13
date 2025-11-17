@@ -5,7 +5,7 @@ export default function Home() {
   return (
     <main className="content">
       <h2>Now Playing in Finland</h2>
-      <div className="movie-box">
+      <div className="now_playing">
         <GetMovies type="now_playing" region="FI" page={1} imageSize="w500"/>
       </div>
 
