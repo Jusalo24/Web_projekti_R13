@@ -1,3 +1,4 @@
+/* Global Styles & Variables */
 :root {
   --color-bg-primary: #0a0e27;
   --color-bg-secondary: #161b33;
@@ -187,7 +188,7 @@ body {
 }
 
 /* Search Dropdown */
-.search__dropdown {
+.search__dropdown-container {
   position: absolute;
   top: calc(100% + var(--spacing-xs));
   left: 0;
@@ -199,7 +200,6 @@ body {
   max-height: 400px;
   overflow-y: auto;
   z-index: 1000;
-  list-style: none;
 }
 
 .search__dropdown-empty {
@@ -208,7 +208,12 @@ body {
   color: var(--color-text-muted);
 }
 
-.search__dropdown-item {
+.search__dropdown-results {
+  display: flex;
+  flex-direction: column;
+}
+
+.search__dropdown-movie {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
@@ -218,11 +223,11 @@ body {
   border-bottom: 1px solid var(--color-border);
 }
 
-.search__dropdown-item:last-child {
+.search__dropdown-movie:last-child {
   border-bottom: none;
 }
 
-.search__dropdown-item:hover {
+.search__dropdown-movie:hover {
   background-color: var(--color-bg-tertiary);
 }
 
@@ -232,11 +237,29 @@ body {
   object-fit: cover;
   border-radius: var(--radius-sm);
   background-color: var(--color-bg-tertiary);
+  flex-shrink: 0;
+}
+
+.search__dropdown-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
 }
 
 .search__dropdown-title {
   color: var(--color-text-primary);
   font-size: 0.95rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search__dropdown-year {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
 }
 
 /* Movies Grid - Horizontal Scrolling */

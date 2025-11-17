@@ -2,24 +2,38 @@ import { useEffect, useState } from "react";
 import GetImage from "./GetImage";
 
 export default function GetMovies({
-    query = "",
-    region = "",
+    type = "now_playing",
     page = 1,
     imageSize = "w500",
-    type = "now_playing",
-    limit = null
+    limit = null,
+    query = "",                   // search query                    // release year for search
+    ...discoverParams              // esim. with_genres, primary_release_year, vote_average_gte, with_cast
+    
 }) {
     const [movies, setMovies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    const baseURL = "http://localhost:3001";
+
     useEffect(() => {
         const fetchMovies = async () => {
             try {
                 setLoading(true);
-                const url = query
-                    ? `http://localhost:3001/api/movies/search?q=${encodeURIComponent(query)}&page=${page}`
-                    : `http://localhost:3001/api/movies/${type}?region=${region}&page=${page}`;
+
+                let url = "";
+
+                if (query) {
+                    // search endpoint
+                    url = `${baseURL}/api/movies/search?q=${encodeURIComponent(query)}&page=${page}`;
+                } else if (type === "discover") {
+                    // discover endpoint
+                    const queryString = new URLSearchParams({ page, ...discoverParams }).toString();
+                    url = `${baseURL}/api/movies/discover?${queryString}`;
+                } else {
+                    // regular type endpoint
+                    url = `${baseURL}/api/movies/${type}?page=${page}`;
+                }
 
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -38,7 +52,8 @@ export default function GetMovies({
         };
 
         fetchMovies();
-    }, [query, region, page, type, limit]);
+    }, [type, page, limit, query, JSON.stringify(discoverParams)]); 
+    // JSON.stringify -> jotta useEffect havaitsee objektimuutokset
 
     if (loading) return <div className="movies-loading">Loading movies...</div>;
     if (error) return <div className="movies-error">Error: {error}</div>;

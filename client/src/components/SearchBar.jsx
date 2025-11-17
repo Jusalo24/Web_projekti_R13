@@ -6,6 +6,7 @@ export default function SearchBar({ onSearch }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [loading, setLoading] = useState(false);
   const debounceTimer = useRef(null);
   const containerRef = useRef(null);
   const navigate = useNavigate();
@@ -17,13 +18,17 @@ export default function SearchBar({ onSearch }) {
     }
 
     try {
+      setLoading(true);
       const res = await fetch(
         `http://localhost:3001/api/movies/search?q=${encodeURIComponent(search)}&page=1`
       );
       const data = await res.json();
-      setResults(data?.results || []);
+      setResults((data?.results || []).slice(0, 5)); // Limit to 5 results
     } catch (err) {
       console.error("Search error", err);
+      setResults([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -40,14 +45,13 @@ export default function SearchBar({ onSearch }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (onSearch) onSearch(query);
+    if (onSearch && query) onSearch(query);
     setShowDropdown(false);
   };
 
   const handleSelect = (movie) => {
     setQuery(movie.title);
     setShowDropdown(false);
-    setResults([]);
     navigate(`/SearchResult?search=${encodeURIComponent(movie.title)}`);
   };
 
@@ -57,7 +61,6 @@ export default function SearchBar({ onSearch }) {
         setShowDropdown(false);
       }
     };
-
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
@@ -78,30 +81,39 @@ export default function SearchBar({ onSearch }) {
       </form>
 
       {showDropdown && (
-        <ul className="search__dropdown">
-          {results.length === 0 ? (
-            <li className="search__dropdown-empty">No results</li>
+        <div className="search__dropdown-container">
+          {loading ? (
+            <div className="search__dropdown-empty">Searching...</div>
+          ) : results.length === 0 ? (
+            <div className="search__dropdown-empty">No results</div>
           ) : (
-            results.map((movie) => (
-              <li
-                key={movie.id}
-                className="search__dropdown-item"
-                onClick={() => handleSelect(movie)}
-              >
-                <img
-                  src={
-                    movie.poster_path
-                      ? `https://image.tmdb.org/t/p/w92${movie.poster_path}`
-                      : "/placeholder.png"
-                  }
-                  alt={movie.title}
-                  className="search__dropdown-thumb"
-                />
-                <span className="search__dropdown-title">{movie.title}</span>
-              </li>
-            ))
+            <div className="search__dropdown-results">
+              {results.map((movie) => (
+                <div
+                  key={movie.id}
+                  className="search__dropdown-movie"
+                  onClick={() => handleSelect(movie)}
+                >
+                  <img
+                    src={
+                      movie.poster_path
+                        ? `https://image.tmdb.org/t/p/w92${movie.poster_path}`
+                        : "/placeholder.png"
+                    }
+                    alt={movie.title}
+                    className="search__dropdown-thumb"
+                  />
+                  <div className="search__dropdown-info">
+                    <span className="search__dropdown-title">{movie.title}</span>
+                    <span className="search__dropdown-year">
+                      {movie.release_date?.substring(0, 4)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
-        </ul>
+        </div>
       )}
     </div>
   );
