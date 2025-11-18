@@ -226,3 +226,53 @@ export const getSimilarTV = async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch similar TV shows' })
     }
 }
+
+/**
+ * Discover TV shows with filters
+ * GET /api/tv/discover?with_genres=28&sort_by=popularity.desc&page=1
+ */
+export const discoverTV = async (req, res) => {
+    try {
+        const {
+            with_genres,
+            sort_by,
+            page,
+            year,
+            with_cast,
+            with_crew,
+            vote_average_gte,
+            vote_average_lte
+        } = req.query
+
+        const pageNum = page ? parseInt(page, 10) : 1
+        if (isNaN(pageNum) || pageNum < 1) {
+            return res.status(400).json({
+                error: 'Page must be a positive integer'
+            })
+        }
+
+        const params = {
+            language: 'en-US',
+            page: pageNum,
+            sort_by: sort_by || 'popularity.desc'
+        }
+
+        if (with_genres) params.with_genres = with_genres
+        if (year) params.first_air_date_year = year
+        if (with_cast) params.with_cast = with_cast
+        if (with_crew) params.with_crew = with_crew
+        if (vote_average_gte) params['vote_average.gte'] = vote_average_gte
+        if (vote_average_lte) params['vote_average.lte'] = vote_average_lte
+
+        // DEBUG: Tulosta parametrit konsoliin
+        console.log('Params to TMDB:', params)
+        console.log('Full URL will be:', `/discover/tv`)
+
+        const tvData = await tmdbRequest('/discover/tv', params)
+
+        res.status(200).json(tvData)
+    } catch (err) {
+        console.error('Error discovering tv shows:', err.message)
+        res.status(500).json({ error: 'Failed to discover tv shows' })
+    }
+}

@@ -11,21 +11,25 @@ export default function SearchBar({ onSearch }) {
   const containerRef = useRef(null);
   const navigate = useNavigate();
 
+  const baseURL = import.meta.env.VITE_API_BASE_URL;
+
   const fetchResults = async (search) => {
     if (!search) {
       setResults([]);
       return;
     }
 
-    const baseURL = import.meta.env.VITE_API_BASE_URL;
-
     try {
       setLoading(true);
       const res = await fetch(
-        `${baseURL}/api/movies/search?q=${encodeURIComponent(search)}&page=1`
+        `${baseURL}/api/search/multi?q=${encodeURIComponent(search)}&page=1`
       );
       const data = await res.json();
-      setResults((data?.results || []).slice(0, 5)); // Limit to 5 results
+      // Filter to show only movies and TV shows, limit to 8 results
+      const filtered = (data?.results || [])
+        .filter(item => item.media_type === 'movie' || item.media_type === 'tv')
+        .slice(0, 8);
+      setResults(filtered);
     } catch (err) {
       console.error("Search error", err);
       setResults([]);
@@ -51,10 +55,28 @@ export default function SearchBar({ onSearch }) {
     setShowDropdown(false);
   };
 
-  const handleSelect = (movie) => {
-    setQuery(movie.title);
+  const handleSelect = (item) => {
+    const title = item.media_type === 'movie' ? item.title : item.name;
+    setQuery(title);
     setShowDropdown(false);
-    navigate(`/SearchResult?search=${encodeURIComponent(movie.title)}`);
+    navigate(`/SearchResult?search=${encodeURIComponent(title)}`);
+  };
+
+  const getMediaIcon = (mediaType) => {
+    return mediaType === 'movie' ? 'Movie' : 'TV Show';
+  };
+
+  const getTitle = (item) => {
+    return item.media_type === 'movie' ? item.title : item.name;
+  };
+
+  const getReleaseYear = (item) => {
+    const date = item.media_type === 'movie' ? item.release_date : item.first_air_date;
+    return date ? date.substring(0, 4) : '';
+  };
+
+  const getPosterPath = (item) => {
+    return item.poster_path || item.profile_path;
   };
 
   useEffect(() => {
@@ -72,7 +94,7 @@ export default function SearchBar({ onSearch }) {
       <form className="search__form" onSubmit={handleSubmit}>
         <input
           type="text"
-          placeholder="Search movies..."
+          placeholder="Search..."
           value={query}
           onChange={handleChange}
           className="search__input"
@@ -90,26 +112,33 @@ export default function SearchBar({ onSearch }) {
             <div className="search__dropdown-empty">No results</div>
           ) : (
             <div className="search__dropdown-results">
-              {results.map((movie) => (
+              {results.map((item) => (
                 <div
-                  key={movie.id}
+                  key={`${item.media_type}-${item.id}`}
                   className="search__dropdown-movie"
-                  onClick={() => handleSelect(movie)}
+                  onClick={() => handleSelect(item)}
                 >
                   <img
                     src={
-                      movie.poster_path
-                        ? `https://image.tmdb.org/t/p/w92${movie.poster_path}`
+                      getPosterPath(item)
+                        ? `https://image.tmdb.org/t/p/w92${getPosterPath(item)}`
                         : "/placeholder.png"
                     }
-                    alt={movie.title}
+                    alt={getTitle(item)}
                     className="search__dropdown-thumb"
                   />
                   <div className="search__dropdown-info">
-                    <span className="search__dropdown-title">{movie.title}</span>
-                    <span className="search__dropdown-year">
-                      {movie.release_date?.substring(0, 4)}
-                    </span>
+                    <div className="search__dropdown-title-row">
+                      <span className="search__dropdown-media-icon">
+                        {getMediaIcon(item.media_type)}
+                      </span>
+                      <span className="search__dropdown-title">{getTitle(item)}</span>
+                    </div>
+                    {getReleaseYear(item) && (
+                      <span className="search__dropdown-year">
+                        {getReleaseYear(item)}
+                      </span>
+                    )}
                   </div>
                 </div>
               ))}
