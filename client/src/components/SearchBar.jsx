@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSearchApi, movieHelpers } from "../hooks/useSearchApi";
-import "../styles/index.css";
+import "../styles/App.css";
 
 export default function SearchBar({ onSearch }) {
   const [query, setQuery] = useState("");
@@ -100,18 +100,20 @@ export default function SearchBar({ onSearch }) {
                   />
                   <div className="search__dropdown-info">
                     <div className="search__dropdown-title-row">
-                      <span className="search__dropdown-media-icon">
-                        {getMediaIcon(item.media_type)}
-                      </span>
                       <span className="search__dropdown-title">
                         {movieHelpers.getTitle(item)}
                       </span>
                     </div>
-                    {movieHelpers.getReleaseDate(item) && (
-                      <span className="search__dropdown-year">
-                        {movieHelpers.getReleaseDate(item)}
+                    <div className="search__dropdown-meta-row">
+                      <span className="search__dropdown-media-icon">
+                        {getMediaIcon(item.media_type)}
                       </span>
-                    )}
+                      {movieHelpers.getReleaseDate(item) && (
+                        <span className="search__dropdown-year">
+                          {movieHelpers.getReleaseDate(item)}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
