@@ -7,7 +7,7 @@ export default function Home() {
       <section className="home__section">
         <h2 className="home__section-title">Now Playing in Finland</h2>
         <div className="home__movies-container">
-          <GetMovies type="now_playing" region="FI" page={1} imageSize="w500" />
+          <GetMovies type="now_playing" region="FI" page={1} pages={3} imageSize="w500" />
         </div>
       </section>
 

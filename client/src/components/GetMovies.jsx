@@ -4,11 +4,12 @@ import GetImage from "./GetImage";
 export default function GetMovies({
     type = "now_playing",
     page = 1,
+    pages = 1,
     imageSize = "w500",
     limit = null,
     query = "",
     ...discoverParams
-    
+
 }) {
     const [movies, setMovies] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -21,28 +22,31 @@ export default function GetMovies({
             try {
                 setLoading(true);
 
-                let url = "";
+                const allResults = [];
 
-                if (query) {
-                    // search endpoint
-                    url = `${baseURL}/api/movies/search?q=${encodeURIComponent(query)}&page=${page}`;
-                } else if (type === "discover") {
-                    // discover endpoint
-                    const queryString = new URLSearchParams({ page, ...discoverParams }).toString();
-                    url = `${baseURL}/api/movies/discover?${queryString}`;
-                } else {
-                    // regular type endpoint
-                    url = `${baseURL}/api/movies/${type}?page=${page}`;
+                for (let p = page; p <= pages; p++) {
+                    let url = "";
+
+                    if (query) {
+                        url = `${baseURL}/api/movies/search?q=${encodeURIComponent(query)}&page=${p}`;
+                    } else if (type === "discover") {
+                        const queryString = new URLSearchParams({ page: p, ...discoverParams }).toString();
+                        url = `${baseURL}/api/movies/discover?${queryString}`;
+                    } else {
+                        url = `${baseURL}/api/movies/${type}?page=${p}`;
+                    }
+
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                    const data = await response.json();
+                    const results = data.results || [];
+
+                    allResults.push(...results);
                 }
 
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-                const data = await response.json();
-                let results = data.results || [];
-                if (limit) results = results.slice(0, limit);
-
-                setMovies(results);
+                // limit jos annettu
+                setMovies(limit ? allResults.slice(0, limit) : allResults);
             } catch (err) {
                 console.error("Error fetching movies:", err);
                 setError(err.message);
@@ -52,7 +56,7 @@ export default function GetMovies({
         };
 
         fetchMovies();
-    }, [type, page, limit, query, JSON.stringify(discoverParams)]); 
+    }, [type, page, pages, limit, query, JSON.stringify(discoverParams)]);
     // JSON.stringify -> jotta useEffect havaitsee objektimuutokset
 
     if (loading) return <div className="movies-loading">Loading movies...</div>;
