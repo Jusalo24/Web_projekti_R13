@@ -19,6 +19,13 @@ export default function Home() {
       </section>
 
       <section className="home__section">
+        <h2 className="home__section-title">Top 10 TV Shows</h2>
+        <div className="home__movies-container">
+          <GetMoviesSeries type="top_rated" media_type="tv" page={1} imageSize="w500" limit={10} />
+        </div>
+      </section>
+
+      <section className="home__section">
         <h2 className="home__section-title">Upcoming Movies</h2>
         <div className="home__movies-container">
           <GetMoviesSeries type="upcoming" page={1} pages={2} imageSize="w500" />
