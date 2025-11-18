@@ -8,6 +8,8 @@ export default function GetCast({ onSelect }) {
     const containerRef = useRef(null);
     const debounceTimer = useRef(null);
 
+    const baseURL = import.meta.env.VITE_API_BASE_URL;
+
     const fetchCast = async (name) => {
         if (!name) {
             setResults([]);
@@ -16,7 +18,7 @@ export default function GetCast({ onSelect }) {
         try {
             setLoading(true);
             const res = await fetch(
-                `http://localhost:3001/api/search/person?q=${encodeURIComponent(name)}&page=1`
+                `${baseURL}/api/search/person?q=${encodeURIComponent(name)}&page=1`
             );
             if (!res.ok) throw new Error("Failed to fetch cast");
             const data = await res.json();

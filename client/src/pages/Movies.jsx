@@ -14,7 +14,7 @@ export default function Movies() {
   const handleFilterChange = () => {
     const params = {};
     if (selectedGenre) params.with_genres = selectedGenre;
-    if (selectedReleaseYear) params.primary_release_year = selectedReleaseYear;
+    if (selectedReleaseYear) params.year = selectedReleaseYear;
     if (withCast) params.with_cast = withCast;
     if (selectedSortBy) params.sort_by = selectedSortBy;
     setQueryParams(params);
