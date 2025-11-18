@@ -332,6 +332,8 @@ body {
   overflow: hidden;
   transition: all var(--transition-normal);
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
 }
 
 .movie-card:hover {
@@ -345,6 +347,7 @@ body {
   aspect-ratio: 2/3;
   overflow: hidden;
   background-color: var(--color-bg-tertiary);
+  flex-shrink: 0;
 }
 
 .movie-card__poster img {
@@ -359,7 +362,9 @@ body {
 }
 
 .movie-card__info {
-  padding: var(--spacing-md);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .movie-card__title {
@@ -369,7 +374,6 @@ body {
   color: var(--color-text-primary);
   line-height: 1.3;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -411,9 +415,8 @@ body {
   justify-content: space-between;
   align-items: center;
   gap: var(--spacing-sm);
-  margin-top: var(--spacing-sm);
+  margin-top: auto;
   padding-top: var(--spacing-sm);
-  border-top: 1px solid var(--color-border);
 }
 
 .movie-card__year {

@@ -5,13 +5,15 @@ import GetCast from "../components/GetCast";
 import "../styles/discover.css";
 
 export default function Discover() {
+  // State variables for filters
   const [selectedGenre, setSelectedGenre] = useState("");
   const [selectedReleaseYear, setSelectedReleaseYear] = useState("");
   const [withCast, setWithCast] = useState("");
   const [selectedSortBy, setSelectedSortBy] = useState("popularity.desc");
   const [selectedMediaType, setSelectedMediaType] = useState("movie");
-  const [queryParams, setQueryParams] = useState({});
+  const [queryParams, setQueryParams] = useState({}); // Object to hold query parameters
 
+  // Function to update query parameters based on selected filters
   const handleFilterChange = () => {
     const params = {};
     if (selectedGenre) params.with_genres = selectedGenre;
@@ -19,16 +21,19 @@ export default function Discover() {
     if (withCast) params.with_cast = withCast;
     if (selectedSortBy) params.sort_by = selectedSortBy;
     if (selectedMediaType) params.media_type = selectedMediaType;
-    setQueryParams(params);
+    setQueryParams(params); // Update queryParams state
   };
 
+  // Update queryParams whenever any filter changes
   useEffect(() => {
     handleFilterChange();
   }, [selectedGenre, selectedReleaseYear, withCast, selectedSortBy, selectedMediaType]);
 
+  // Generate last 100 years for the release year dropdown
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
 
+  // Options for sorting
   const sortOptions = [
     { value: "popularity.desc", label: "Popularity Desc" },
     { value: "popularity.asc", label: "Popularity Asc" },
@@ -44,11 +49,13 @@ export default function Discover() {
     { value: "vote_count.asc", label: "Vote Count Asc" },
   ];
 
+  // Media type options
   const mediaTypes = [
     { value: "movie", label: "Movie" },
     { value: "tv", label: "TV Show" },
   ];
 
+  // Function to reset all filters to default values
   const handleClearFilters = () => {
     setSelectedGenre("");
     setSelectedReleaseYear("");
@@ -59,14 +66,15 @@ export default function Discover() {
 
   return (
     <main className="discover-page">
+      {/* Page Header */}
       <div className="discover-page__header">
         <h2 className="discover-page__title">Discover Movies & TV Shows</h2>
-        <p className="discover-page__subtitle">
-      
-        </p>
+        <p className="discover-page__subtitle"></p>
       </div>
 
+      {/* Filters Section */}
       <div className="discover-page__filters">
+        {/* Media Type Filter */}
         <div className="filter-group">
           <label className="filter-group__label">Media Type</label>
           <select
@@ -82,15 +90,17 @@ export default function Discover() {
           </select>
         </div>
 
+        {/* Genre Filter */}
         <div className="filter-group">
           <label className="filter-group__label">Genre</label>
-          <GetGenre 
-            onSelect={setSelectedGenre} 
-            selectedGenre={selectedGenre} 
-            mediaType={selectedMediaType} 
+          <GetGenre
+            onSelect={setSelectedGenre}
+            selectedGenre={selectedGenre}
+            mediaType={selectedMediaType}
           />
         </div>
 
+        {/* Release Year Filter */}
         <div className="filter-group">
           <label className="filter-group__label">Release Year</label>
           <select
@@ -107,6 +117,7 @@ export default function Discover() {
           </select>
         </div>
 
+        {/* Sort By Filter */}
         <div className="filter-group">
           <label className="filter-group__label">Sort By</label>
           <select
@@ -122,17 +133,19 @@ export default function Discover() {
           </select>
         </div>
 
+        {/* Cast Filter */}
         <div className="filter-group">
           <label className="filter-group__label">Cast</label>
           <GetCast onSelect={setWithCast} disabled={selectedMediaType === "tv"} />
         </div>
 
-
+        {/* Clear Filters Button */}
         <button className="filter-clear-btn" onClick={handleClearFilters}>
           Clear Filters
         </button>
       </div>
 
+      {/* Movies & TV Shows Results */}
       <div className="discover-page__results">
         <GetMoviesSeries
           type="discover"
