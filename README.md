@@ -1,5 +1,9 @@
 # Movie Project R13
 
+![Backend Tests](https://img.shields.io/badge/tests-69%2F69%20passing-brightgreen)
+![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-blue)
+![Docker](https://img.shields.io/badge/Docker-Required-2496ED)
+
 A full-stack movie web application built with React, Node.js/Express, PostgreSQL, and TMDB API.
 
 **Team Members:** Juho-Pekka Salo, Tomi Roumio, Leevi Määttä, Konsta Ahvonen
@@ -12,6 +16,7 @@ A full-stack movie web application built with React, Node.js/Express, PostgreSQL
 - [Prerequisites](#prerequisites)
 - [Project Setup](#project-setup)
 - [Running the Application](#running-the-application)
+- [Testing](#testing)
 - [Database Schema](#database-schema)
 - [API Documentation](#api-documentation)
 - [Project Structure](#project-structure)
@@ -21,12 +26,15 @@ A full-stack movie web application built with React, Node.js/Express, PostgreSQL
 
 ## Features
 
-- 🎬 Browse and search movies using TMDB API
+- 🎬 Browse and search movies and TV shows using TMDB API
 - 👥 Create and manage groups for collaborative movie experiences
 - ⭐ Create and share favorite movie lists
-- 📝 Write and read movie reviews
+- 📝 Write and read movie reviews with ratings
 - 🔐 User authentication and account management
 - 🌐 Responsive web design
+- 🔍 Advanced search and discovery features
+- 📊 Trending content (movies, TV shows, people)
+- 🎭 Person details and filmography
 
 ---
 
@@ -44,10 +52,12 @@ A full-stack movie web application built with React, Node.js/Express, PostgreSQL
 - **PostgreSQL 16** - Database
 - **JWT** - Authentication
 - **bcryptjs** - Password hashing
+- **TMDB API** - Movie and TV show data
 
-### DevOps
+### DevOps & Testing
 - **Docker & Docker Compose** - Containerization
 - **Nodemon** - Development auto-reload
+- **PowerShell** - Automated testing suite (69 comprehensive tests)
 
 ---
 
@@ -57,6 +67,7 @@ Before you begin, ensure you have the following installed:
 
 - **Git** - [Download](https://git-scm.com/downloads)
 - **Docker Desktop** - [Download](https://www.docker.com/products/docker-desktop)
+- **PowerShell 5.1+** - Pre-installed on Windows, [install on Linux/Mac](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell)
 - **TMDB API Key** - [Get your free API key](https://www.themoviedb.org/settings/api)
 
 ### Verify Installation
@@ -72,6 +83,9 @@ docker --version
 
 # Check Docker Compose
 docker-compose --version
+
+# Check PowerShell version
+$PSVersionTable.PSVersion
 ```
 
 ---
@@ -116,6 +130,7 @@ JWT_SECRET=your_secure_random_string_here
 **Important:** 
 - Replace `your_tmdb_api_key_here` with your actual TMDB API key
 - Replace `your_secure_random_string_here` with a strong random string for JWT
+- **Never commit `.env` to version control** (already in `.gitignore`)
 
 ### 3. Start Docker Desktop
 
@@ -147,7 +162,23 @@ Once all containers are running:
 
 - **Frontend (React):** http://localhost:5173
 - **Backend API (Express):** http://localhost:3001
+- **Backend Health Check:** http://localhost:3001/health
 - **PostgreSQL Database:** localhost:5432
+
+### Verify Services
+
+```powershell
+# Check all containers are running
+docker ps
+
+# Expected: 3 containers running
+# - web_projekti_r13-client-1
+# - web_projekti_r13-server-1
+# - web_projekti_r13-db-1
+
+# Check health endpoint
+curl http://localhost:3001/health
+```
 
 ### Verify Database Initialization
 
@@ -166,15 +197,6 @@ docker-compose exec db psql -U postgres -d moviedb
 
 You should see tables like `users`, `groups`, `reviews`, `favorite_lists`, etc.
 
-Three containers should be running. To verify:
-
-```powershell
-# Lists running containers on your system.
-docker ps
-```
-
-You should see containers with names like `web_projekti_r13-client-1`, `web_projekti_r13-server-1` and `web_projekti_r13-db-1`.
-
 ### Stop the Application
 
 ```powershell
@@ -183,6 +205,67 @@ docker-compose down
 
 # Stop and remove all data (fresh start)
 docker-compose down -v
+```
+
+---
+
+## Testing
+
+### Automated Backend Testing
+
+The project includes a comprehensive PowerShell testing suite with **69 automated tests** covering all API endpoints.
+
+#### Run All Tests
+
+```powershell
+# Run complete test suite
+.\Test-Backend.ps1
+
+# Save results to file
+.\Test-Backend.ps1 > test-results.txt
+```
+
+#### Test Coverage
+
+**69 Tests covering:**
+- Health check (1 test)
+- Movie endpoints - search, browse, details, credits, videos (17 tests)
+- TV show endpoints - search, browse, seasons, credits (11 tests)
+- Genre endpoints - movie/TV genres, discovery (3 tests)
+- Search & discovery - multi-search, people, trending (10 tests)
+- User authentication - register, login, profile (7 tests)
+- Review system - CRUD operations, ratings (11 tests)
+- Error handling - validation, 404s, edge cases (6 tests)
+- Pagination - different pages return different results (1 test)
+
+#### Test Script Features
+
+- ✅ Color-coded output (green = pass, red = fail)
+- ✅ Detailed error messages with response previews
+- ✅ Exit code validation (0 = all passed, >0 = failures)
+- ✅ CI/CD ready (can be integrated with GitHub Actions later)
+- ✅ Automatic authentication token management
+- ✅ Request/response time tracking
+- ✅ PSScriptAnalyzer compliant
+
+#### Manual API Testing
+
+You can also test endpoints manually using curl or Postman:
+
+```powershell
+# Health check
+curl http://localhost:3001/health
+
+# Search movies
+curl "http://localhost:3001/api/movies/search?q=inception"
+
+# Get movie details
+curl http://localhost:3001/api/movies/550
+
+# Register user
+curl -X POST http://localhost:3001/api/users/register `
+  -H "Content-Type: application/json" `
+  -d '{"email":"test@test.com","username":"testuser","password":"password123"}'
 ```
 
 ---
@@ -229,41 +312,83 @@ docker-compose down -v
 http://localhost:3001/api
 ```
 
-### Planned Endpoints
+### Implemented Endpoints
 
 #### Movies
-- `GET /api/movies/now_playing` - Get now playing movies
+- `GET /api/movies/search?q=query&page=1` - Search movies
 - `GET /api/movies/:id` - Get movie details
-- `GET /api/movies/search?q=query` - Search movies
+- `GET /api/movies/:id/credits` - Get movie cast and crew
+- `GET /api/movies/:id/videos` - Get movie trailers and videos
+- `GET /api/movies/:id/similar` - Get similar movies
+- `GET /api/movies/:id/recommendations` - Get movie recommendations
+- `GET /api/movies/list/:type` - Get movies by category (popular, now_playing, top_rated, upcoming)
+- `GET /api/movies/genres` - Get all movie genres
+- `GET /api/movies/discover` - Discover movies with filters
 
-#### Authentication
+#### TV Shows
+- `GET /api/tv/search?q=query` - Search TV shows
+- `GET /api/tv/:id` - Get TV show details
+- `GET /api/tv/:id/season/:number` - Get season details
+- `GET /api/tv/:id/credits` - Get TV show cast and crew
+- `GET /api/tv/:id/videos` - Get TV show videos
+- `GET /api/tv/:id/similar` - Get similar TV shows
+- `GET /api/tv/:id/recommendations` - Get TV show recommendations
+- `GET /api/tv/list/:type` - Get TV shows by category (popular, top_rated, on_the_air, airing_today)
+
+#### Genres
+- `GET /api/genres/movie` - Get all movie genres
+- `GET /api/genres/tv` - Get all TV genres
+- `GET /api/discover/tv` - Discover TV shows with filters
+
+#### Search & Discovery
+- `GET /api/search/multi?q=query` - Multi-search (movies, TV, people)
+- `GET /api/search/person?q=query` - Search people
+- `GET /api/person/:id` - Get person details
+- `GET /api/person/:id/movie_credits` - Get person's movie credits
+- `GET /api/person/:id/tv_credits` - Get person's TV credits
+- `GET /api/trending/:media_type/:time_window` - Get trending content
+
+#### Authentication (Protected with JWT)
 - `POST /api/users/register` - Register new user
 - `POST /api/users/login` - User login
-- `GET /api/users/profile` - Get current user profile
-- `PUT /api/users/profile` - Update user profile
+- `GET /api/users/:id` - Get user profile (protected)
+- `PUT /api/users/:id` - Update user profile (protected)
 
-#### Groups
-- `GET /api/groups` - Get all public groups
-- `POST /api/groups` - Create a new group
-- `GET /api/groups/:id` - Get group details
-- `PUT /api/groups/:id` - Update group (admin/owner only)
-- `DELETE /api/groups/:id` - Delete group (owner only)
-- `POST /api/groups/:id/members` - Add member to group
-- `POST /api/groups/:id/join-request` - Request to join group
-- `GET /api/groups/:id/movies` - Get group's movie collection
+#### Reviews (Protected operations require JWT)
+- `GET /api/reviews/movie/:movieId` - Get reviews for a movie (public)
+- `GET /api/reviews/movie/:movieId/average` - Get average rating (public)
+- `POST /api/reviews` - Create a review (protected)
+- `PUT /api/reviews/:id` - Update own review (protected)
+- `DELETE /api/reviews/:id` - Delete own review (protected)
 
-#### Reviews
-- `GET /api/reviews/movie/:movieId` - Get reviews for a movie
-- `POST /api/reviews` - Create a review
-- `PUT /api/reviews/:id` - Update own review
-- `DELETE /api/reviews/:id` - Delete own review
+### Authentication
 
-#### Favorite Lists
-- `GET /api/favorites` - Get user's favorite lists
-- `POST /api/favorites` - Create favorite list
-- `POST /api/favorites/:id/movies` - Add movie to list
-- `DELETE /api/favorites/:id/movies/:movieId` - Remove movie from list
-- `GET /api/favorites/share/:token` - View shared list (public)
+Protected endpoints require a JWT token in the Authorization header:
+
+```bash
+Authorization: Bearer <your_jwt_token>
+```
+
+Get token by logging in via `/api/users/login`
+
+### Error Responses
+
+All errors return JSON with an `error` property:
+
+```json
+{
+  "error": "Error message description"
+}
+```
+
+Common HTTP status codes:
+- `200` - Success
+- `201` - Created
+- `400` - Bad Request (validation error)
+- `401` - Unauthorized (missing/invalid token)
+- `404` - Not Found
+- `409` - Conflict (duplicate resource)
+- `500` - Internal Server Error
 
 ---
 
@@ -284,22 +409,36 @@ Web_projekti_R13/
 ├── server/                    # Express backend
 │   ├── routes/                # API route definitions
 │   │   ├── movieRouter.js
+│   │   ├── tvRouter.js
+│   │   ├── searchRouter.js
+│   │   ├── reviewRouter.js
+│   │   ├── genreRouter.js
 │   │   └── userRouter.js
-│   ├── controllers/           # Request handlers (to be implemented)
-│   ├── services/              # Business logic (to be implemented)
-│   ├── middleware/            # Express middleware (to be implemented)
-│   ├── db/                    # Database connection (to be implemented)
+│   ├── controllers/           # Request handlers
+│   │   ├── TMDBMovieController.js
+│   │   ├── TMDBTVController.js
+│   │   ├── searchController.js
+│   │   ├── reviewController.js
+│   │   ├── genreController.js
+│   │   └── userController.js
+│   ├── services/              # Business logic
+│   │   └── userService.js
+│   ├── models/                # Database models
+│   │   └── userModel.js
+│   ├── helpers/               # Utility functions
+│   │   ├── db.js              # Database connection
+│   │   ├── auth.js            # JWT middleware
+│   │   └── tmdbHelper.js      # TMDB API helper
 │   ├── Dockerfile
 │   ├── index.js               # Server entry point
 │   └── package.json
 ├── init_moviedb.sql           # Database schema initialization
 ├── docker-compose.yml         # Multi-container configuration
+├── Test-Backend.ps1           # Automated testing suite (69 tests)
 ├── .env                       # Environment variables (not in git)
 ├── .env.example               # Environment template
 ├── README.md                  # This file
 └── DEBUGGING.md               # Troubleshooting guide
-
-**Note:** Directories marked "to be implemented" are part of the planned architecture.
 ```
 
 ---
@@ -310,12 +449,15 @@ Web_projekti_R13/
 
 1. **Backend changes** - Edit files in `server/` directory
    - Nodemon will automatically restart the server
+   - Test endpoint manually or run full test suite
    
 2. **Frontend changes** - Edit files in `client/src/` directory
    - Vite HMR will update the browser automatically
+   - No restart needed for most changes
 
 3. **Database changes** - Edit `init_moviedb.sql`
    - Requires container restart: `docker-compose down -v && docker-compose up --build`
+   - **Warning:** This deletes all data
 
 ### Viewing Logs
 
@@ -330,6 +472,22 @@ docker-compose logs db
 
 # Follow logs in real-time
 docker-compose logs -f server
+
+# View last 50 lines
+docker-compose logs --tail=50 server
+```
+
+### Running Tests During Development
+
+```powershell
+# Run tests after making changes
+.\Test-Backend.ps1
+
+# Quick test specific endpoint
+curl http://localhost:3001/api/movies/550
+
+# Test with verbose output
+.\Test-Backend.ps1 -Verbose
 ```
 
 ---
@@ -337,7 +495,9 @@ docker-compose logs -f server
 ## Additional Resources
 
 ### Documentation
-- **[DEBUGGING.md](./DEBUGGING.md)** - Troubleshooting common issues
+- **[DEBUGGING.md](./DEBUGGING.md)** - Comprehensive troubleshooting guide
+- **[API_DOCUMENTATION.md](./API_DOCUMENTATION.md)** - Detailed API reference with examples
+- **[FIXES_APPLIED.md](./FIXES_APPLIED.md)** - Backend fixes and improvements log
 - **TMDB API** - [Documentation](https://developers.themoviedb.org/3)
 - **React** - [Documentation](https://react.dev/)
 - **Express** - [Documentation](https://expressjs.com/)
@@ -357,6 +517,9 @@ docker-compose exec db psql -U postgres -d moviedb
 # Clean restart
 docker-compose down -v
 docker-compose up --build
+
+# Run tests
+.\Test-Backend.ps1
 ```
 
 ---
@@ -376,6 +539,19 @@ This project is created for educational purposes as part of a web development co
 
 ---
 
-**Last Updated:** November 13, 2025
+## Contributing
+
+This is a student project, but contributions and suggestions are welcome:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+6. Run tests before submitting: `.\Test-Backend.ps1`
+
+---
+
+**Last Updated:** November 18, 2025
 
 For questions or issues, please refer to [DEBUGGING.md](./DEBUGGING.md) or create an issue on the GitHub repository.

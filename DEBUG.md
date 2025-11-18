@@ -6,6 +6,7 @@ Comprehensive troubleshooting guide for common development issues in the Movie P
 
 ## Table of Contents
 - [Quick Diagnostics](#quick-diagnostics)
+- [Testing Issues](#testing-issues)
 - [Docker Issues](#docker-issues)
 - [Database Issues](#database-issues)
 - [Backend Server Issues](#backend-server-issues)
@@ -31,6 +32,18 @@ docker-compose ps
 # - web_projekti_r13-client-1 (Up)
 ```
 
+### Run Automated Tests
+
+```powershell
+# Quick health check
+curl http://localhost:3001/health
+
+# Run full test suite (69 tests)
+.\Test-Backend.ps1
+
+# Expected: 69/69 tests passing
+```
+
 ### View Recent Logs
 
 ```powershell
@@ -51,6 +64,160 @@ docker-compose restart
 
 # Restart specific service
 docker-compose restart server
+```
+
+---
+
+## Testing Issues
+
+### Issue: Test Script Won't Run
+
+**Symptom:**
+```
+Test-Backend.ps1 cannot be loaded because running scripts is disabled
+```
+
+**Solution:**
+
+```powershell
+# One-time fix: Allow script execution
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+# Then run tests
+.\Test-Backend.ps1
+```
+
+### Issue: Tests Fail - "Server Not Running"
+
+**Symptom:**
+```
+X ERROR: Server is not running at http://localhost:3001/health
+```
+
+**Solution:**
+
+```powershell
+# 1. Start Docker containers
+docker-compose up -d
+
+# 2. Wait for services to start (30 seconds)
+Start-Sleep -Seconds 30
+
+# 3. Verify server is running
+docker-compose ps server
+curl http://localhost:3001/health
+
+# 4. Run tests again
+.\Test-Backend.ps1
+```
+
+### Issue: Tests Fail - Authentication Issues
+
+**Symptom:**
+```
+X FAILED - User Registration
+X FAILED - Wrong Password Login
+```
+
+**Solution:**
+
+```powershell
+# 1. Check if .env has JWT_SECRET
+cat .env | Select-String "JWT_SECRET"
+
+# 2. Verify database is running
+docker-compose ps db
+
+# 3. Restart server
+docker-compose restart server
+
+# 4. Run tests again
+.\Test-Backend.ps1
+```
+
+### Issue: Tests Fail - TMDB API Errors
+
+**Symptom:**
+```
+X FAILED - Search Movies
+{"status_code":7,"status_message":"Invalid API key"}
+```
+
+**Solution:**
+
+```powershell
+# 1. Verify TMDB_API_KEY in .env
+cat .env | Select-String "TMDB_API_KEY"
+
+# 2. Test API key directly
+curl "https://api.themoviedb.org/3/movie/popular?api_key=YOUR_KEY"
+
+# 3. Restart server to reload env vars
+docker-compose restart server
+
+# 4. Run tests again
+.\Test-Backend.ps1
+```
+
+### Issue: Test Script Has Warnings
+
+**Symptom:**
+```
+PSScriptAnalyzer found warnings in Test-Backend.ps1
+```
+
+**Solution:**
+
+```powershell
+# Install PSScriptAnalyzer
+Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+
+# Check for issues
+Invoke-ScriptAnalyzer -Path .\Test-Backend.ps1
+
+# The current script should have zero warnings
+# If warnings appear, check for:
+# - Write-Host usage (should use Write-Information)
+# - Unapproved verbs (use approved PowerShell verbs)
+# - Global variables (should be script-scoped)
+```
+
+### Issue: Cannot Save Test Results
+
+**Symptom:** Redirect to file fails or creates empty file
+
+**Solution:**
+
+```powershell
+# Use proper output redirection
+.\Test-Backend.ps1 > test-results.txt
+
+# Or use Tee-Object to see output AND save
+.\Test-Backend.ps1 | Tee-Object -FilePath test-results.txt
+
+# Check file was created
+Get-Content test-results.txt
+```
+
+### Issue: Tests Timeout
+
+**Symptom:** Tests hang or timeout waiting for responses
+
+**Solution:**
+
+```powershell
+# 1. Check if server is responsive
+curl http://localhost:3001/health
+
+# 2. Check server logs for errors
+docker-compose logs server --tail=50
+
+# 3. Increase timeout in test script (if needed)
+# Edit Test-Backend.ps1 and change:
+# -DefaultTimeoutSec 30  →  -DefaultTimeoutSec 60
+
+# 4. Restart services
+docker-compose restart
 ```
 
 ---
@@ -115,6 +282,9 @@ docker-compose up
 # 2. Check for syntax errors in code
 # 3. Verify environment variables in .env
 # 4. Check Dockerfile configuration
+
+# 5. After fixing, run tests
+.\Test-Backend.ps1
 ```
 
 ### Issue: "No space left on device"
@@ -153,8 +323,8 @@ docker-compose down
 docker-compose build --no-cache
 docker-compose up
 
-# Check volume mounts in docker-compose.yml
-# Ensure volumes are correctly mapped
+# Verify changes with tests
+.\Test-Backend.ps1
 ```
 
 ---
@@ -188,6 +358,9 @@ docker-compose exec db psql -U postgres -d moviedb
 # Host: db (NOT localhost when inside Docker)
 # Port: 5432
 # Example: postgresql://postgres:postgres@db:5432/moviedb
+
+# 6. Test database connectivity via tests
+.\Test-Backend.ps1
 ```
 
 ### Issue: Tables Don't Exist
@@ -213,6 +386,12 @@ docker-compose exec db psql -U postgres -d moviedb
 # 4. Or restart with volume removed
 docker-compose down -v
 docker-compose up
+
+# 5. Verify tables exist
+docker-compose exec db psql -U postgres -d moviedb -c "\dt"
+
+# 6. Run tests to verify database is working
+.\Test-Backend.ps1
 ```
 
 ### Issue: Database Schema Out of Sync
@@ -232,6 +411,9 @@ docker-compose exec db psql -U postgres -d moviedb
 # Then paste the specific ALTER commands or new schema
 # Example:
 # ALTER TABLE users ADD COLUMN new_field VARCHAR(100);
+
+# Verify with tests
+.\Test-Backend.ps1
 ```
 
 ### Issue: Cannot Delete Database Volume
@@ -293,8 +475,11 @@ docker-compose down
 docker-compose build --no-cache server
 docker-compose up
 
-# 3. Check package.json for correct dependencies
-# 4. Verify Dockerfile COPY and RUN npm install commands
+# 3. Verify server is running
+curl http://localhost:3001/health
+
+# 4. Run tests
+.\Test-Backend.ps1
 ```
 
 ### Issue: "Module Not Found" Error
@@ -317,6 +502,9 @@ docker-compose exec server ls -la routes/
 # 3. Check package.json has "type": "module"
 
 # 4. Verify file is being copied to container (check Dockerfile)
+
+# 5. Test with automated tests
+.\Test-Backend.ps1
 ```
 
 ### Issue: Nodemon Not Restarting
@@ -341,6 +529,9 @@ docker-compose exec server npm list nodemon
 
 # 4. Manual restart as workaround
 docker-compose restart server
+
+# 5. Verify with tests
+.\Test-Backend.ps1
 ```
 
 ### Issue: CORS Errors
@@ -363,6 +554,11 @@ app.use(cors({
 }));
 ```
 
+Test CORS with curl:
+```powershell
+curl -H "Origin: http://localhost:5173" http://localhost:3001/api/movies/550
+```
+
 ### Issue: JWT Token Errors
 
 **Symptom:**
@@ -374,10 +570,40 @@ JsonWebTokenError: invalid signature
 
 ```powershell
 # 1. Verify JWT_SECRET is set in .env
+cat .env | Select-String "JWT_SECRET"
+
 # 2. Ensure same secret is used for signing and verifying
-# 3. Clear browser cookies/localStorage
-# 4. Restart server after changing JWT_SECRET
+
+# 3. Restart server after changing JWT_SECRET
 docker-compose restart server
+
+# 4. Clear browser cookies/localStorage
+
+# 5. Run authentication tests
+.\Test-Backend.ps1
+```
+
+### Issue: API Endpoints Return 404
+
+**Symptom:** All API calls return 404 Not Found
+
+**Solution:**
+
+```powershell
+# 1. Check server logs for route registration
+docker-compose logs server | Select-String "route"
+
+# 2. Verify routers are imported in index.js
+# Should have: app.use('/api', movieRouter)
+
+# 3. Check route path in router files
+# Should be: router.get('/movies/:id', ...) not router.get('/api/movies/:id', ...)
+
+# 4. Test health endpoint first
+curl http://localhost:3001/health
+
+# 5. Run full test suite to identify issues
+.\Test-Backend.ps1
 ```
 
 ---
@@ -404,6 +630,8 @@ docker-compose logs client
 
 # 4. Rebuild
 docker-compose restart client
+
+# 5. Hard refresh browser (Ctrl + Shift + R)
 ```
 
 ### Issue: Vite HMR Not Working
@@ -502,12 +730,18 @@ docker-compose ps server
 docker-compose logs server | Select-String "listening"
 
 # 3. Test server directly
-# In browser: http://localhost:3001/api/movies
+curl http://localhost:3001/health
 
-# 4. Check API URL in frontend code
+# 4. Test API endpoint
+curl http://localhost:3001/api/movies/550
+
+# 5. Check API URL in frontend code
 # Should be: http://localhost:3001 (not http://server:3001)
 
-# 5. Verify CORS is enabled on server
+# 6. Verify CORS is enabled on server
+
+# 7. Run tests to verify all endpoints
+.\Test-Backend.ps1
 ```
 
 ### Issue: Server Can't Reach Database
@@ -531,6 +765,9 @@ docker network ls
 
 # Check if containers are on same network
 docker-compose exec server ping db
+
+# Test with backend tests
+.\Test-Backend.ps1
 ```
 
 ### Issue: Cannot Access Application from Another Device
@@ -567,16 +804,20 @@ ipconfig | Select-String "IPv4"
 
 ```powershell
 # 1. Verify API key in .env is correct
+cat .env | Select-String "TMDB_API_KEY"
 # No quotes, no extra spaces
 
 # 2. Ensure .env is being loaded
-# Check server logs for dotenv output
+docker-compose logs server | Select-String "TMDB"
 
 # 3. Restart server after changing .env
 docker-compose restart server
 
 # 4. Test API key directly:
-# Visit: https://api.themoviedb.org/3/movie/popular?api_key=YOUR_KEY
+curl "https://api.themoviedb.org/3/movie/popular?api_key=YOUR_KEY"
+
+# 5. Run TMDB-related tests
+.\Test-Backend.ps1
 ```
 
 ### Issue: Rate Limit Exceeded
@@ -620,6 +861,15 @@ async function fetchMovies() {
 // 3. Verify URL parameters are correct
 ```
 
+Test TMDB endpoints:
+```powershell
+# Test with test suite
+.\Test-Backend.ps1
+
+# Manual test
+curl http://localhost:3001/api/movies/550
+```
+
 ---
 
 ## Environment Variable Issues
@@ -632,7 +882,7 @@ async function fetchMovies() {
 
 ```powershell
 # 1. Verify .env file exists in correct location
-# Should be: Web_projekti_R13/.env
+Test-Path .\.env
 
 # 2. Check .env syntax (no quotes, no spaces around =)
 # Correct: TMDB_API_KEY=abc123
@@ -648,6 +898,9 @@ docker-compose up
 
 # 5. Test inside container
 docker-compose exec server printenv | Select-String "TMDB"
+
+# 6. Verify with tests
+.\Test-Backend.ps1
 ```
 
 ### Issue: Wrong Environment in Production
@@ -688,6 +941,15 @@ CREATE INDEX idx_table_column ON table_name(column_name);
 
 -- Check existing indexes
 \di
+```
+
+Test query performance:
+```powershell
+# Time API calls
+Measure-Command { curl http://localhost:3001/api/movies/search?q=inception }
+
+# Run performance tests
+.\Test-Backend.ps1
 ```
 
 ### Issue: Container Using Too Much Memory
@@ -784,6 +1046,22 @@ SELECT * FROM users;     # Query data
 \q                       # Quit
 ```
 
+### Run Automated Tests First
+
+Before deep debugging, always run the automated test suite:
+
+```powershell
+# Run all 69 tests
+.\Test-Backend.ps1
+
+# This will quickly identify:
+# - Which endpoints are broken
+# - Authentication issues
+# - Database connectivity problems
+# - TMDB API issues
+# - Error handling bugs
+```
+
 ### Fresh Start Checklist
 
 When nothing else works:
@@ -805,6 +1083,12 @@ docker-compose up
 
 # 5. Check all services are running
 docker-compose ps
+
+# 6. Wait for startup (30 seconds)
+Start-Sleep -Seconds 30
+
+# 7. Run tests to verify everything works
+.\Test-Backend.ps1
 ```
 
 ---
@@ -813,17 +1097,18 @@ docker-compose ps
 
 If you're still stuck:
 
-1. **Check logs first:** `docker-compose logs`
-2. **Search error message** on Google/Stack Overflow
-3. **Read documentation** for the specific technology
-4. **Ask team members** - they might have seen it before
-5. **Create a GitHub issue** with:
+1. **Run automated tests first:** `.\Test-Backend.ps1`
+2. **Check logs:** `docker-compose logs`
+3. **Search error message** on Google/Stack Overflow
+4. **Read documentation** for the specific technology
+5. **Ask team members** - they might have seen it before
+6. **Create a GitHub issue** with:
    - What you tried to do
    - What actually happened
    - Error messages
-   - Relevant code snippets
+   - Test results from `Test-Backend.ps1`
    - Output of `docker-compose ps` and `docker-compose logs`
 
 ---
 
-**Last Updated:** November 13, 2025
+**Last Updated:** November 18, 2025
