@@ -301,7 +301,7 @@ export const discoverMovies = async (req, res) => {
         }
 
         if (with_genres) params.with_genres = with_genres
-        if (year) params.year = year
+        if (year) params.primary_release_year = year
         if (with_cast) params.with_cast = with_cast
         if (with_crew) params.with_crew = with_crew
         if (vote_average_gte) params['vote_average.gte'] = vote_average_gte
