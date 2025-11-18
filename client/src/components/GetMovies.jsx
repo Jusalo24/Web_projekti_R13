@@ -78,7 +78,7 @@ export default function GetMovies({
                         <h3 className="movie-card__title">{movie.title}</h3>
                         <div className="movie-card__meta">
                             <span className="movie-card__rating">
-                                ⭐ {movie.vote_average?.toFixed(1)}
+                                ★ {movie.vote_average?.toFixed(1)}
                             </span>
                             <span className="movie-card__date">
                                 {movie.release_date.slice(0, 4)}
