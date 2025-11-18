@@ -17,6 +17,20 @@ export default function Home() {
           <GetMovies type="top_rated" page={1} imageSize="w500" limit={10} />
         </div>
       </section>
+
+      <section className="home__section">
+        <h2 className="home__section-title">Upcoming Movies</h2>
+        <div className="home__movies-container">
+          <GetMovies type="upcoming" page={1} pages={2} imageSize="w500" />
+        </div>
+      </section>
+
+      <section className="home__section">
+        <h2 className="home__section-title">Popular Movies</h2>
+        <div className="home__movies-container">
+          <GetMovies type="popular" page={1} pages={2} imageSize="w500" />
+        </div>
+      </section>
     </main>
   );
 }

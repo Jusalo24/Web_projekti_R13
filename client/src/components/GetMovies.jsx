@@ -81,7 +81,7 @@ export default function GetMovies({
                                 ⭐ {movie.vote_average?.toFixed(1)}
                             </span>
                             <span className="movie-card__date">
-                                📅 {movie.release_date}
+                                {movie.release_date.slice(0, 4)}
                             </span>
                         </div>
                     </div>
