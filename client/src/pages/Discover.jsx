@@ -62,7 +62,7 @@ export default function Discover() {
       <div className="discover-page__header">
         <h2 className="discover-page__title">Discover Movies & TV Shows</h2>
         <p className="discover-page__subtitle">
-          
+      
         </p>
       </div>
 
@@ -84,7 +84,11 @@ export default function Discover() {
 
         <div className="filter-group">
           <label className="filter-group__label">Genre</label>
-          <GetGenre onSelect={setSelectedGenre} selectedGenre={selectedGenre} />
+          <GetGenre 
+            onSelect={setSelectedGenre} 
+            selectedGenre={selectedGenre} 
+            mediaType={selectedMediaType} 
+          />
         </div>
 
         <div className="filter-group">
