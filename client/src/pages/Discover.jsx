@@ -138,6 +138,7 @@ export default function Discover() {
           type="discover"
           {...queryParams}
           page={1}
+          pages={2}
           imageSize="w500"
         />
       </div>
