@@ -1,42 +1,21 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSearchApi, movieHelpers } from "../hooks/useSearchApi";
 import "../styles/index.css";
 
 export default function SearchBar({ onSearch }) {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState([]);
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
-  const [loading, setLoading] = useState(false);
   const debounceTimer = useRef(null);
   const containerRef = useRef(null);
   const navigate = useNavigate();
 
-  const baseURL = import.meta.env.VITE_API_BASE_URL;
-
-  const fetchResults = async (search) => {
-    if (!search) {
-      setResults([]);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const res = await fetch(
-        `${baseURL}/api/search/multi?q=${encodeURIComponent(search)}&page=1`
-      );
-      const data = await res.json();
-      // Filter to show only movies and TV shows, limit to 8 results
-      const filtered = (data?.results || [])
-        .filter(item => item.media_type === 'movie' || item.media_type === 'tv')
-        .slice(0, 8);
-      setResults(filtered);
-    } catch (err) {
-      console.error("Search error", err);
-      setResults([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Use the shared hook with debounced query
+  const { movies: results, loading } = useSearchApi({
+    query: debouncedQuery,
+    limit: 8
+  });
 
   const handleChange = (e) => {
     const value = e.target.value;
@@ -44,7 +23,7 @@ export default function SearchBar({ onSearch }) {
 
     clearTimeout(debounceTimer.current);
     debounceTimer.current = setTimeout(() => {
-      fetchResults(value);
+      setDebouncedQuery(value);
       if (value.length > 0) setShowDropdown(true);
     }, 300);
   };
@@ -56,7 +35,7 @@ export default function SearchBar({ onSearch }) {
   };
 
   const handleSelect = (item) => {
-    const title = item.media_type === 'movie' ? item.title : item.name;
+    const title = movieHelpers.getTitle(item);
     setQuery(title);
     setShowDropdown(false);
     navigate(`/SearchResult?search=${encodeURIComponent(title)}`);
@@ -64,19 +43,6 @@ export default function SearchBar({ onSearch }) {
 
   const getMediaIcon = (mediaType) => {
     return mediaType === 'movie' ? 'Movie' : 'TV Show';
-  };
-
-  const getTitle = (item) => {
-    return item.media_type === 'movie' ? item.title : item.name;
-  };
-
-  const getReleaseYear = (item) => {
-    const date = item.media_type === 'movie' ? item.release_date : item.first_air_date;
-    return date ? date.substring(0, 4) : '';
-  };
-
-  const getPosterPath = (item) => {
-    return item.poster_path || item.profile_path;
   };
 
   useEffect(() => {
@@ -88,6 +54,11 @@ export default function SearchBar({ onSearch }) {
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
+
+  // Filter only movies and TV shows from multi-search results
+  const filteredResults = results.filter(
+    item => item.media_type === 'movie' || item.media_type === 'tv'
+  );
 
   return (
     <div ref={containerRef} className="search">
@@ -108,23 +79,23 @@ export default function SearchBar({ onSearch }) {
         <div className="search__dropdown-container">
           {loading ? (
             <div className="search__dropdown-empty">Searching...</div>
-          ) : results.length === 0 ? (
+          ) : filteredResults.length === 0 ? (
             <div className="search__dropdown-empty">No results</div>
           ) : (
             <div className="search__dropdown-results">
-              {results.map((item) => (
+              {filteredResults.map((item) => (
                 <div
-                  key={`${item.media_type}-${item.id}`}
+                  key={movieHelpers.getUniqueKey(item)}
                   className="search__dropdown-movie"
                   onClick={() => handleSelect(item)}
                 >
                   <img
                     src={
-                      getPosterPath(item)
-                        ? `https://image.tmdb.org/t/p/w92${getPosterPath(item)}`
+                      movieHelpers.getPosterPath(item)
+                        ? `https://image.tmdb.org/t/p/w92${movieHelpers.getPosterPath(item)}`
                         : "/placeholder.png"
                     }
-                    alt={getTitle(item)}
+                    alt={movieHelpers.getTitle(item)}
                     className="search__dropdown-thumb"
                   />
                   <div className="search__dropdown-info">
@@ -132,11 +103,13 @@ export default function SearchBar({ onSearch }) {
                       <span className="search__dropdown-media-icon">
                         {getMediaIcon(item.media_type)}
                       </span>
-                      <span className="search__dropdown-title">{getTitle(item)}</span>
+                      <span className="search__dropdown-title">
+                        {movieHelpers.getTitle(item)}
+                      </span>
                     </div>
-                    {getReleaseYear(item) && (
+                    {movieHelpers.getReleaseDate(item) && (
                       <span className="search__dropdown-year">
-                        {getReleaseYear(item)}
+                        {movieHelpers.getReleaseDate(item)}
                       </span>
                     )}
                   </div>

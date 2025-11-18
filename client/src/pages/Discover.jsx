@@ -27,7 +27,7 @@ export default function Discover() {
   }, [selectedGenre, selectedReleaseYear, withCast, selectedSortBy, selectedMediaType]);
 
   const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 20 }, (_, i) => currentYear - i);
+  const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
 
   const sortOptions = [
     { value: "popularity.desc", label: "Popularity Desc" },
@@ -124,8 +124,9 @@ export default function Discover() {
 
         <div className="filter-group">
           <label className="filter-group__label">Cast</label>
-          <GetCast onSelect={setWithCast} />
+          <GetCast onSelect={setWithCast} disabled={selectedMediaType === "tv"} />
         </div>
+
 
         <button className="filter-clear-btn" onClick={handleClearFilters}>
           Clear Filters

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
-export default function GetCast({ onSelect }) {
+export default function GetCast({ onSelect, disabled = false }) {
     const [query, setQuery] = useState("");
     const [results, setResults] = useState([]);
     const [showDropdown, setShowDropdown] = useState(false);
@@ -32,6 +32,7 @@ export default function GetCast({ onSelect }) {
     };
 
     const handleChange = (e) => {
+        if (disabled) return;
         const value = e.target.value;
         setQuery(value);
 
@@ -43,6 +44,7 @@ export default function GetCast({ onSelect }) {
     };
 
     const handleSelect = (person) => {
+        if (disabled) return;
         setQuery(person.name);
         setShowDropdown(false);
         setResults([]);
@@ -71,13 +73,15 @@ export default function GetCast({ onSelect }) {
             <div className="cast-search__input-wrapper">
                 <input
                     type="text"
-                    placeholder="Search cast member..."
+                    placeholder={disabled ? "Disabled for TV" : "Search cast member..."}
                     value={query}
                     onChange={handleChange}
                     onFocus={() => {
                         if (results.length > 0) setShowDropdown(true);
                     }}
                     className="cast-search__input"
+                    disabled={disabled}
+                    
                 />
                 {query && (
                     <button
