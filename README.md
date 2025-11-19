@@ -21,12 +21,47 @@ A full-stack movie web application built with React, Node.js/Express, PostgreSQL
 
 ## Features
 
-- 🎬 Browse and search movies using TMDB API
-- 👥 Create and manage groups for collaborative movie experiences
-- ⭐ Create and share favorite movie lists
-- 📝 Write and read movie reviews
-- 🔐 User authentication and account management
-- 🌐 Responsive web design
+### 🎬 Movie & TV Show Discovery
+- Browse and search movies and TV shows using TMDB API
+- Advanced filtering system with multiple criteria:
+  - Filter by genre (movies and TV shows)
+  - Filter by release year
+  - Filter by cast members (movies only)
+  - Sort by popularity, rating, release date, title, revenue, and vote count
+  - Switch between movie and TV show discovery
+- Real-time search with debounced input and dropdown suggestions
+- Detailed movie/TV show pages with:
+  - Full movie/series information
+  - Trailers and videos
+  - Cast and crew information
+  - Similar content recommendations
+  - Production company details
+
+### 👥 User Management & Authentication
+- User registration and login with JWT authentication
+- Secure password hashing with bcryptjs
+- Protected routes requiring authentication
+- User profile management
+- Token-based session management
+
+### ⭐ Favorite Lists (In Development)
+- Create and manage personal favorite movie lists
+- Add movies to custom lists
+- List sharing functionality (backend ready)
+
+### 🔍 Advanced Search
+- Multi-search functionality (movies, TV shows, and people)
+- Person search with department information
+- Trending content (daily/weekly)
+- Search by actor/director credits
+- Smart dropdown with thumbnails and metadata
+
+### 🌐 Responsive Design
+- Modern, dark-themed UI
+- Horizontal scrolling movie grids on main pages
+- Grid layouts for search and discovery pages
+- Mobile-friendly navigation
+- Smooth animations and transitions
 
 ---
 
@@ -36,7 +71,8 @@ A full-stack movie web application built with React, Node.js/Express, PostgreSQL
 - **React 19** - UI framework
 - **Vite 7** - Build tool and dev server
 - **React Router 7** - Client-side routing
-- **Axios** - HTTP client
+- **Axios** - HTTP client (via custom hooks)
+- **CSS Variables** - Consistent theming
 
 ### Backend
 - **Node.js 22** - Runtime environment
@@ -111,6 +147,9 @@ POSTGRES_PORT=5432
 
 # JWT Configuration
 JWT_SECRET=your_secure_random_string_here
+
+# Vite Frontend Configuration
+VITE_API_BASE_URL=http://localhost:3001
 ```
 
 **Important:** 
@@ -229,41 +268,97 @@ docker-compose down -v
 http://localhost:3001/api
 ```
 
-### Planned Endpoints
+### Authentication Endpoints
 
-#### Movies
-- `GET /api/movies/now_playing` - Get now playing movies
-- `GET /api/movies/:id` - Get movie details
-- `GET /api/movies/search?q=query` - Search movies
-
-#### Authentication
+#### User Management
 - `POST /api/users/register` - Register new user
+  - Body: `{ email, username, password }`
+  - Returns: User object
 - `POST /api/users/login` - User login
-- `GET /api/users/profile` - Get current user profile
-- `PUT /api/users/profile` - Update user profile
+  - Body: `{ email, password }`
+  - Returns: `{ user, token }`
+- `GET /api/users/:id` - Get user profile (protected)
+  - Headers: `Authorization: Bearer <token>`
+  - Returns: User profile
+- `PUT /api/users/:id` - Update user profile (protected)
+  - Headers: `Authorization: Bearer <token>`
+  - Body: Fields to update
+  - Returns: Updated user
 
-#### Groups
-- `GET /api/groups` - Get all public groups
-- `POST /api/groups` - Create a new group
-- `GET /api/groups/:id` - Get group details
-- `PUT /api/groups/:id` - Update group (admin/owner only)
-- `DELETE /api/groups/:id` - Delete group (owner only)
-- `POST /api/groups/:id/members` - Add member to group
-- `POST /api/groups/:id/join-request` - Request to join group
-- `GET /api/groups/:id/movies` - Get group's movie collection
+### Movie Endpoints
 
-#### Reviews
-- `GET /api/reviews/movie/:movieId` - Get reviews for a movie
-- `POST /api/reviews` - Create a review
-- `PUT /api/reviews/:id` - Update own review
-- `DELETE /api/reviews/:id` - Delete own review
+#### Movie Discovery & Search
+- `GET /api/movies/byId/:id` - Get movie details by ID
+- `GET /api/movies/:searchType` - Get movies by category
+  - Valid types: `popular`, `now_playing`, `top_rated`, `upcoming`
+  - Query params: `page`, `region` (e.g., `?region=FI`)
+- `GET /api/movies/search?q=query&page=1` - Search movies
+- `GET /api/movies/discover` - Discover movies with filters
+  - Query params: `with_genres`, `sort_by`, `page`, `year`, `with_cast`, `with_crew`, `vote_average_gte`, `vote_average_lte`
+- `GET /api/movies/:id/credits` - Get movie cast and crew
+- `GET /api/movies/:id/videos` - Get movie trailers and videos
+- `GET /api/movies/:id/similar?page=1` - Get similar movies
+- `GET /api/movies/:id/recommendations?page=1` - Get movie recommendations
+- `GET /api/movies/genres` - Get all movie genres
 
-#### Favorite Lists
-- `GET /api/favorites` - Get user's favorite lists
-- `POST /api/favorites` - Create favorite list
-- `POST /api/favorites/:id/movies` - Add movie to list
-- `DELETE /api/favorites/:id/movies/:movieId` - Remove movie from list
-- `GET /api/favorites/share/:token` - View shared list (public)
+### TV Show Endpoints
+
+#### TV Discovery & Search
+- `GET /api/tv/:id` - Get TV show details by ID
+- `GET /api/tv/list/:searchType` - Get TV shows by category
+  - Valid types: `popular`, `top_rated`, `on_the_air`, `airing_today`
+- `GET /api/tv/search?q=query&page=1` - Search TV shows
+- `GET /api/tv/discover` - Discover TV shows with filters
+  - Query params: `with_genres`, `sort_by`, `page`, `year`, `vote_average_gte`, `vote_average_lte`, `with_networks`
+- `GET /api/tv/:id/season/:season_number` - Get TV season details
+- `GET /api/tv/:id/credits` - Get TV show cast and crew
+- `GET /api/tv/:id/videos` - Get TV show trailers
+- `GET /api/tv/:id/similar?page=1` - Get similar TV shows
+- `GET /api/tv/:id/recommendations?page=1` - Get TV show recommendations
+
+### Genre Endpoints
+- `GET /api/genres/movie` - Get all movie genres
+- `GET /api/genres/tv` - Get all TV genres
+- `GET /api/discover/tv` - Discover TV shows (alternative endpoint)
+
+### Search & Trending Endpoints
+- `GET /api/search/multi?q=query&page=1` - Multi-search (movies, TV, people)
+- `GET /api/search/person?q=name&page=1` - Search people (actors, directors)
+- `GET /api/person/:id` - Get person details
+- `GET /api/person/:id/movie_credits` - Get person's movie credits
+- `GET /api/person/:id/tv_credits` - Get person's TV credits
+- `GET /api/trending/:media_type/:time_window` - Get trending content
+  - media_type: `all`, `movie`, `tv`, `person`
+  - time_window: `day`, `week`
+
+### Review Endpoints
+- `GET /api/reviews/movie/:movieId` - Get reviews for a movie (public)
+  - Query params: `page`, `limit`
+- `GET /api/reviews/movie/:movieId/average` - Get average rating (public)
+- `GET /api/reviews/user/:userId` - Get user's reviews (public)
+  - Query params: `page`, `limit`
+- `POST /api/reviews` - Create review (protected)
+  - Headers: `Authorization: Bearer <token>`
+  - Body: `{ user_id, movie_external_id, rating, review_text }`
+- `PUT /api/reviews/:id` - Update review (protected)
+  - Headers: `Authorization: Bearer <token>`
+  - Body: `{ rating, review_text }`
+- `DELETE /api/reviews/:id` - Delete review (protected)
+  - Headers: `Authorization: Bearer <token>`
+
+### Favorite List Endpoints (Protected)
+- `POST /api/favorite-lists` - Create favorite list
+  - Headers: `Authorization: Bearer <token>`
+  - Body: `{ title, description }`
+- `GET /api/favorite-lists` - Get user's lists
+  - Headers: `Authorization: Bearer <token>`
+- `GET /api/favorite-lists/:listId/items` - Get items in list
+  - Headers: `Authorization: Bearer <token>`
+- `POST /api/favorite-lists/:listId/items` - Add movie to list
+  - Headers: `Authorization: Bearer <token>`
+  - Body: `{ movieId, position }`
+- `DELETE /api/favorite-lists/items/:itemId` - Remove movie from list
+  - Headers: `Authorization: Bearer <token>`
 
 ---
 
@@ -271,35 +366,85 @@ http://localhost:3001/api
 
 ```
 Web_projekti_R13/
-├── client/                    # React frontend
+├── client/                           # React frontend
 │   ├── src/
-│   │   ├── components/        # Reusable UI components
-│   │   ├── pages/             # Page components
-│   │   ├── services/          # API service layer
-│   │   ├── App.jsx            # Main app component
-│   │   └── main.jsx           # Entry point
+│   │   ├── assets/
+│   │   │   └── favicon.ico
+│   │   ├── components/               # Reusable UI components
+│   │   │   ├── GetCast.jsx           # Cast member search component with debounce.       Props: onSelect (callback), disabled (boolean)
+│   │   │   ├── GetGenre.jsx          # Genre dropdown component.                         Props: onSelect (callback), selectedGenre (id), mediaType ('movie'|'tv')
+│   │   │   ├── GetImage.jsx          # TMDB image component with configurable size.      Props: path (string), title (string), size (string), style (object), onClick (function)
+│   │   │   ├── GetMoviesSeries.jsx   # Grid/list component for movies/TV shows.     (1/2)Props: type (string), page (number), pages (number),
+│   │   │   │                                                                        (2/2)Props: imageSize (string), limit (number), query (string), discoverParams (object)
+│   │   │   ├── navbar.jsx            # Main navigation bar with search
+│   │   │   └── SearchBar.jsx         # Search input with dropdown suggestions.           Props: onSearch (callback)
+│   │   ├── hooks/
+│   │   │   └── useSearchApi.js       # Custom hook for TMDB API calls.                   Params: type, page, pages, limit, query, discoverParams.       Returns: { movies, loading, error }
+│   │   ├── pages/                    # Page components
+│   │   │   ├── Account.jsx           # User profile and settings page (protected).       Features: Profile info, favorite lists, groups
+│   │   │   ├── Discover.jsx          # Advanced movie/TV discovery with filters          Filters: Genre, year, cast, sort, media type
+│   │   │   ├── Groups.jsx            # Groups page (placeholder)
+│   │   │   ├── Home.jsx              # Homepage with categorized content                 Sections: Now playing, top rated, upcoming, popular
+│   │   │   ├── Login.jsx             # User login page.                                  Stores JWT token in localStorage
+│   │   │   ├── MovieDetail.jsx       # Detailed movie/TV show page.                      Features: Full info, trailer, cast, similar content            Query param: type ('movie'|'tv')
+│   │   │   ├── Register.jsx          # User registration page
+│   │   │   └── SearchResult.jsx      # Search results page                                                                                              Query param: search (string)
+│   │   ├── styles/                   # CSS stylesheets
+│   │   │   ├── Account.css           # Account page styles
+│   │   │   ├── App.css               # Global styles and CSS variables
+│   │   │   ├── Auth.css              # Login/Register page styles
+│   │   │   ├── discover.css          # Discover page and filter styles
+│   │   │   ├── home.css              # Home page styles
+│   │   │   ├── movie-detail.css      # Movie detail page styles
+│   │   │   ├── Navbar.css            # Navigation bar styles
+│   │   │   ├── search-result.css     # Search results page styles
+│   │   │   └── index.css             # Base CSS imports
+│   │   ├── App.jsx                   # Main app component with routes
+│   │   └── main.jsx                  # Entry point with BrowserRouter
 │   ├── Dockerfile
 │   ├── package.json
 │   └── vite.config.js
-├── server/                    # Express backend
-│   ├── routes/                # API route definitions
-│   │   ├── movieRouter.js
-│   │   └── userRouter.js
-│   ├── controllers/           # Request handlers (to be implemented)
-│   ├── services/              # Business logic (to be implemented)
-│   ├── middleware/            # Express middleware (to be implemented)
-│   ├── db/                    # Database connection (to be implemented)
+├── server/                           # Express backend
+│   ├── routes/                       # API route definitions
+│   │   ├── favoriteListRouter.js     # Favorite list routes (protected)
+│   │   ├── genreRouter.js            # Genre and discover routes
+│   │   ├── groupRouter.js            # Group routes (empty)
+│   │   ├── movieRouter.js            # Movie TMDB API routes
+│   │   ├── reviewRouter.js           # Review CRUD routes
+│   │   ├── searchRouter.js           # Search and trending routes
+│   │   ├── tvRouter.js               # TV show TMDB API routes
+│   │   └── userRouter.js             # User authentication routes
+│   ├── controllers/                  # Request handlers
+│   │   ├── favoriteListController.js # Favorite list logic.                    Functions: createList, getUserLists, getListItems, addItemToList, deleteItem          
+│   │   ├── genreController.js        # Genre fetching and TV discovery         Functions: getMovieGenres, getTVGenres, discoverTV
+│   │   ├── groupController.js        # Group logic (empty)
+│   │   ├── reviewController.js       # Review CRUD operations                  Functions: createReview, getReviewsByMovieId, getReviewsByUserId, updateReview, deleteReview, getMovieAverageRating
+│   │   ├── searchController.js       # Search and trending logic               Functions: multiSearch, searchPerson, getPersonById, getPersonMovieCredits, getPersonTVCredits, getTrending
+│   │   ├── TMDBMovieController.js    # TMDB movie API handlers            (1/3)Functions: getMovieById, getMoviesByType, searchMovies,
+│   │   │                                                                  (2/3)Functions: getMovieCredits, getMovieVideos, getSimilarMovies,
+│   │   │                                                                  (3/3)Functions: getMovieRecommendations, getMovieGenres, discoverMovies
+│   │   ├── TMDBTVController.js       # TMDB TV API handlers               (1/2)Functions: getTVById, getTVByType, searchTV, getTVSeason, getTVCredits,
+│   │   │                                                                  (2/2)Functions: getTVVideos, getSimilarTV, getTVRecommendations, discoverTV        
+│   │   └── userController.js         # User authentication handlers            Functions: createUser, userLogin, getUserById, updateUser
+│   ├── models/                       # Database models
+│   │   ├── favoriteItemModel.js      # Favorite list items CRUD                Functions: addFavoriteItem, getFavoriteItemsByList, deleteFavoriteItem
+│   │   ├── favoriteListModel.js      # Favorite lists CRUD                     Functions: createFavoriteList, getFavoriteListsByUser, getFavoriteListById, deleteFavoriteList    
+│   │   └── userModel.js              # User database operations                Functions: createUser, getUserByEmail, getUserById, updateUser
+│   ├── services/                     # Business logic layer
+│   │   └── userService.js            # User authentication logic               Functions: registerUser, loginUser, getUserProfile, updateUserProfile
+│   ├── helpers/                      # Helper functions and middleware
+│   │   ├── auth.js                   # JWT authentication middleware           Verifies Bearer token and attaches user to req.user
+│   │   ├── db.js                     # PostgreSQL connection pool
+│   │   └── tmdbHelper.js             # TMDB API request wrapper                Function: tmdbRequest(endpoint, params)
 │   ├── Dockerfile
-│   ├── index.js               # Server entry point
+│   ├── index.js                      # Server entry point                      Configures Express, CORS, routes, error handling
 │   └── package.json
-├── init_moviedb.sql           # Database schema initialization
-├── docker-compose.yml         # Multi-container configuration
-├── .env                       # Environment variables (not in git)
-├── .env.example               # Environment template
-├── README.md                  # This file
-└── DEBUGGING.md               # Troubleshooting guide
-
-**Note:** Directories marked "to be implemented" are part of the planned architecture.
+├── init_moviedb.sql                  # Database schema initialization
+├── docker-compose.yml                # Multi-container configuration
+├── .env                              # Environment variables (not in git)
+├── .env.example                      # Environment template
+├── README.md                         # This file
+└── DEBUGGING.md                      # Troubleshooting guide
 ```
 
 ---
@@ -331,6 +476,35 @@ docker-compose logs db
 # Follow logs in real-time
 docker-compose logs -f server
 ```
+
+---
+
+## Current Development Status
+
+### ✅ Completed Features
+- Full TMDB API integration for movies and TV shows
+- User authentication system with JWT
+- Advanced discovery page with multiple filters
+- Search functionality with dropdown suggestions
+- Detailed movie/TV show pages with trailers and cast
+- Reviews system (backend complete)
+- Favorite lists (backend complete)
+- Responsive UI with dark theme
+- Person search and credits viewing
+- Trending content tracking
+
+### 🚧 In Progress
+- Groups functionality (backend ready, frontend placeholder)
+- Account page enhancements
+- Review UI integration
+- Favorite list management UI
+
+### 📋 Planned Features
+- Group movie collections
+- Social features (sharing lists, group discussions)
+- User reviews UI
+- Advanced filtering in account page
+- Mobile app considerations
 
 ---
 
@@ -376,6 +550,6 @@ This project is created for educational purposes as part of a web development co
 
 ---
 
-**Last Updated:** November 13, 2025
+**Last Updated:** November 19, 2024
 
 For questions or issues, please refer to [DEBUGGING.md](./DEBUGGING.md) or create an issue on the GitHub repository.
