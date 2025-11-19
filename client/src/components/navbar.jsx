@@ -22,7 +22,7 @@ export default function Navbar() {
             <Link to="/" className="navbar__link">Home</Link>
           </li>
           <li className="navbar__link-item">
-            <Link to="/movies" className="navbar__link">Movies</Link>
+            <Link to="/discover" className="navbar__link">Discover</Link>
           </li>
           <li className="navbar__link-item">
             <Link to="/groups" className="navbar__link">Groups</Link>

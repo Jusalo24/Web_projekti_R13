@@ -1,35 +1,49 @@
 import { useEffect, useState } from "react";
 
-export default function GetGenre({ onSelect, selectedGenre }) {
+export default function GetGenre({
+    onSelect,         // Callback function to send selected genre back to parent
+    selectedGenre,    // Currently selected genre ID
+    mediaType = "movie" // "movie" or "tv", determines which genres to fetch
+}) {
+    // State to store fetched genres from API
     const [genres, setGenres] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const baseURL = "http://localhost:3001";
+    // Base URL for API requests (from environment variable or fallback)
+    const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
 
+    // Fetch genres from API whenever mediaType changes
     useEffect(() => {
         const fetchGenres = async () => {
             try {
-                setLoading(true);
-                const res = await fetch(`${baseURL}/api/genres/movie`);
+                setLoading(true); // Show loading state
+
+                // Choose endpoint based on media type
+                const endpoint = mediaType === "tv" ? "tv" : "movie";
+                const res = await fetch(`${baseURL}/api/genres/${endpoint}`);
                 if (!res.ok) throw new Error("Failed to fetch genres");
+
                 const data = await res.json();
-                setGenres(data.genres || []);
+                setGenres(data.genres || []); // Save fetched genres
             } catch (err) {
                 console.error("Failed to fetch genres:", err);
-                setError(err.message);
+                setError(err.message); // Save error message
             } finally {
-                setLoading(false);
+                setLoading(false); // Stop loading
             }
         };
-        fetchGenres();
-    }, []);
 
+        fetchGenres();
+    }, [mediaType]); // Re-run when mediaType changes
+
+    // Handle dropdown selection change
     const handleChange = (e) => {
         const value = e.target.value;
-        if (onSelect) onSelect(value);
+        if (onSelect) onSelect(value); // Pass selected genre ID to parent
     };
 
+    // Render loading state
     if (loading) {
         return (
             <select className="filter-group__select" disabled>
@@ -38,6 +52,7 @@ export default function GetGenre({ onSelect, selectedGenre }) {
         );
     }
 
+    // Render error state
     if (error) {
         return (
             <select className="filter-group__select" disabled>
@@ -46,16 +61,17 @@ export default function GetGenre({ onSelect, selectedGenre }) {
         );
     }
 
+    // Render genre dropdown when data is ready
     return (
         <select
             className="filter-group__select"
-            value={selectedGenre || ""}
+            value={selectedGenre || ""} // Selected value or empty string
             onChange={handleChange}
         >
-            <option value="">All Genres</option>
+            <option value="">All Genres</option> {/* Default option */}
             {genres.map((genre) => (
                 <option key={genre.id} value={genre.id}>
-                    {genre.name}
+                    {genre.name} {/* Display genre name */}
                 </option>
             ))}
         </select>

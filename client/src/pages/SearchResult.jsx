@@ -1,5 +1,5 @@
 import { useLocation } from "react-router-dom";
-import GetMovies from "../components/GetMovies";
+import GetMoviesSeries from "../components/GetMoviesSeries";
 import "../styles/search-result.css";
 
 export default function SearchResult() {
@@ -14,7 +14,7 @@ export default function SearchResult() {
         </h2>
       </div>
       <div className="search-result__movies">
-        <GetMovies query={search} />
+        <GetMoviesSeries query={search} />
       </div>
     </div>
   );
