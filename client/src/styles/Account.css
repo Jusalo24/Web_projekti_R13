@@ -11,7 +11,7 @@
 
 .account-sidebar {
   width: 250px;
-  background: #111;
+  background: #161b33;
   color: white;
   padding: 1.5rem;
   border-radius: 10px;
@@ -23,7 +23,7 @@
   width: 100%;
   padding: 0.8rem;
   margin-top: 1rem;
-  background: #222;
+  background: linear-gradient(135deg, var(--color-accent) 0%, #4a8ef5 100%);
   color: white;
   border: none;
   border-radius: 6px;
@@ -33,7 +33,9 @@
 }
 
 .side-btn:hover {
-  background: #444;
+  background: linear-gradient(135deg, var(--color-accent-hover) 0%, var(--color-accent) 100%);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
 .side-btn.delete {
@@ -42,6 +44,8 @@
 
 .side-btn.delete:hover {
   background: #c62828;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
 /* ---------- PÄÄSISÄLTÖ ---------- */
@@ -98,7 +102,7 @@
 }
 
 .modal-box {
-  background: #1e1e1e;
+  background: #161b33;
   padding: 2rem;
   border-radius: 10px;
   width: 350px;
@@ -119,6 +123,7 @@
   display: flex;
   justify-content: space-between;
   margin-top: 1.5rem;
+  
 }
 
 .modal-btn {
@@ -127,9 +132,38 @@
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, var(--color-accent) 0%, #4a8ef5 100%);
 }
 
 .modal-btn.cancel {
   background: #9c1c1c;
   color: white;
+}
+
+.modal-box label {
+  margin-top: 1rem;
+  font-weight: 600;
+  display: block;
+}
+
+.modal-box input {
+  margin-top: 0.4rem;
+  margin-bottom: 0.8rem;
+  padding: 0.7rem;
+  width: 100%;
+}
+
+.modal-btn:hover {
+  background: linear-gradient(135deg, var(--color-accent-hover) 0%, var(--color-accent) 100%);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.modal-btn.cancel:hover {
+  background: #b71c1c;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }

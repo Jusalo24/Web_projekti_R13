@@ -7,6 +7,12 @@ export default function Account() {
   const [favorites, setFavorites] = useState([])
   const [modalOpen, setModalOpen] = useState(false)
   const [newListTitle, setNewListTitle] = useState("")
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
 
 
   useEffect(() => {
@@ -31,6 +37,23 @@ export default function Account() {
     fetchProfile()
     fetchFavorites()
   }, [])
+
+  useEffect(() => {
+    const handleEsc = (event) => {
+      if (event.key === "Escape") {
+        setShowChangePassword(false);
+        setShowDeleteConfirm(false);
+        setModalOpen(false); // favorite list modal
+      }
+    };
+
+    window.addEventListener("keydown", handleEsc);
+
+    return () => {
+      window.removeEventListener("keydown", handleEsc);
+    };
+  }, []);
+
 
   const handleCreateFavoriteList = async () => {
     if (!newListTitle.trim()) return
@@ -64,6 +87,62 @@ export default function Account() {
     }
   }
 
+  const handlePasswordChange = async () => {
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      alert("Please fill all fields.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      alert("New passwords do not match.");
+      return;
+    }
+
+    // Password strength check
+    if (!isValidPassword(newPassword)) {
+      alert("Password must be at least 8 characters long and contain one uppercase letter and one number.");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
+
+    const res = await fetch(`/api/users/${userId}/password`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        oldPassword,
+        newPassword
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) { alert(data.error); return; }
+
+    alert("Password updated!");
+
+    // Reset and close modal
+    setShowChangePassword(false);
+    setOldPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+  };
+
+
+  const handleDeleteAccount = () => {
+    console.log("Account deleted");
+
+    // TODO: backend call here
+
+    setShowDeleteConfirm(false);
+  };
+
+
+
 
   return (
     <div className="account-container">
@@ -74,8 +153,13 @@ export default function Account() {
         <button className="side-btn" onClick={() => setModalOpen(true)}>
           Create Favorite List
         </button>
-        <button className="side-btn">Change Password</button>
-        <button className="side-btn delete">Delete Account</button>
+        <button className="side-btn" onClick={() => setShowChangePassword(true)}>
+          Change Password
+        </button>
+        <button className="side-btn delete" onClick={() => setShowDeleteConfirm(true)}>
+          Delete Account
+        </button>
+
         
       </aside>
 
@@ -115,35 +199,80 @@ export default function Account() {
         </section>
       </main>
       {modalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-box">
+        <div className="modal-overlay" onClick={() => setModalOpen(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
             <h3>Create Favorite List</h3>
 
-            <input
-              type="text"
-              placeholder="List name"
-              value={newListTitle}
-              onChange={(e) => setNewListTitle(e.target.value)}
-            />
+            <input type="text" placeholder="List name" value={newListTitle}
+              onChange={(e) => setNewListTitle(e.target.value)}/>
 
             <div className="modal-buttons">
-              <button
-                className="modal-btn"
-                onClick={handleCreateFavoriteList}
-              >
+              <button className="modal-btn" onClick={handleCreateFavoriteList}>
                 Create
               </button>
 
-              <button
-                className="modal-btn cancel"
-                onClick={() => setModalOpen(false)}
-              >
+              <button className="modal-btn cancel" onClick={() => setModalOpen(false)}>
                 Cancel
               </button>
             </div>
           </div>
         </div>
       )}
+
+      {showChangePassword && (
+        <div className="modal-overlay" onClick={() => setShowChangePassword(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+
+            <h3>Change Password</h3>
+
+            <label>Old Password</label>
+            <input type="password" value={oldPassword}
+             onChange={(e) => setOldPassword(e.target.value)}/>
+
+            <label>New Password</label>
+            <input type="password" value={newPassword} 
+              onChange={(e) => setNewPassword(e.target.value)}/>
+
+            <label>Re-enter New Password</label>
+            <input type="password" value={confirmPassword} 
+              onChange={(e) => setConfirmPassword(e.target.value)}/>
+
+            <div className="modal-buttons">
+              <button className="modal-btn" onClick={handlePasswordChange}>
+                Apply
+              </button>
+
+              <button className="modal-btn cancel" onClick={() => setShowChangePassword(false)}>
+                Cancel
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {showDeleteConfirm && (
+        <div className="modal-overlay" onClick={() => setShowDeleteConfirm(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+
+            <h3>Delete Account</h3>
+            <p>Are you sure you want to delete your account?</p>
+
+            <div className="modal-buttons">
+              <button className="modal-btn" onClick={handleDeleteAccount}>
+                Confirm
+              </button>
+
+              <button className="modal-btn cancel" onClick={() => setShowDeleteConfirm(false)}>
+                No
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+
 
     </div>
   )
