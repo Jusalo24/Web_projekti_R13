@@ -13,6 +13,8 @@ export default function Discover() {
   const [selectedMediaType, setSelectedMediaType] = useState("movie");
   const [queryParams, setQueryParams] = useState({});
 
+  const imageSize = "w342"; // Size of poster images: w780, w500, w342, w185, w154, w92, original
+
   // Ref to track if it's the initial render
   const isInitialRender = useRef(true);
 
@@ -179,7 +181,7 @@ export default function Discover() {
           {...queryParams}
           page={1}
           pages={2}
-          imageSize="w185"
+          imageSize={imageSize}
         />
       </div>
     </main>
