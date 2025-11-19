@@ -48,6 +48,6 @@ movieRouter.get('/movies/:id/recommendations', getMovieRecommendations)
 
 // Get movie details by ID (must be last to avoid route conflicts)
 // GET /api/movies/:id
-movieRouter.get('/movies/:id', getMovieById)
+movieRouter.get('/movies/byId/:id', getMovieById)
 
 export default movieRouter

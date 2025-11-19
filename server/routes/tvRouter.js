@@ -7,7 +7,8 @@ import {
     getTVCredits,
     getTVVideos,
     getSimilarTV,
-    getTVRecommendations
+    getTVRecommendations,
+    discoverTV
 } from '../controllers/TMDBTVController.js'
 
 const tvRouter = Router()
@@ -23,6 +24,10 @@ tvRouter.get('/tv/list/:searchType', getTVByType)
 // Get TV show season details
 // GET /api/tv/:id/season/:season_number
 tvRouter.get('/tv/:id/season/:season_number', getTVSeason)
+
+// Discover tv shows with filters
+// GET /api/tv/discover?with_genres=28&sort_by=popularity.desc&page=1
+tvRouter.get('/tv/discover', discoverTV)
 
 // Get TV show credits
 // GET /api/tv/:id/credits

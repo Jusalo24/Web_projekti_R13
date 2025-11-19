@@ -1,32 +1,39 @@
 import { useEffect, useState } from "react";
-import GetMovies from "../components/GetMovies";
+import GetMoviesSeries from "../components/GetMoviesSeries";
 import GetGenre from "../components/GetGenre";
 import GetCast from "../components/GetCast";
-import "../styles/movies.css";
+import "../styles/discover.css";
 
-export default function Movies() {
+export default function Discover() {
+  // State variables for filters
   const [selectedGenre, setSelectedGenre] = useState("");
   const [selectedReleaseYear, setSelectedReleaseYear] = useState("");
   const [withCast, setWithCast] = useState("");
   const [selectedSortBy, setSelectedSortBy] = useState("popularity.desc");
-  const [queryParams, setQueryParams] = useState({});
+  const [selectedMediaType, setSelectedMediaType] = useState("movie");
+  const [queryParams, setQueryParams] = useState({}); // Object to hold query parameters
 
+  // Function to update query parameters based on selected filters
   const handleFilterChange = () => {
     const params = {};
     if (selectedGenre) params.with_genres = selectedGenre;
-    if (selectedReleaseYear) params.primary_release_year = selectedReleaseYear;
+    if (selectedReleaseYear) params.year = selectedReleaseYear;
     if (withCast) params.with_cast = withCast;
     if (selectedSortBy) params.sort_by = selectedSortBy;
-    setQueryParams(params);
+    if (selectedMediaType) params.media_type = selectedMediaType;
+    setQueryParams(params); // Update queryParams state
   };
 
+  // Update queryParams whenever any filter changes
   useEffect(() => {
     handleFilterChange();
-  }, [selectedGenre, selectedReleaseYear, withCast, selectedSortBy]);
+  }, [selectedGenre, selectedReleaseYear, withCast, selectedSortBy, selectedMediaType]);
 
+  // Generate last 100 years for the release year dropdown
   const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 20 }, (_, i) => currentYear - i);
+  const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
 
+  // Options for sorting
   const sortOptions = [
     { value: "popularity.desc", label: "Popularity Desc" },
     { value: "popularity.asc", label: "Popularity Asc" },
@@ -42,26 +49,58 @@ export default function Movies() {
     { value: "vote_count.asc", label: "Vote Count Asc" },
   ];
 
+  // Media type options
+  const mediaTypes = [
+    { value: "movie", label: "Movie" },
+    { value: "tv", label: "TV Show" },
+  ];
+
+  // Function to reset all filters to default values
   const handleClearFilters = () => {
     setSelectedGenre("");
     setSelectedReleaseYear("");
     setWithCast("");
     setSelectedSortBy("popularity.desc");
+    setSelectedMediaType("movie");
   };
 
   return (
-    <main className="movies-page">
-      <div className="movies-page__header">
-        <h2 className="movies-page__title">Discover Movies</h2>
-        <p className="movies-page__subtitle"></p>
+    <main className="discover-page">
+      {/* Page Header */}
+      <div className="discover-page__header">
+        <h2 className="discover-page__title">Discover Movies & TV Shows</h2>
+        <p className="discover-page__subtitle"></p>
       </div>
 
-      <div className="movies-page__filters">
+      {/* Filters Section */}
+      <div className="discover-page__filters">
+        {/* Media Type Filter */}
         <div className="filter-group">
-          <label className="filter-group__label">Genre</label>
-          <GetGenre onSelect={setSelectedGenre} selectedGenre={selectedGenre} />
+          <label className="filter-group__label">Media Type</label>
+          <select
+            className="filter-group__select"
+            value={selectedMediaType}
+            onChange={(e) => setSelectedMediaType(e.target.value)}
+          >
+            {mediaTypes.map((type) => (
+              <option key={type.value} value={type.value}>
+                {type.label}
+              </option>
+            ))}
+          </select>
         </div>
 
+        {/* Genre Filter */}
+        <div className="filter-group">
+          <label className="filter-group__label">Genre</label>
+          <GetGenre
+            onSelect={setSelectedGenre}
+            selectedGenre={selectedGenre}
+            mediaType={selectedMediaType}
+          />
+        </div>
+
+        {/* Release Year Filter */}
         <div className="filter-group">
           <label className="filter-group__label">Release Year</label>
           <select
@@ -78,6 +117,7 @@ export default function Movies() {
           </select>
         </div>
 
+        {/* Sort By Filter */}
         <div className="filter-group">
           <label className="filter-group__label">Sort By</label>
           <select
@@ -93,21 +133,25 @@ export default function Movies() {
           </select>
         </div>
 
+        {/* Cast Filter */}
         <div className="filter-group">
           <label className="filter-group__label">Cast</label>
-          <GetCast onSelect={setWithCast} />
+          <GetCast onSelect={setWithCast} disabled={selectedMediaType === "tv"} />
         </div>
 
+        {/* Clear Filters Button */}
         <button className="filter-clear-btn" onClick={handleClearFilters}>
           Clear Filters
         </button>
       </div>
 
-      <div className="movies-page__results">
-        <GetMovies
+      {/* Movies & TV Shows Results */}
+      <div className="discover-page__results">
+        <GetMoviesSeries
           type="discover"
           {...queryParams}
           page={1}
+          pages={2}
           imageSize="w500"
         />
       </div>

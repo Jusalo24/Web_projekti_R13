@@ -1,13 +1,14 @@
 export default function GetImage({
-    path,
-    title = "Movie image",
-    size = "w500",
-    style = {},
-    onClick
+    path,         // Image path from the API (required)
+    title = "Movie image", // Alt text for accessibility
+    size = "w500",         // Image size (default is "w500")
+    style = {},            // Optional inline styles
+    onClick                // Optional click handler
 }) {
     const baseUrl = "https://image.tmdb.org/t/p";
     const url = `${baseUrl}/${size}${path}`;
-    // console.log("image request:" , url) // debug url
+    // console.log("image request:" , url) // Uncomment for debugging
 
-    return <img src={url} alt={title} onClick={onClick} />;
+    // Render the image
+    return <img src={url} alt={title} onClick={onClick} style={style} />;
 }
