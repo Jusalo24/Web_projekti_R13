@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import SearchBar from "./SearchBar";
 import "../styles/index.css";
+import "../styles/Navbar.css";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -30,11 +31,17 @@ export default function Navbar() {
           <li className="navbar__link-item">
             <Link to="/account" className="navbar__link">Account</Link>
           </li>
+          
         </ul>
 
         <div className="navbar__search">
           <SearchBar onSearch={handleSearch} />
         </div>
+
+        <button className="navbar__login-btn" onClick={() => navigate("/login")}>
+          Login
+        </button>
+
       </div>
     </nav>
   );
