@@ -40,11 +40,11 @@ export default function MovieDetail() {
         
         // If TV fetch fails, try as movie
         if (!detailsRes.ok) {
-          detailsRes = await fetch(`${baseURL}/api/movies/${id}`);
+          detailsRes = await fetch(`${baseURL}/api/movies/byId/${id}`);
           currentMediaType = "movie";
         }
       } else {
-        detailsRes = await fetch(`${baseURL}/api/movies/${id}`);
+        detailsRes = await fetch(`${baseURL}/api/movies/byId/${id}`);
         
         // If movie fetch fails, try as TV
         if (!detailsRes.ok) {
