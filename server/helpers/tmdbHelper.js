@@ -6,39 +6,24 @@ const tmdbRequest = async (endpoint, params = {}) => {
     try {
         const fullUrl = `${TMDB_BASE}${endpoint}`
 
-        // Check if API key exists
-        if (!process.env.TMDB_API_KEY) {
-            throw new Error('TMDB API key is not configured')
-        }
-
-        // Debug log (remove api_key from logs for security)
+        // 🔹 Debug-loki: näyttää koko kutsun rakenteen
         console.log('TMDB Request:', {
             url: fullUrl,
             params: {
-                ...params,
-                api_key: '***hidden***'
+                api_key: '***hidden***', // piilotetaan API-avain konsolista
+                ...params
             }
         })
 
-        const response = await axios.get(fullUrl, {
+        const response = await axios.get(`${TMDB_BASE}${endpoint}`, {
             params: {
                 api_key: process.env.TMDB_API_KEY,
                 ...params
             }
         })
-
-        return response.data
+        return response.data;
     } catch (err) {
-        // Log detailed error information
-        console.error('TMDB API Error:', {
-            message: err.message,
-            endpoint: endpoint,
-            status: err.response?.status,
-            statusText: err.response?.statusText,
-            data: err.response?.data
-        })
-
-        // Preserve the original error for proper handling upstream
+        console.error('TMDB API Error:', err.message)
         throw err
     }
 }
