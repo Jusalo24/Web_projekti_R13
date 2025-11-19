@@ -29,8 +29,13 @@ export const getMovieById = async (req, res) => {
         console.error('Error fetching movie:', err.message)
         
         // Handle TMDB API errors
-        if (err.response && err.response.status === 404) {
-            return res.status(404).json({ error: 'Movie not found' })
+        if (err.response) {
+            if (err.response.status === 404) {
+                return res.status(404).json({ error: 'Movie not found' })
+            }
+            return res.status(err.response.status).json({ 
+                error: err.response.data?.status_message || 'Failed to fetch movie data' 
+            })
         }
         
         res.status(500).json({ error: 'Failed to fetch movie data' })
@@ -71,6 +76,13 @@ export const getMoviesByType = async (req, res) => {
         res.status(200).json(moviesData)
     } catch (err) {
         console.error('Error fetching movies:', err.message)
+        
+        if (err.response) {
+            return res.status(err.response.status).json({ 
+                error: err.response.data?.status_message || 'Failed to fetch movies data' 
+            })
+        }
+        
         res.status(500).json({ error: 'Failed to fetch movies data' })
     }
 }
@@ -103,6 +115,13 @@ export const searchMovies = async (req, res) => {
         res.status(200).json(moviesData)
     } catch (err) {
         console.error('Error searching movies:', err.message)
+        
+        if (err.response) {
+            return res.status(err.response.status).json({ 
+                error: err.response.data?.status_message || 'Failed to search movies' 
+            })
+        }
+        
         res.status(500).json({ error: 'Failed to search movies' })
     }
 }
@@ -131,8 +150,13 @@ export const getMovieCredits = async (req, res) => {
     } catch (err) {
         console.error('Error fetching movie credits:', err.message)
         
-        if (err.response && err.response.status === 404) {
-            return res.status(404).json({ error: 'Movie not found' })
+        if (err.response) {
+            if (err.response.status === 404) {
+                return res.status(404).json({ error: 'Movie not found' })
+            }
+            return res.status(err.response.status).json({ 
+                error: err.response.data?.status_message || 'Failed to fetch movie credits' 
+            })
         }
         
         res.status(500).json({ error: 'Failed to fetch movie credits' })
@@ -163,8 +187,13 @@ export const getMovieVideos = async (req, res) => {
     } catch (err) {
         console.error('Error fetching movie videos:', err.message)
         
-        if (err.response && err.response.status === 404) {
-            return res.status(404).json({ error: 'Movie not found' })
+        if (err.response) {
+            if (err.response.status === 404) {
+                return res.status(404).json({ error: 'Movie not found' })
+            }
+            return res.status(err.response.status).json({ 
+                error: err.response.data?.status_message || 'Failed to fetch movie videos' 
+            })
         }
         
         res.status(500).json({ error: 'Failed to fetch movie videos' })
@@ -204,8 +233,13 @@ export const getSimilarMovies = async (req, res) => {
     } catch (err) {
         console.error('Error fetching similar movies:', err.message)
         
-        if (err.response && err.response.status === 404) {
-            return res.status(404).json({ error: 'Movie not found' })
+        if (err.response) {
+            if (err.response.status === 404) {
+                return res.status(404).json({ error: 'Movie not found' })
+            }
+            return res.status(err.response.status).json({ 
+                error: err.response.data?.status_message || 'Failed to fetch similar movies' 
+            })
         }
         
         res.status(500).json({ error: 'Failed to fetch similar movies' })
@@ -245,8 +279,13 @@ export const getMovieRecommendations = async (req, res) => {
     } catch (err) {
         console.error('Error fetching movie recommendations:', err.message)
         
-        if (err.response && err.response.status === 404) {
-            return res.status(404).json({ error: 'Movie not found' })
+        if (err.response) {
+            if (err.response.status === 404) {
+                return res.status(404).json({ error: 'Movie not found' })
+            }
+            return res.status(err.response.status).json({ 
+                error: err.response.data?.status_message || 'Failed to fetch movie recommendations' 
+            })
         }
         
         res.status(500).json({ error: 'Failed to fetch movie recommendations' })
@@ -266,6 +305,13 @@ export const getMovieGenres = async (req, res) => {
         res.status(200).json(genresData)
     } catch (err) {
         console.error('Error fetching movie genres:', err.message)
+        
+        if (err.response) {
+            return res.status(err.response.status).json({ 
+                error: err.response.data?.status_message || 'Failed to fetch movie genres' 
+            })
+        }
+        
         res.status(500).json({ error: 'Failed to fetch movie genres' })
     }
 }
@@ -301,7 +347,7 @@ export const discoverMovies = async (req, res) => {
         }
 
         if (with_genres) params.with_genres = with_genres
-        if (year) params.primary_release_year = year
+        if (year) params.year = year
         if (with_cast) params.with_cast = with_cast
         if (with_crew) params.with_crew = with_crew
         if (vote_average_gte) params['vote_average.gte'] = vote_average_gte
@@ -312,6 +358,13 @@ export const discoverMovies = async (req, res) => {
         res.status(200).json(moviesData)
     } catch (err) {
         console.error('Error discovering movies:', err.message)
+        
+        if (err.response) {
+            return res.status(err.response.status).json({ 
+                error: err.response.data?.status_message || 'Failed to discover movies' 
+            })
+        }
+        
         res.status(500).json({ error: 'Failed to discover movies' })
     }
 }

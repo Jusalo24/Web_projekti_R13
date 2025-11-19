@@ -16,6 +16,10 @@ export const getTVRecommendations = async (req, res) => {
             return res.status(400).json({ error: 'TV show ID is required' })
         }
 
+        if (isNaN(id)) {
+            return res.status(400).json({ error: 'TV show ID must be a number' })
+        }
+
         const pageNum = page ? parseInt(page, 10) : 1
         if (isNaN(pageNum) || pageNum < 1) {
             return res.status(400).json({
@@ -31,6 +35,11 @@ export const getTVRecommendations = async (req, res) => {
         res.status(200).json(recommendationsData)
     } catch (err) {
         console.error('Error fetching TV recommendations:', err.message)
+        
+        if (err.response && err.response.status === 404) {
+            return res.status(404).json({ error: 'TV show not found' })
+        }
+        
         res.status(500).json({ error: 'Failed to fetch TV recommendations' })
     }
 }
@@ -47,6 +56,10 @@ export const getTVById = async (req, res) => {
             return res.status(400).json({ error: 'TV show ID is required' })
         }
 
+        if (isNaN(id)) {
+            return res.status(400).json({ error: 'TV show ID must be a number' })
+        }
+
         const tvData = await tmdbRequest(`/tv/${id}`, {
             language: 'en-US'
         })
@@ -54,6 +67,11 @@ export const getTVById = async (req, res) => {
         res.status(200).json(tvData)
     } catch (err) {
         console.error('Error fetching TV show:', err.message)
+        
+        if (err.response && err.response.status === 404) {
+            return res.status(404).json({ error: 'TV show not found' })
+        }
+        
         res.status(500).json({ error: 'Failed to fetch TV show data' })
     }
 }
@@ -138,6 +156,14 @@ export const getTVSeason = async (req, res) => {
             return res.status(400).json({ error: 'TV show ID and season number are required' })
         }
 
+        if (isNaN(id)) {
+            return res.status(400).json({ error: 'TV show ID must be a number' })
+        }
+
+        if (isNaN(season_number)) {
+            return res.status(400).json({ error: 'Season number must be a number' })
+        }
+
         const seasonData = await tmdbRequest(`/tv/${id}/season/${season_number}`, {
             language: 'en-US'
         })
@@ -145,6 +171,11 @@ export const getTVSeason = async (req, res) => {
         res.status(200).json(seasonData)
     } catch (err) {
         console.error('Error fetching TV season:', err.message)
+        
+        if (err.response && err.response.status === 404) {
+            return res.status(404).json({ error: 'TV show or season not found' })
+        }
+        
         res.status(500).json({ error: 'Failed to fetch TV season data' })
     }
 }
@@ -161,6 +192,10 @@ export const getTVCredits = async (req, res) => {
             return res.status(400).json({ error: 'TV show ID is required' })
         }
 
+        if (isNaN(id)) {
+            return res.status(400).json({ error: 'TV show ID must be a number' })
+        }
+
         const creditsData = await tmdbRequest(`/tv/${id}/credits`, {
             language: 'en-US'
         })
@@ -168,6 +203,11 @@ export const getTVCredits = async (req, res) => {
         res.status(200).json(creditsData)
     } catch (err) {
         console.error('Error fetching TV credits:', err.message)
+        
+        if (err.response && err.response.status === 404) {
+            return res.status(404).json({ error: 'TV show not found' })
+        }
+        
         res.status(500).json({ error: 'Failed to fetch TV credits' })
     }
 }
@@ -184,6 +224,10 @@ export const getTVVideos = async (req, res) => {
             return res.status(400).json({ error: 'TV show ID is required' })
         }
 
+        if (isNaN(id)) {
+            return res.status(400).json({ error: 'TV show ID must be a number' })
+        }
+
         const videosData = await tmdbRequest(`/tv/${id}/videos`, {
             language: 'en-US'
         })
@@ -191,6 +235,11 @@ export const getTVVideos = async (req, res) => {
         res.status(200).json(videosData)
     } catch (err) {
         console.error('Error fetching TV videos:', err.message)
+        
+        if (err.response && err.response.status === 404) {
+            return res.status(404).json({ error: 'TV show not found' })
+        }
+        
         res.status(500).json({ error: 'Failed to fetch TV videos' })
     }
 }
@@ -208,6 +257,10 @@ export const getSimilarTV = async (req, res) => {
             return res.status(400).json({ error: 'TV show ID is required' })
         }
 
+        if (isNaN(id)) {
+            return res.status(400).json({ error: 'TV show ID must be a number' })
+        }
+
         const pageNum = page ? parseInt(page, 10) : 1
         if (isNaN(pageNum) || pageNum < 1) {
             return res.status(400).json({
@@ -223,56 +276,10 @@ export const getSimilarTV = async (req, res) => {
         res.status(200).json(similarData)
     } catch (err) {
         console.error('Error fetching similar TV shows:', err.message)
+        
+        if (err.response && err.response.status === 404) {
+            return res.status(404).json({ error: 'TV show not found' })
+        }
+        
         res.status(500).json({ error: 'Failed to fetch similar TV shows' })
-    }
-}
-
-/**
- * Discover TV shows with filters
- * GET /api/tv/discover?with_genres=28&sort_by=popularity.desc&page=1
- */
-export const discoverTV = async (req, res) => {
-    try {
-        const {
-            with_genres,
-            sort_by,
-            page,
-            year,
-            with_cast,
-            with_crew,
-            vote_average_gte,
-            vote_average_lte
-        } = req.query
-
-        const pageNum = page ? parseInt(page, 10) : 1
-        if (isNaN(pageNum) || pageNum < 1) {
-            return res.status(400).json({
-                error: 'Page must be a positive integer'
-            })
-        }
-
-        const params = {
-            language: 'en-US',
-            page: pageNum,
-            sort_by: sort_by || 'popularity.desc'
-        }
-
-        if (with_genres) params.with_genres = with_genres
-        if (year) params.first_air_date_year = year
-        if (with_cast) params.with_cast = with_cast
-        if (with_crew) params.with_crew = with_crew
-        if (vote_average_gte) params['vote_average.gte'] = vote_average_gte
-        if (vote_average_lte) params['vote_average.lte'] = vote_average_lte
-
-        // DEBUG: Tulosta parametrit konsoliin
-        console.log('Params to TMDB:', params)
-        console.log('Full URL will be:', `/discover/tv`)
-
-        const tvData = await tmdbRequest('/discover/tv', params)
-
-        res.status(200).json(tvData)
-    } catch (err) {
-        console.error('Error discovering tv shows:', err.message)
-        res.status(500).json({ error: 'Failed to discover tv shows' })
-    }
-}
+    }}
