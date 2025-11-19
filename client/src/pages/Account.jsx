@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react"
-import "../styles/Account.css"
+import { useEffect, useState } from "react";
+import "../styles/Account.css";
 
 
 export default function Account() {
