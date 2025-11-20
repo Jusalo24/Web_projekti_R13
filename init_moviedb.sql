@@ -123,3 +123,20 @@ ALTER TABLE reviews ADD CONSTRAINT ux_user_movie_review
 
 CREATE INDEX idx_users_email_lower ON users (lower(email));
 CREATE INDEX idx_users_username_lower ON users (lower(username));
+
+-- Functions
+CREATE OR REPLACE FUNCTION add_owner_to_group_members()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO group_members (group_id, user_id, role)
+    VALUES (NEW.id, NEW.owner_id, 'owner')
+    ON CONFLICT DO NOTHING;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_add_owner_to_group_members
+AFTER INSERT ON groups
+FOR EACH ROW
+EXECUTE FUNCTION add_owner_to_group_members();

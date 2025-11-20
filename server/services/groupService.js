@@ -7,6 +7,8 @@ import {
     addMember,
     createJoinRequest,
     getJoinRequests,
+    acceptJoinRequest,
+    rejectJoinRequest
 } from "../models/groupModel.js";
 
 // Create a new group

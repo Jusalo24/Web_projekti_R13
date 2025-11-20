@@ -1,6 +1,6 @@
 import db from "../helpers/db.js";
 
-/** Check if user is admin or owner in group */
+// Check if user is admin or owner in group
 // middleware: requires params: { id = groupId }
 export async function requireAdminOrOwner(req, res, next) {
     try {
