@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import GetMoviesSeries from "../components/GetMoviesSeries";
 import GetGenre from "../components/GetGenre";
 import GetCast from "../components/GetCast";
@@ -11,12 +11,17 @@ export default function Discover() {
   const [withCast, setWithCast] = useState("");
   const [selectedSortBy, setSelectedSortBy] = useState("popularity.desc");
   const [selectedMediaType, setSelectedMediaType] = useState("movie");
-  const [queryParams, setQueryParams] = useState({}); // Object to hold query parameters
+  const [queryParams, setQueryParams] = useState({});
+
+  const imageSize = "w342"; // Size of poster images: w780, w500, w342, w185, w154, w92, original
+
+  // Ref to track if it's the initial render
+  const isInitialRender = useRef(true);
 
   // Function to update query parameters based on selected filters
   const handleFilterChange = () => {
     const params = {};
-    if (selectedGenre) params.with_genres = selectedGenre;
+    if (selectedGenre !== "") params.with_genres = selectedGenre;
     if (selectedReleaseYear) params.year = selectedReleaseYear;
     if (withCast) params.with_cast = withCast;
     if (selectedSortBy) params.sort_by = selectedSortBy;
@@ -24,10 +29,31 @@ export default function Discover() {
     setQueryParams(params); // Update queryParams state
   };
 
-  // Update queryParams whenever any filter changes
+  // Reset genre when media type changes
+  useEffect(() => {
+    setSelectedGenre("");
+    setWithCast(""); // Reset cast as well since it's disabled for TV
+  }, [selectedMediaType]);
+
+  // Update queryParams whenever any filter changes, but not on initial render
+  useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
+
+    // Use timeout to ensure state updates have completed
+    const timeoutId = setTimeout(() => {
+      handleFilterChange();
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
+  }, [selectedGenre, selectedReleaseYear, withCast, selectedSortBy, selectedMediaType]);
+
+  // Initial filter setup
   useEffect(() => {
     handleFilterChange();
-  }, [selectedGenre, selectedReleaseYear, withCast, selectedSortBy, selectedMediaType]);
+  }, []);
 
   // Generate last 100 years for the release year dropdown
   const currentYear = new Date().getFullYear();
@@ -136,7 +162,10 @@ export default function Discover() {
         {/* Cast Filter */}
         <div className="filter-group">
           <label className="filter-group__label">Cast</label>
-          <GetCast onSelect={setWithCast} disabled={selectedMediaType === "tv"} />
+          <GetCast
+            onSelect={setWithCast}
+            disabled={selectedMediaType === "tv"}
+          />
         </div>
 
         {/* Clear Filters Button */}
@@ -152,7 +181,7 @@ export default function Discover() {
           {...queryParams}
           page={1}
           pages={2}
-          imageSize="w500"
+          imageSize={imageSize}
         />
       </div>
     </main>

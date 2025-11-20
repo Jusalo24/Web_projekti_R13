@@ -78,15 +78,6 @@
   border-radius: 6px;
 }
 
-.movie-card {
-  background: #2a3251;
-  padding: 1rem;
-  border-radius: 8px;
-  color: white;
-  width: 180px;
-  box-shadow: 0 0 6px rgba(0,0,0,0.2);
-}
-
 .modal-overlay {
   position: fixed;
   top: 0;
