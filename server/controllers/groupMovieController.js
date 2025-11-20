@@ -14,7 +14,7 @@ export async function addMovieToGroup(req, res) {
         if (!movie)
             return res.status(409).json({ error: "Movie already in group" });
 
-        res.status(201).json(movie);
+        res.status(201).json({ message: "Movie added successfully" });
     } catch (err) {
         res.status(500).json({ error: "Failed to add movie" });
     }
@@ -23,14 +23,27 @@ export async function addMovieToGroup(req, res) {
 // Remove movie
 export async function removeMovieFromGroup(req, res) {
     try {
+        const { movieId, mediaType } = req.query;
+
+        if (!movieId || !mediaType) {
+            console.log('❌ Missing parameters');
+            return res.status(400).json({
+                error: "movieId and mediaType are required as query parameters"
+            });
+        }
+
+        console.log('Calling removeMovie service...');
         await movieService.removeMovie(
-            req.params.id, 
-            req.query.movieId,
-            req.query.mediaType
+            req.params.id,
+            movieId,
+            mediaType
         );
-        res.status(204).send();
+
+        console.log('✅ Movie removed successfully');
+        res.status(201).json({ message: "Movie removed successfully" });
     } catch (err) {
-        res.status(500).json({ error: "Failed to remove movie" });
+        console.error('❌ Remove movie error:', err);
+        res.status(500).json({ error: "Failed to remove movie", details: err.message });
     }
 }
 
