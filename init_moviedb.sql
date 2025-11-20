@@ -60,6 +60,7 @@ CREATE TABLE group_movies (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   group_id UUID NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
   movie_external_id VARCHAR(100) NOT NULL,
+  media_type VARCHAR(10) NOT NULL DEFAULT 'movie',
   added_by UUID REFERENCES users(id) ON DELETE SET NULL
 );
 CREATE INDEX idx_group_movies_movieid ON group_movies (movie_external_id);
@@ -112,8 +113,9 @@ SELECT id, name, description, created_at, owner_id
 FROM groups
 WHERE is_visible = TRUE;
 
-ALTER TABLE group_movies ADD CONSTRAINT ux_group_movie 
-  UNIQUE (group_id, movie_external_id);
+ALTER TABLE group_movies 
+ADD CONSTRAINT ux_group_movie 
+UNIQUE (group_id, movie_external_id, media_type);
 
 ALTER TABLE favorite_list_items ADD CONSTRAINT ux_list_item
   UNIQUE (favorite_list_id, movie_external_id);
