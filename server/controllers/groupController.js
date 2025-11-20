@@ -25,6 +25,21 @@ export async function getGroupById(req, res) {
     }
 }
 
+// Get groups the logged-in user belongs to
+// GET /api/groups/my
+export async function getMyGroups(req, res) {
+    try {
+        const userId = req.user.id;
+
+        const groups = await groupService.getUserGroups(userId);
+
+        return res.json(groups);
+    } catch (err) {
+        console.error("Failed to fetch user groups", err);
+        res.status(500).json({ error: "Failed to fetch user groups" });
+    }
+}
+
 // Get all visible groups
 // GET /api/groups/groups  | no params, no body
 export async function getGroups(req, res) {

@@ -11,7 +11,8 @@ import {
     requestJoin,
     getJoinRequests,
     acceptJoin,
-    rejectJoin
+    rejectJoin,
+    getMyGroups
 } from "../controllers/groupController.js";
 
 import { requireOwner, requireMemberOrOwner } from '../helpers/groupRoles.js';
@@ -35,6 +36,10 @@ groupRouter.post("/groups/", auth, createGroup);
 // Update group by id (auth)
 // PUT /api/groups/:id | params: { id }  body: { name?, description?, isVisible? }
 groupRouter.put("/groups/:id", auth, updateGroup);
+
+// Get groups the user owns or is member of
+// GET /api/groups/my
+groupRouter.get("/groups/my", auth, getMyGroups);
 
 // Delete group by id (auth)
 // DELETE /api/groups/:id | params: { id }  no body
@@ -75,7 +80,7 @@ groupRouter.patch(
 );
 
 // Add movie to group
-// POST /api/groups/:id/movies | query: { movieId }
+// POST /api/groups/:id/movies | query: { movieId, mediaType }
 groupRouter.post(
     "/groups/:id/movies",
     auth,
@@ -84,7 +89,7 @@ groupRouter.post(
 );
 
 // Remove movie
-// DELETE /api/groups/:id/movies | query: { movieId }
+// DELETE /api/groups/:id/movies | query: { movieId, mediaType }
 groupRouter.delete(
     "/groups/:id/movies",
     auth,

@@ -22,6 +22,21 @@ export async function getGroupById(groupId) {
     return result.rows[0];
 }
 
+// Get groups the user is a member/owner of
+export async function getGroupsForUser(userId) {
+    const result = await db.query(
+        `
+        SELECT g.*, gm.role
+        FROM group_members gm
+        JOIN groups g ON g.id = gm.group_id
+        WHERE gm.user_id = $1
+        ORDER BY g.created_at DESC
+        `,
+        [userId]
+    );
+    return result.rows;
+}
+
 // Get all visible groups
 // SQL: SELECT * FROM groups WHERE is_visible=true | no params
 export async function getGroups() {

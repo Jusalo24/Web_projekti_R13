@@ -8,7 +8,8 @@ import {
     createJoinRequest,
     getJoinRequests,
     acceptJoinRequest,
-    rejectJoinRequest
+    rejectJoinRequest,
+    getGroupsForUser
 } from "../models/groupModel.js";
 
 // Create a new group
@@ -22,6 +23,11 @@ export default {
     // service: getGroupById(groupId) → model.getGroupById(id)
     getGroupById: async (groupId) => {
         return await getGroupById(groupId);
+    },
+
+    // Get all groups for user
+    getUserGroups: async (userId) => {
+        return await getGroupsForUser(userId);
     },
 
     // Get all visible groups

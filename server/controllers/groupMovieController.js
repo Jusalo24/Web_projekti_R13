@@ -1,7 +1,7 @@
 import movieService from "../services/groupMovieService.js";
 
 // Add movie to group
-// POST /api/groups/groups/:id/movies | body: { movieId }
+// POST /api/groups/groups/:id/movies | query: { movieId, mediaType }
 export async function addMovieToGroup(req, res) {
     try {
         const movie = await movieService.addMovie(
@@ -21,6 +21,7 @@ export async function addMovieToGroup(req, res) {
 }
 
 // Remove movie
+// DELETE /api/groups/groups/:id/movies | query: { movieId, mediaType }
 export async function removeMovieFromGroup(req, res) {
     try {
         const { movieId, mediaType } = req.query;
