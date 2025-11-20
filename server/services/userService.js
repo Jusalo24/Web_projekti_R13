@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import { createUser, getUserByEmail, getUserById, updateUser, updateUserPassword } from '../models/userModel.js'
+import { createUser, getUserByEmail, getUserById, getUserByIdWithPassword_hash, updateUser, updateUserPassword } from '../models/userModel.js'
 
 export const registerUser = async (email, username, password) => {
     const existing = await getUserByEmail(email)
@@ -60,7 +60,7 @@ export const validatePassword = (password) => {
 
 
 export const changeUserPassword = async (userId, oldPassword, newPassword) => {
-  const user = await getUserById(userId)
+  const user = await getUserByIdWithPassword_hash(userId)
 
   if (!user) throw new Error("User not found")
 

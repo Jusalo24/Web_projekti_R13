@@ -20,6 +20,14 @@ export const getUserByEmail = async (email) => {
 
 export const getUserById = async (id) => {
     const result = await pool.query(
+        'SELECT id, email, username FROM users WHERE id = $1',
+        [id]
+    )
+    return result.rows[0]
+}
+
+export const getUserByIdWithPassword_hash = async (id) => {
+    const result = await pool.query(
         'SELECT id, email, username, password_hash FROM users WHERE id = $1',
         [id]
     )
