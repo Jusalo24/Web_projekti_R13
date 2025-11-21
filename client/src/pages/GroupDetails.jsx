@@ -46,8 +46,23 @@ export default function GroupDetails() {
 
             <section className="group-details__content">
                 <h3>Members</h3>
-                <p>Members listing will come here...</p>
-
+                {group.members && group.members.length > 0 ? (
+                    <div className="members-list">
+                        {group.members.map((m) => (
+                            <div className="member-card" key={m.id}>
+                                <div className="member-info">
+                                    <span className="member-name">
+                                        {m.username || m.id}
+                                        {m.id === ownerId ? " (You)" : ""}
+                                    </span>
+                                    <span className="member-role">{m.role}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p>No members yet...</p>
+                )}
                 <h3>Movies</h3>
                 <p>Movies listing will come here...</p>
             </section>

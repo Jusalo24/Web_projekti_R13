@@ -25,10 +25,11 @@ export async function isUserInGroup(userId, groupId) {
     return result.rowCount > 0;
 }
 
-// Get a single group by ID
-// SQL: SELECT * FROM groups WHERE id=$1 | params: groupId
+// Get a single group by ID including its members
+// SQL: SELECT group info + separate query for members
 export async function getGroupById(groupId) {
-    const result = await db.query(`
+    // Fetch group base data + owner name
+    const groupResult = await db.query(`
         SELECT 
             g.*,
             u.username AS owner_name
@@ -36,7 +37,33 @@ export async function getGroupById(groupId) {
         LEFT JOIN users u ON g.owner_id = u.id
         WHERE g.id = $1
     `, [groupId]);
-    return result.rows[0];
+
+    const group = groupResult.rows[0];
+
+    if (!group) return null;
+
+    // Fetch group members & their usernames
+    const membersResult = await db.query(`
+        SELECT 
+            gm.user_id,
+            gm.role,
+            u.username
+        FROM group_members gm
+        LEFT JOIN users u ON gm.user_id = u.id
+        WHERE gm.group_id = $1
+        ORDER BY 
+            CASE 
+                WHEN gm.role = 'owner' THEN 1
+                WHEN gm.role = 'admin' THEN 2
+                ELSE 3
+            END, 
+            u.username ASC
+    `, [groupId]);
+
+    // Add members array to group object
+    group.members = membersResult.rows;
+
+    return group;
 }
 
 // Get groups the user is a member/owner of
