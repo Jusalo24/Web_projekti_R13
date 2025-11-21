@@ -189,6 +189,9 @@ export function useGroupApi() {
     loading, // Loading state
     error, // Error state
     notification, // Popup message
+    fetchGroups, // Refresh public groups
+    fetchMyGroups, // Refresh user's groups
+    fetchJoinRequests, // Refresh join requests
     createGroup, // Create new group
     joinGroup, // Send join request
     acceptJoin, // Accept request
