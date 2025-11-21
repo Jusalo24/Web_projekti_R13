@@ -1,9 +1,11 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/groups.css";
+import { useGroupApi } from "../hooks/useGroupApi";
 
 export default function GroupList({ groups, onJoin }) {
     const navigate = useNavigate();
+    const { ownerName } = useGroupApi();
 
     return (
         <div className="group-list">
@@ -16,7 +18,7 @@ export default function GroupList({ groups, onJoin }) {
 
                     <div className="group-card__footer">
                         <span className="group-card__owner">
-                            Owner: {group.owner_id ? group.owner_id.slice(0, 6) + "..." : "Unknown"}
+                            Owner: {group.owner_name === ownerName ? "You" : group.owner_name}
                         </span>
 
                         <div className="group-card__buttons">
@@ -35,7 +37,7 @@ export default function GroupList({ groups, onJoin }) {
                             {!onJoin && (
                                 <button
                                     className="group-card__open-btn"
-                                    onClick={() => navigate(`/groups/${group.id}`)}
+                                    onClick={() => navigate(`/groupDetails/${group.id}`)}
                                 >
                                     Open
                                 </button>
