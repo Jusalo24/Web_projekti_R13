@@ -12,6 +12,19 @@ export async function createGroup(ownerId, name, description) {
     return result.rows[0];
 }
 
+export async function isUserInGroup(userId, groupId) {
+    const result = await db.query(
+        `
+        SELECT 1 
+        FROM group_members
+        WHERE user_id = $1 AND group_id = $2
+        LIMIT 1
+        `,
+        [userId, groupId]
+    );
+    return result.rowCount > 0;
+}
+
 // Get a single group by ID
 // SQL: SELECT * FROM groups WHERE id=$1 | params: groupId
 export async function getGroupById(groupId) {
@@ -84,16 +97,23 @@ export async function addMember(groupId, userId, role = "member") {
 // Create a join request
 // SQL: INSERT INTO group_join_requests | params: groupId, userId
 export async function createJoinRequest(groupId, userId) {
-    const result = await db.query(
-        `INSERT INTO group_join_requests (group_id, user_id)
-         VALUES ($1, $2)
-         ON CONFLICT (group_id, user_id) 
-         WHERE status = 'pending'
-         DO NOTHING
-         RETURNING *`,
-        [groupId, userId]
-    );
-    return result.rows[0];
+    try {
+        const result = await db.query(
+            `INSERT INTO group_join_requests (group_id, user_id)
+             VALUES ($1, $2)
+             ON CONFLICT (group_id, user_id) 
+             WHERE status = 'pending'
+             DO NOTHING
+             RETURNING *`,
+            [groupId, userId]
+        );
+        if (result.rows.length === 0) {
+            return { error: "PENDING_EXISTS" }; // user already sent request
+        }
+        return result.rows[0];
+    } catch (err) {
+        throw err;
+    }
 }
 
 // Get all pending join requests for group

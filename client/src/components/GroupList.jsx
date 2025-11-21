@@ -19,6 +19,8 @@ export default function GroupList({ groups, onJoin }) {
                         </span>
 
                         <div className="group-card__buttons">
+
+                            {/* If onJoin exists -> Public Groups list */}
                             {onJoin && (
                                 <button
                                     className="group-card__join-btn"
@@ -28,12 +30,16 @@ export default function GroupList({ groups, onJoin }) {
                                 </button>
                             )}
 
-                            <button
-                                className="group-card__open-btn"
-                                onClick={() => navigate(`/groups/${group.id}`)}
-                            >
-                                Open
-                            </button>
+                            {/* If onJoin does NOT exist -> My Groups list */}
+                            {!onJoin && (
+                                <button
+                                    className="group-card__open-btn"
+                                    onClick={() => navigate(`/groups/${group.id}`)}
+                                >
+                                    Open
+                                </button>
+                            )}
+
                         </div>
                     </div>
                 </div>

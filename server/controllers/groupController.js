@@ -93,18 +93,26 @@ export async function addMember(req, res) {
 // POST /api/groups/groups/:id/join-request  | params: { id }, no body
 export async function requestJoin(req, res) {
     try {
-        const joinReq = await groupService.createJoinRequest(
-            req.params.id,
-            req.user.id
-        );
+        const groupId = req.params.id;
+        const userId = req.user.id;
 
-        if (!joinReq)
-            return res
-                .status(409)
-                .json({ error: "Pending request exists or already a member" });
+        const result = await groupService.createJoinRequest(groupId, userId);
 
-        res.status(201).json(joinReq);
+        if (result?.error === "ALREADY_MEMBER") {
+            return res.status(409).json({
+                error: "You are already a member or owner of this group"
+            });
+        }
+
+        if (result?.error === "PENDING_EXISTS") {
+            return res.status(409).json({
+                error: "You have already sent a join request to this group"
+            });
+        }
+
+        res.status(201).json(result);
     } catch (err) {
+        console.error("Failed to create join request", err);
         res.status(500).json({ error: "Failed to create join request" });
     }
 }
@@ -113,12 +121,25 @@ export async function requestJoin(req, res) {
 // GET /api/groups/groups/:id/join-requests  | params: { id }
 export async function getJoinRequests(req, res) {
     try {
+        const group = await groupService.getGroupById(req.params.id);
+
+        if (!group) {
+            return res.status(404).json([]);
+        }
+
         const requests = await groupService.getJoinRequests(req.params.id);
+
+        if (!Array.isArray(requests)) {
+            return res.json([]);
+        }
+
         res.json(requests);
     } catch (err) {
-        res.status(500).json({ error: "Failed to fetch join requests" });
+        console.error("Failed to fetch join requests", err);
+        res.status(500).json([]);
     }
 }
+
 
 // Accept group join request
 // PATCH /api/groups/:id/join-requests/:requestId/accept | params: { id, requestId }
