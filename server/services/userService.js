@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { createUser, getUserByEmail, getUserById, getUserByIdWithPassword_hash, updateUser, updateUserPassword } from '../models/userModel.js'
+import { validatePassword } from './passwordValidator.js'
 
 export const registerUser = async (email, username, password) => {
     const existing = await getUserByEmail(email)
