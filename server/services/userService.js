@@ -27,7 +27,7 @@ export const loginUser = async (email, password) => {
     if (!isMatch) throw new Error('Invalid password')
 
     const token = jwt.sign(
-        { id: user.id, email: user.email },
+        { id: user.id, email: user.email, username: user.username },
         process.env.JWT_SECRET,
         { expiresIn: '7d' }
     )
@@ -50,12 +50,7 @@ export const updateUserProfile = async (id, updates) => {
     return updated
 }
 
-export const validatePassword = (password) => {
-  if (password.length < 8) return false;
-  if (!/[A-Z]/.test(password)) return false;
-  if (!/[0-9]/.test(password)) return false;
-  return true;
-};
+
 
 
 
