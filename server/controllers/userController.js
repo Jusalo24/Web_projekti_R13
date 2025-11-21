@@ -1,4 +1,5 @@
 import { registerUser, loginUser, getUserProfile, updateUserProfile } from '../services/userService.js'
+import { changeUserPassword } from '../services/userService.js'
 
 export const createUser = async (req, res) => {
     try {
@@ -71,4 +72,23 @@ export const updateUser = async (req, res) => {
     } catch (err) {
         res.status(400).json({ error: err.message })
     }
+}
+
+
+
+export const updatePassword = async (req, res) => {
+  try {
+    const userId = req.params.id
+    const { oldPassword, newPassword } = req.body
+
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ error: "Both old and new password are required" })
+    }
+
+    const result = await changeUserPassword(userId, oldPassword, newPassword)
+
+    res.status(200).json({ message: "Password updated successfully" })
+  } catch (err) {
+    res.status(400).json({ error: err.message })
+  }
 }

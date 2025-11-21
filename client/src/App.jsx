@@ -1,12 +1,18 @@
+import React from "react";
 import { Routes, Route } from "react-router-dom"
 import './styles/app.css'
-import Navbar from "./components/Navbar"
+import './styles/Navbar.css'
+import Navbar from "./components/navbar"
 import Home from "./pages/Home"
 import Discover from "./pages/Discover"
 import Groups from "./pages/Groups"
 import Account from "./pages/Account"
 import SearchResult from "./pages/SearchResult"
 import MovieDetail from "./pages/MovieDetail"
+import Login from "./pages/Login"
+import Register from "./pages/Register"
+
+
 
 function App() {
   return (
@@ -19,6 +25,8 @@ function App() {
         <Route path="/account" element={<Account />} />
         <Route path="/SearchResult" element={<SearchResult />} />
         <Route path="/movies/:id" element={<MovieDetail />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
       </Routes>
     </>
   )

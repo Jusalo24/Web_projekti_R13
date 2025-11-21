@@ -1,3 +1,5 @@
+import React from "react";
+
 export default function GetImage({
     path,         // Image path from the API (required)
     title = "Movie image", // Alt text for accessibility

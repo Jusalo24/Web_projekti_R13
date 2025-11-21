@@ -39,3 +39,10 @@ export const updateUser = async (id, fields) => {
     )
     return result.rows[0]
 }
+
+export const updateUserPassword = async (id, passwordHash) => {
+  await pool.query(
+    `UPDATE users SET password_hash = $1 WHERE id = $2`,
+    [passwordHash, id]
+  )
+}
