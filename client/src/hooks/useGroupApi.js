@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import react, { useState, useEffect } from "react";
 
 export function useGroupApi() {
   const [groups, setGroups] = useState([]); // All visible/public groups
@@ -9,7 +9,7 @@ export function useGroupApi() {
   const [notification, setNotification] = useState({ message: null, type: "error" }); // Popup notification state
 
   const baseURL = import.meta.env.VITE_API_BASE_URL; // API base URL
-  const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjExMTExMTExLTExMTEtMTExMS0xMTExLTExMTExMTExMTExMSIsImVtYWlsIjoiYWxpY2VAZXhhbXBsZS5jb20iLCJpYXQiOjE3NjM3MjU5MzUsImV4cCI6MTc2NDMzMDczNX0.0LjQfwPli-iO6zUEn6MDztoNZpkcmd4EmZyDD2eKmVU'; // Temporary JWT for testing
+  const token = localStorage.getItem("token");
 
   const fetchGroups = async () => { // Fetch all public groups
     setLoading(true);

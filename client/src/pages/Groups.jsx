@@ -1,7 +1,7 @@
+import React, { useState } from "react";
 import "../styles/groups.css";
 import { useGroupApi } from "../hooks/useGroupApi";
 import GroupList from "../components/GroupList";
-import { useState } from "react";
 import Notification from "../components/Notification";
 
 export default function Groups() {
