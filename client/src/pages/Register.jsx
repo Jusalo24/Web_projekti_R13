@@ -1,3 +1,4 @@
+import React from "react";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import "../styles/Auth.css";
@@ -38,7 +39,7 @@ export default function Register() {
     }
 
     // SEND DATA TO BACKEND
-    const res = await fetch("/api/users/register", {
+    const res = await fetch("http://localhost:3001/api/users/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, username, password }),
