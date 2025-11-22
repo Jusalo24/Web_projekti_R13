@@ -1,4 +1,4 @@
-import react, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 export function useGroupApi() {
   const [groups, setGroups] = useState([]); // All visible/public groups
@@ -10,26 +10,30 @@ export function useGroupApi() {
   const [ownerId, setOwnerId] = useState(null);    // Logged-in user's ID
   const [ownerName, setOwnerName] = useState(null); // Logged-in user's username
 
-
   const baseURL = import.meta.env.VITE_API_BASE_URL; // API base URL
   const token = localStorage.getItem("token");
 
   useEffect(() => {
     if (token) {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      setOwnerId(payload.id);  // Save logged-in user ID
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        setOwnerId(payload.id);  // Save logged-in user ID
+      } catch (err) {
+        console.error("Invalid token:", err);
+      }
     }
   }, [token]);
 
-  // Call fetchOwnerInfo, when ownerId is known
+  // Call fetchOwnerInfo when ownerId is known
   useEffect(() => {
     if (ownerId) {
       fetchOwnerInfo(ownerId);
     }
   }, [ownerId]);
 
-
   const fetchOwnerInfo = async (id) => {  // Get logged-in user's name
+    if (!token) return;
+    
     try {
       const res = await fetch(`${baseURL}/api/users/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -45,7 +49,6 @@ export function useGroupApi() {
     }
   };
 
-
   const fetchGroups = async () => { // Fetch all public groups
     setLoading(true);
     try {
@@ -54,12 +57,15 @@ export function useGroupApi() {
       setGroups(data);
     } catch (err) {
       console.error("Failed to fetch groups", err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   const fetchGroupById = async (id) => { // Fetch one group by ID
+    if (!token) return null;
+    
     try {
       const res = await fetch(`${baseURL}/api/groups/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -67,10 +73,16 @@ export function useGroupApi() {
       return await res.json();
     } catch (err) {
       console.error("Failed to fetch group", err);
+      return null;
     }
   };
 
   const createGroup = async (name, description) => { // Create a new group
+    if (!token) {
+      showError("You must be logged in to create a group");
+      return null;
+    }
+
     try {
       const res = await fetch(`${baseURL}/api/groups`, {
         method: "POST",
@@ -80,13 +92,29 @@ export function useGroupApi() {
         },
         body: JSON.stringify({ name, description }),
       });
-      return await res.json();
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        showError(data.error || "Failed to create group");
+        return null;
+      }
+      
+      showSuccess("Group created successfully!");
+      return data;
     } catch (err) {
       console.error("Failed to create group", err);
+      showError("Network error");
+      return null;
     }
   };
 
   const joinGroup = async (groupId) => { // Send join request to group
+    if (!token) {
+      showError("You must be logged in to join a group");
+      return null;
+    }
+
     try {
       const res = await fetch(`${baseURL}/api/groups/${groupId}/join-request`, {
         method: "POST",
@@ -110,10 +138,9 @@ export function useGroupApi() {
   };
 
   const fetchMyGroups = async () => { // Fetch groups user belongs to
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1])); // Decode JWT
-      const userId = payload.id;
+    if (!token) return;
 
+    try {
       const res = await fetch(`${baseURL}/api/groups/my`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -122,10 +149,13 @@ export function useGroupApi() {
       setMyGroups(data);
     } catch (err) {
       console.error("Failed to fetch my groups", err);
+      setError(err.message);
     }
   };
 
   const fetchJoinRequests = async () => { // Fetch all pending join requests for owned groups
+    if (!token) return;
+
     try {
       const res = await fetch(`${baseURL}/api/groups`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -133,10 +163,12 @@ export function useGroupApi() {
 
       const allGroups = await res.json();
 
-      const payload = JSON.parse(atob(token.split(".")[1])); // Decode token
-      const userId = payload.id;
+      if (!ownerId) {
+        console.warn("Owner ID not available");
+        return;
+      }
 
-      const ownedGroups = allGroups.filter((g) => g.owner_id === userId); // Only groups user owns
+      const ownedGroups = allGroups.filter((g) => g.owner_id === ownerId); // Only groups user owns
 
       const pending = [];
 
@@ -158,16 +190,18 @@ export function useGroupApi() {
         pending.push(
           ...requests.map((r) => ({ ...r, groupName: group.name })) // Include group name
         );
-
       }
 
       setJoinRequests(pending); // Update state
     } catch (err) {
       console.error("Failed to fetch join requests", err);
+      setError(err.message);
     }
   };
 
   const acceptJoin = async (groupId, requestId) => { // Accept join request
+    if (!token) return null;
+
     try {
       const res = await fetch(
         `${baseURL}/api/groups/${groupId}/join-requests/${requestId}/accept`,
@@ -178,13 +212,18 @@ export function useGroupApi() {
       );
       const data = await res.json();
       await fetchJoinRequests(); // Refresh list
+      showSuccess("Join request accepted!");
       return data;
     } catch (err) {
       console.error("Failed to accept join request", err);
+      showError("Failed to accept request");
+      return null;
     }
   };
 
   const rejectJoin = async (groupId, requestId) => { // Reject join request
+    if (!token) return null;
+
     try {
       const res = await fetch(
         `${baseURL}/api/groups/${groupId}/join-requests/${requestId}/reject`,
@@ -195,27 +234,32 @@ export function useGroupApi() {
       );
       const data = await res.json();
       await fetchJoinRequests(); // Refresh
+      showSuccess("Join request rejected");
       return data;
     } catch (err) {
       console.error("Failed to reject join request", err);
+      showError("Failed to reject request");
+      return null;
     }
   };
 
   const showError = (msg) => { // Show red popup
     setNotification({ message: msg, type: "error" });
-    setTimeout(() => setNotification({ message: null }), 3000);
+    setTimeout(() => setNotification({ message: null, type: "error" }), 3000);
   };
 
   const showSuccess = (msg) => { // Show green popup
     setNotification({ message: msg, type: "success" });
-    setTimeout(() => setNotification({ message: null }), 3000);
+    setTimeout(() => setNotification({ message: null, type: "success" }), 3000);
   };
 
   useEffect(() => {
     fetchGroups(); // Load public groups
-    fetchMyGroups(); // Load user's groups
-    fetchJoinRequests(); // Load join requests
-  }, []);
+    if (token) {
+      fetchMyGroups(); // Load user's groups
+      fetchJoinRequests(); // Load join requests
+    }
+  }, [token]);
 
   return {
     groups, // All public groups

@@ -1,75 +1,81 @@
-import {
+import * as groupModel from "../models/groupModel.js";
+
+// Create a new group
+export async function createGroup(ownerId, { name, description }) {
+    const group = await groupModel.createGroup(ownerId, name, description);
+    
+    // Automatically add owner as member with 'owner' role
+    await groupModel.addMember(group.id, ownerId, 'owner');
+    
+    return group;
+}
+
+// Get single group by ID with members
+export async function getGroupById(groupId) {
+    return await groupModel.getGroupById(groupId);
+}
+
+// Get all visible/public groups
+export async function getGroups() {
+    return await groupModel.getGroups();
+}
+
+// Get groups user belongs to
+export async function getUserGroups(userId) {
+    return await groupModel.getGroupsForUser(userId);
+}
+
+// Update group details
+export async function updateGroup(groupId, { name, description, isVisible }) {
+    return await groupModel.updateGroup(groupId, name, description, isVisible);
+}
+
+// Delete a group
+export async function deleteGroup(groupId) {
+    await groupModel.deleteGroup(groupId);
+}
+
+// Add member to group
+export async function addMember(groupId, userId, role = "member") {
+    return await groupModel.addMember(groupId, userId, role);
+}
+
+// Create join request
+export async function createJoinRequest(groupId, userId) {
+    // Check if user is already a member
+    const isMember = await groupModel.isUserInGroup(userId, groupId);
+    if (isMember) {
+        return { error: "ALREADY_MEMBER" };
+    }
+    
+    return await groupModel.createJoinRequest(groupId, userId);
+}
+
+// Get join requests for a group
+export async function getJoinRequests(groupId) {
+    return await groupModel.getJoinRequests(groupId);
+}
+
+// Accept join request
+export async function acceptJoin(requestId) {
+    return await groupModel.acceptJoinRequest(requestId);
+}
+
+// Reject join request
+export async function rejectJoin(requestId) {
+    return await groupModel.rejectJoinRequest(requestId);
+}
+
+export default {
     createGroup,
     getGroupById,
     getGroups,
+    getUserGroups,
     updateGroup,
     deleteGroup,
     addMember,
     createJoinRequest,
     getJoinRequests,
-    acceptJoinRequest,
-    rejectJoinRequest,
-    getGroupsForUser,
-    isUserInGroup
-} from "../models/groupModel.js";
-
-export default {
-    createGroup: async (ownerId, data) => {
-        return await createGroup(ownerId, data.name, data.description);
-    },
-
-    getGroupById: async (groupId) => {
-        return await getGroupById(groupId);
-    },
-
-    getGroups: async () => {
-        return await getGroups();
-    },
-
-    updateGroup: async (groupId, data) => {
-        return await updateGroup(
-            groupId,
-            data.name,
-            data.description,
-            data.isVisible
-        );
-    },
-
-    deleteGroup: async (groupId) => {
-        return await deleteGroup(groupId);
-    },
-
-    addMember: async (groupId, userId) => {
-        return await addMember(groupId, userId);
-    },
-
-    // Join request logic
-    createJoinRequest: async (groupId, userId) => {
-        const isMember = await isUserInGroup(userId, groupId);
-        if (isMember) return { error: "ALREADY_MEMBER" };
-
-        const result = await createJoinRequest(groupId, userId);
-
-        if (result?.error === "PENDING_EXISTS") {
-            return { error: "PENDING_EXISTS" };
-        }
-
-        return result;
-    },
-
-    getJoinRequests: async (groupId) => {
-        return await getJoinRequests(groupId);
-    },
-
-    acceptJoin: async (requestId) => {
-        return await acceptJoinRequest(requestId);
-    },
-
-    rejectJoin: async (requestId) => {
-        return await rejectJoinRequest(requestId);
-    },
-
-    getUserGroups: async (userId) => {
-        return await getGroupsForUser(userId);
-    }
+    acceptJoin,
+    rejectJoin
 };

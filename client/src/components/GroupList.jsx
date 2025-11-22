@@ -18,7 +18,7 @@ export default function GroupList({ groups, onJoin }) {
 
                     <div className="group-card__footer">
                         <span className="group-card__owner">
-                            Owner: {group.owner_name === ownerName ? "You" : group.owner_name}
+                            Owner: {group.owner_name === ownerName ? "You" : (group.owner_name || "Unknown")}
                         </span>
 
                         <div className="group-card__buttons">

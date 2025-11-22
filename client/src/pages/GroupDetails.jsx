@@ -34,12 +34,12 @@ export default function GroupDetails() {
                         <strong>Owner:</strong>{" "}
                         {group.owner_id === ownerId
                             ? "You"
-                            : group.owner_name || group.owner_id}
+                            : group.owner_name || "Unknown"}
                     </p>
 
                     <p>
                         <strong>Created:</strong>{" "}
-                        {new Date(group.created_at).toLocaleString().slice(0, 10)}
+                        {new Date(group.created_at).toLocaleDateString()}
                     </p>
                 </div>
             </section>
@@ -53,7 +53,7 @@ export default function GroupDetails() {
                                 <div className="member-info">
                                     <span className="member-name">
                                         {m.username || m.id}
-                                        {m.id === ownerId ? " (You)" : ""}
+                                        {m.user_id === ownerId ? " (You)" : ""}
                                     </span>
                                     <span className="member-role">{m.role}</span>
                                 </div>
