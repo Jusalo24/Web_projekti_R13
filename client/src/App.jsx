@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom"
 import './styles/app.css'
 import './styles/Navbar.css'
 import Navbar from "./components/navbar"
+import ErrorBoundary from "./components/ErrorBoundary";
 import Home from "./pages/Home"
 import Discover from "./pages/Discover"
 import Groups from "./pages/Groups"
@@ -17,9 +18,10 @@ import GroupDetails from "./pages/GroupDetails"
 
 function App() {
   return (
-    <>
+    <ErrorBoundary>
       <Navbar />
-      <Routes>
+      <ErrorBoundary>
+        <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/discover" element={<Discover />} />
         <Route path="/groups" element={<Groups />} />
@@ -30,7 +32,8 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/groupDetails/:id" element={<GroupDetails />} />
       </Routes>
-    </>
+      </ErrorBoundary>
+    </ErrorBoundary>
   )
 }
 

@@ -1,5 +1,17 @@
 import React, { useState, useEffect } from "react";
 
+// Error message mapping for user-friendly display
+const ERROR_MESSAGES = {
+  ALREADY_MEMBER: "You're already a member of this group",
+  PENDING_EXISTS: "You already have a pending join request for this group",
+  NETWORK_ERROR: "Network error. Please check your connection and try again.",
+  UNAUTHORIZED: "You must be logged in to perform this action",
+  FORBIDDEN: "You don't have permission to perform this action",
+  NOT_FOUND: "Group not found",
+  SERVER_ERROR: "Server error. Please try again later.",
+  TIMEOUT: "Request timed out. Please check your connection."
+};
+
 export function useGroupApi() {
   const [groups, setGroups] = useState([]); // All visible/public groups
   const [myGroups, setMyGroups] = useState([]); // Groups where the user is member/owner
@@ -12,6 +24,19 @@ export function useGroupApi() {
 
   const baseURL = import.meta.env.VITE_API_BASE_URL; // API base URL
   const token = localStorage.getItem("token");
+
+  // Helper function to handle API errors
+  const handleApiError = (error, defaultMessage) => {
+    if (!navigator.onLine) {
+      return ERROR_MESSAGES.NETWORK_ERROR;
+    }
+    
+    if (error?.error && ERROR_MESSAGES[error.error]) {
+      return ERROR_MESSAGES[error.error];
+    }
+    
+    return error?.error || error?.message || defaultMessage;
+  };
 
   useEffect(() => {
     if (token) {
@@ -51,13 +76,21 @@ export function useGroupApi() {
 
   const fetchGroups = async () => { // Fetch all public groups
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch(`${baseURL}/api/groups`);
+      
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
       const data = await res.json();
       setGroups(data);
     } catch (err) {
       console.error("Failed to fetch groups", err);
-      setError(err.message);
+      const errorMsg = handleApiError(err, "Failed to load groups. Please try again.");
+      setError(errorMsg);
+      showError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -145,11 +178,17 @@ export function useGroupApi() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
       const data = await res.json();
       setMyGroups(data);
     } catch (err) {
       console.error("Failed to fetch my groups", err);
-      setError(err.message);
+      const errorMsg = handleApiError(err, "Failed to load your groups.");
+      setError(errorMsg);
+      showError(errorMsg);
     }
   };
 
@@ -160,6 +199,10 @@ export function useGroupApi() {
       const res = await fetch(`${baseURL}/api/groups`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
 
       const allGroups = await res.json();
 
@@ -180,6 +223,11 @@ export function useGroupApi() {
           }
         );
 
+        if (!jrRes.ok) {
+          console.warn(`Failed to fetch requests for group ${group.id}`);
+          continue;
+        }
+
         const requests = await jrRes.json();
 
         if (!Array.isArray(requests)) { // Skip invalid response
@@ -195,7 +243,8 @@ export function useGroupApi() {
       setJoinRequests(pending); // Update state
     } catch (err) {
       console.error("Failed to fetch join requests", err);
-      setError(err.message);
+      const errorMsg = handleApiError(err, "Failed to load join requests.");
+      setError(errorMsg);
     }
   };
 
