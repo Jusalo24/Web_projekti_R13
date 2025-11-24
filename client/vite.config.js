@@ -1,19 +1,19 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-console.log("Vite config LOADED");
+// Use an environment override when running inside Docker compose
+// Default to localhost for local development.
+const proxyTarget = process.env.VITE_DEV_PROXY_TARGET || 'http://localhost:3001'
 
-
-// https://vite.dev/config/
-
-export default {
+export default defineConfig({
+  plugins: [react()],
   server: {
     proxy: {
-      "/api": {
-        target: "http://server:3001",
+      '/api': {
+        target: proxyTarget,
         changeOrigin: true,
-        secure: false
-      }
-    }
-  }
-}
+        secure: false,
+      },
+    },
+  },
+})
