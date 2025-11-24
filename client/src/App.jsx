@@ -1,3 +1,4 @@
+import React from "react";
 import { Routes, Route } from "react-router-dom"
 import './styles/app.css'
 import './styles/Navbar.css'
@@ -10,7 +11,7 @@ import SearchResult from "./pages/SearchResult"
 import MovieDetail from "./pages/MovieDetail"
 import Login from "./pages/Login"
 import Register from "./pages/Register"
-import GroupsDetails from "./pages/GroupDetails"
+import GroupDetails from "./pages/GroupDetails"
 
 
 
@@ -27,7 +28,7 @@ function App() {
         <Route path="/movies/:id" element={<MovieDetail />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/groupDetails" element={<GroupsDetails />} />
+        <Route path="/groupDetails/:id" element={<GroupDetails />} />
       </Routes>
     </>
   )

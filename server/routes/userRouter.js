@@ -11,6 +11,15 @@ userRouter.post('/users/register', createUser)
 // User login
 userRouter.post('/users/login', userLogin)
 
+// Get current logged-in user
+userRouter.get('/users/me', auth, (req, res) => {
+    res.json({
+        id: req.user.id,
+        email: req.user.email,
+        username: req.user.username
+    });
+});
+
 // Get user information by ID
 userRouter.get('/users/:id', auth, getUserById)
 

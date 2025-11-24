@@ -41,37 +41,45 @@ export default function Register() {
     }
 
     try {
-      // SEND DATA TO BACKEND
       const res = await fetch(`${baseURL}/api/users/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, username, password }),
       });
 
-      const data = await res.json();
-
       if (!res.ok) {
-        setErrorMessage(data.error || "Registration failed.");
+        let msg = "Registration failed.";
+        try {
+          const data = await res.json();
+          msg = data?.error || msg;
+        } catch (_) {
+          // ignore JSON parsing errors and fall back to default message
+        }
+        setErrorMessage(msg);
         return;
       }
 
       // Try auto-login to avoid forcing user back through the form
-      const loginRes = await fetch(`${baseURL}/api/users/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const loginData = await loginRes.json();
+      try {
+        const loginRes = await fetch(`${baseURL}/api/users/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+        const loginData = await loginRes.json();
 
-      if (loginRes.ok && loginData.user && loginData.token) {
-        login(loginData.user, loginData.token);
-        navigate("/account");
-        return;
+        if (loginRes.ok && loginData.user && loginData.token) {
+          login(loginData.user, loginData.token);
+          navigate("/account");
+          return;
+        }
+      } catch (autoLoginErr) {
+        console.warn("Auto-login failed:", autoLoginErr);
       }
 
       // Fallback: redirect to login if auto-login fails
-      setSuccessMessage("Account created successfully! Redirecting to login...");
-      setTimeout(() => navigate("/login"), 1500);
+      setSuccessMessage("Account created! Please login.");
+      setTimeout(() => navigate("/login"), 1200);
     } catch (err) {
       console.error("Registration error:", err);
       setErrorMessage("Registration failed.");
@@ -84,16 +92,28 @@ export default function Register() {
 
       <form className="auth-form" onSubmit={handleRegister}>
         <label>Email</label>
-        <input type="email" placeholder="Enter email..." value={email}
-         onChange={(e) => setEmail(e.target.value)}/>
+        <input
+          type="email"
+          placeholder="Enter email..."
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
         <label>Username</label>
-        <input type="text" placeholder="Choose username..." value={username}
-          onChange={(e) => setUsername(e.target.value)}/>
+        <input
+          type="text"
+          placeholder="Choose username..."
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
 
         <label>Password</label>
-        <input type="password" placeholder="Create password..." value={password}
-          onChange={(e) => setPassword(e.target.value)}/>
+        <input
+          type="password"
+          placeholder="Create password..."
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
         {/* Show error message */}
         {errorMessage && <p className="auth-error">{errorMessage}</p>}
@@ -107,7 +127,7 @@ export default function Register() {
       </form>
 
       <p>
-        Already have an account?{" "}
+        Already have an account? {" "}
         <Link to="/login">Login here</Link>
       </p>
     </div>

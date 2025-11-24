@@ -25,27 +25,58 @@ export async function isUserInGroup(userId, groupId) {
     return result.rowCount > 0;
 }
 
-// Get a single group by ID
-// SQL: SELECT * FROM groups WHERE id=$1 | params: groupId
+// Get a single group by ID including its members
+// SQL: SELECT group info + separate query for members
 export async function getGroupById(groupId) {
-    const result = await db.query(
-        `SELECT * FROM groups WHERE id = $1`,
-        [groupId]
-    );
-    return result.rows[0];
+    // Fetch group base data + owner name
+    const groupResult = await db.query(`
+        SELECT 
+            g.*,
+            u.username AS owner_name
+        FROM groups g
+        LEFT JOIN users u ON g.owner_id = u.id
+        WHERE g.id = $1
+    `, [groupId]);
+
+    const group = groupResult.rows[0];
+
+    if (!group) return null;
+
+    // Fetch group members & their usernames
+    const membersResult = await db.query(`
+        SELECT 
+            gm.user_id,
+            gm.role,
+            u.username
+        FROM group_members gm
+        LEFT JOIN users u ON gm.user_id = u.id
+        WHERE gm.group_id = $1
+        ORDER BY 
+            CASE 
+                WHEN gm.role = 'owner' THEN 1
+                WHEN gm.role = 'admin' THEN 2
+                ELSE 3
+            END, 
+            u.username ASC
+    `, [groupId]);
+
+    // Add members array to group object
+    group.members = membersResult.rows;
+
+    return group;
 }
 
 // Get groups the user is a member/owner of
 export async function getGroupsForUser(userId) {
-    const result = await db.query(
-        `
-        SELECT g.*, gm.role
+    const result = await db.query(`
+        SELECT 
+            g.*,
+            u.username AS owner_name
         FROM group_members gm
-        JOIN groups g ON g.id = gm.group_id
+        JOIN groups g ON gm.group_id = g.id
+        LEFT JOIN users u ON g.owner_id = u.id
         WHERE gm.user_id = $1
-        ORDER BY g.created_at DESC
-        `,
-        [userId]
+    `, [userId]
     );
     return result.rows;
 }
@@ -53,9 +84,14 @@ export async function getGroupsForUser(userId) {
 // Get all visible groups
 // SQL: SELECT * FROM groups WHERE is_visible=true | no params
 export async function getGroups() {
-    const result = await db.query(
-        `SELECT * FROM groups WHERE is_visible = true`
-    );
+    const result = await db.query(`
+        SELECT 
+            g.*,
+            u.username AS owner_name
+        FROM groups g
+        LEFT JOIN users u ON g.owner_id = u.id
+        ORDER BY g.created_at DESC
+    `);
     return result.rows;
 }
 

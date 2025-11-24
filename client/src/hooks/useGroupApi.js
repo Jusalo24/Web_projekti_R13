@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import react, { useState, useEffect } from "react";
 
 export function useGroupApi() {
   const [groups, setGroups] = useState([]); // All visible/public groups
@@ -7,9 +7,44 @@ export function useGroupApi() {
   const [loading, setLoading] = useState(false); // Loading state for API calls
   const [error, setError] = useState(null); // Error message (optional)
   const [notification, setNotification] = useState({ message: null, type: "error" }); // Popup notification state
+  const [ownerId, setOwnerId] = useState(null);    // Logged-in user's ID
+  const [ownerName, setOwnerName] = useState(null); // Logged-in user's username
+
 
   const baseURL = import.meta.env.VITE_API_BASE_URL; // API base URL
-  const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjExMTExMTExLTExMTEtMTExMS0xMTExLTExMTExMTExMTExMSIsImVtYWlsIjoiYWxpY2VAZXhhbXBsZS5jb20iLCJpYXQiOjE3NjM3MjU5MzUsImV4cCI6MTc2NDMzMDczNX0.0LjQfwPli-iO6zUEn6MDztoNZpkcmd4EmZyDD2eKmVU'; // Temporary JWT for testing
+  const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    if (token) {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      setOwnerId(payload.id);  // Save logged-in user ID
+    }
+  }, [token]);
+
+  // Call fetchOwnerInfo, when ownerId is known
+  useEffect(() => {
+    if (ownerId) {
+      fetchOwnerInfo(ownerId);
+    }
+  }, [ownerId]);
+
+
+  const fetchOwnerInfo = async (id) => {  // Get logged-in user's name
+    try {
+      const res = await fetch(`${baseURL}/api/users/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setOwnerName(data.username);  // Save username
+      }
+    } catch (err) {
+      console.error("Failed to fetch owner info", err);
+    }
+  };
+
 
   const fetchGroups = async () => { // Fetch all public groups
     setLoading(true);
@@ -189,6 +224,11 @@ export function useGroupApi() {
     loading, // Loading state
     error, // Error state
     notification, // Popup message
+    ownerId, // Logged-in user's ID
+    ownerName, // Logged-in user's username
+    fetchGroups, // Refresh public groups
+    fetchMyGroups, // Refresh user's groups
+    fetchJoinRequests, // Refresh join requests
     createGroup, // Create new group
     joinGroup, // Send join request
     acceptJoin, // Accept request

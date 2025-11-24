@@ -1,3 +1,4 @@
+import React from "react";
 import { useEffect, useState } from "react";
 import "../styles/Account.css";
 
@@ -13,30 +14,60 @@ export default function Account() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
 
+const authHeaders = {
+  "Content-Type": "application/json",
+  Authorization: `Bearer ${localStorage.getItem("token")}`,
+};
 
   useEffect(() => {
-    const token = localStorage.getItem("token")
+    const token = localStorage.getItem("token");
+    if (!token) return;
 
     const fetchProfile = async () => {
-      const res = await fetch("/api/users/me", {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      const data = await res.json()
-      setProfile(data)
-    }
+      try {
+        const res = await fetch(`${API}/api/users/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          setProfile(data);
+        } else {
+          console.error("Profile fetch error:", data);
+        }
+      } catch (err) {
+        console.error("Profile error:", err);
+      }
+    };
 
     const fetchFavorites = async () => {
-      const res = await fetch("/api/favorites", {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      const data = await res.json()
-      setFavorites(data)
-    }
+      try {
+        const res = await fetch(`${API}/api/favorites`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
 
-    fetchProfile()
-    fetchFavorites()
-  }, [])
+        const data = await res.json();
+        if (res.ok) {
+          setFavorites(data);
+        } else {
+          setFavorites([]);
+        }
+      } catch (err) {
+        console.error("Favorites error:", err);
+      }
+    };
+
+    fetchProfile();
+    fetchFavorites();
+  }, []);
+
+
 
   useEffect(() => {
     const handleEsc = (event) => {
