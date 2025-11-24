@@ -1,7 +1,7 @@
+import React, { useEffect, useState } from "react";
 import "../styles/groups.css";
 import { useGroupApi } from "../hooks/useGroupApi";
 import GroupList from "../components/GroupList";
-import { useState } from "react";
 import Notification from "../components/Notification";
 
 export default function Groups() {
@@ -16,16 +16,36 @@ export default function Groups() {
     rejectJoin,            // Reject a join request
     error,                 // Error state (optional)
     notification,          // Notification popup message
-    setNotification        // Setter for notification
+    setNotification,       // Setter for notification
+    fetchGroups,           // Refresh public groups
+    fetchMyGroups,         // Refresh user's groups
+    fetchJoinRequests      // Refresh join requests  
   } = useGroupApi();
 
   const [form, setForm] = useState({ name: "", description: "" }); // Create-group form state
 
   const handleCreate = async (e) => { // Submit new group creation
     e.preventDefault();
-    await createGroup(form.name, form.description);
+    const result = await createGroup(form.name, form.description);
+    if (result?.error) {
+      setNotification({ message: result.error, type: "error" });
+      return;
+    } else {
+      setNotification({ message: "Group created successfully!", type: "success" });
+    }
     setForm({ name: "", description: "" });
+
+    fetchGroups();
+    fetchMyGroups();
+    fetchJoinRequests();
   };
+
+  useEffect(() => {
+    fetchGroups();
+    fetchMyGroups();
+    fetchJoinRequests();
+  }, []);
+
 
   return (
     <main className="groups">

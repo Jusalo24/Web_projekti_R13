@@ -1,3 +1,4 @@
+import React from "react";
 import "../styles/notification.css";
 
 export default function Notification({ message, type = "error", onClose }) {
