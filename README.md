@@ -15,7 +15,7 @@ A full-stack movie web application built with React, Node.js/Express, PostgreSQL
 - [Database Schema](#database-schema)
 - [API Documentation](#api-documentation)
 - [Project Structure](#project-structure)
-- [Additional Resources](#additional-resources)
+- [Development Status](#development-status)
 
 ---
 
@@ -40,14 +40,36 @@ A full-stack movie web application built with React, Node.js/Express, PostgreSQL
 ### 👥 User Management & Authentication
 - User registration and login with JWT authentication
 - Secure password hashing with bcryptjs
+- Password strength validation (8+ characters, uppercase, number required)
 - Protected routes requiring authentication
 - User profile management
+- Password change functionality
 - Token-based session management
 
-### ⭐ Favorite Lists (In Development)
+### 👫 Groups Feature
+- **Create and manage movie groups** - Users can create groups with names and descriptions
+- **Public and private groups** - Control group visibility settings
+- **Group membership system** with roles:
+  - **Owner** - Full control over the group
+  - **Admin** - Can manage members
+  - **Member** - Can view and add movies
+- **Join request system** - Users request to join, owners approve/reject
+- **Group movie collections** - Add movies/TV shows to group libraries
+- **Group details page** - View members, roles, and shared movie collections
+
+### ⭐ Favorite Lists
 - Create and manage personal favorite movie lists
 - Add movies to custom lists
-- List sharing functionality (backend ready)
+- List sharing functionality (backend infrastructure ready)
+- Organize your movie collection
+
+### 🎭 Reviews System
+- Rate movies on a 1-5 star scale
+- Write detailed text reviews
+- View reviews by movie or user
+- Calculate average ratings
+- Update and delete your own reviews
+- Full CRUD operations via protected API endpoints
 
 ### 🔍 Advanced Search
 - Multi-search functionality (movies, TV shows, and people)
@@ -57,33 +79,36 @@ A full-stack movie web application built with React, Node.js/Express, PostgreSQL
 - Smart dropdown with thumbnails and metadata
 
 ### 🌐 Responsive Design
-- Modern, dark-themed UI
+- Modern, dark-themed UI with gradient accents
 - Horizontal scrolling movie grids on main pages
 - Grid layouts for search and discovery pages
 - Mobile-friendly navigation
 - Smooth animations and transitions
+- CSS custom properties for consistent theming
 
 ---
 
 ## Technology Stack
 
 ### Frontend
-- **React 19** - UI framework
-- **Vite 7** - Build tool and dev server
-- **React Router 7** - Client-side routing
-- **Axios** - HTTP client (via custom hooks)
-- **CSS Variables** - Consistent theming
+- **React 19.1.1** - UI framework with latest features
+- **Vite 7.2.2** - Lightning-fast build tool and dev server
+- **React Router 7.9.5** - Client-side routing with data loading
+- **Axios 1.13.2** - HTTP client for API requests
+- **CSS Variables** - Consistent theming and dark mode
 
 ### Backend
-- **Node.js 22** - Runtime environment
-- **Express 5** - Web framework
-- **PostgreSQL 16** - Database
-- **JWT** - Authentication
-- **bcryptjs** - Password hashing
+- **Node.js 22** - Runtime environment (Alpine-based Docker image)
+- **Express 5.1.0** - Modern web framework
+- **PostgreSQL 16** - Relational database with UUID support
+- **JWT (jsonwebtoken 9.0.2)** - Secure authentication
+- **bcryptjs 3.0.3** - Password hashing
+- **Axios 1.13.2** - TMDB API integration
 
 ### DevOps
-- **Docker & Docker Compose** - Containerization
-- **Nodemon** - Development auto-reload
+- **Docker & Docker Compose** - Complete containerization
+- **Nodemon 3.1.10** - Development auto-reload
+- **Multi-stage Docker setup** - Optimized for development
 
 ---
 
@@ -126,7 +151,11 @@ cd Web_projekti_R13
 Create a `.env` file in the project root directory:
 
 ```powershell
+# For Windows PowerShell
 New-Item -Path ".env" -ItemType File
+
+# For macOS/Linux
+touch .env
 ```
 
 Add the following content to `.env`:
@@ -154,7 +183,7 @@ VITE_API_BASE_URL=http://localhost:3001
 
 **Important:** 
 - Replace `your_tmdb_api_key_here` with your actual TMDB API key
-- Replace `your_secure_random_string_here` with a strong random string for JWT
+- Replace `your_secure_random_string_here` with a strong random string for JWT (e.g., generate with `openssl rand -base64 32`)
 
 ### 3. Start Docker Desktop
 
@@ -166,7 +195,7 @@ Ensure Docker Desktop is running before proceeding.
 
 ### Start All Services
 
-From the project root directory in PowerShell:
+From the project root directory:
 
 ```powershell
 # Build and start all services (database, server, client)
@@ -180,17 +209,31 @@ This command will:
 4. Initialize the database with the schema from `init_moviedb.sql`
 5. Start all services with networking configured
 
+**First-time setup takes 2-5 minutes.** Subsequent starts are much faster.
+
 ### Access the Application
 
 Once all containers are running:
 
 - **Frontend (React):** http://localhost:5173
 - **Backend API (Express):** http://localhost:3001
+- **Health Check:** http://localhost:3001/health
 - **PostgreSQL Database:** localhost:5432
 
-### Verify Database Initialization
+### Verify Services
 
-The database schema is automatically initialized from `init_moviedb.sql` on first startup. To verify:
+Check running containers:
+
+```powershell
+docker ps
+```
+
+You should see three containers:
+- `web_projekti_r13-client-1` (React frontend)
+- `web_projekti_r13-server-1` (Express backend)
+- `web_projekti_r13-db-1` (PostgreSQL database)
+
+### Verify Database Initialization
 
 ```powershell
 # Connect to the database
@@ -199,20 +242,12 @@ docker-compose exec db psql -U postgres -d moviedb
 # Inside psql, list all tables
 \dt
 
+# You should see: users, groups, group_members, group_join_requests, 
+# group_movies, reviews, favorite_lists, favorite_list_items, favorite_list_shares
+
 # Exit psql
 \q
 ```
-
-You should see tables like `users`, `groups`, `reviews`, `favorite_lists`, etc.
-
-Three containers should be running. To verify:
-
-```powershell
-# Lists running containers on your system.
-docker ps
-```
-
-You should see containers with names like `web_projekti_r13-client-1`, `web_projekti_r13-server-1` and `web_projekti_r13-db-1`.
 
 ### Stop the Application
 
@@ -234,21 +269,50 @@ docker-compose down -v
 
 <img width="855" height="771" alt="ER Diagram" src="https://github.com/user-attachments/assets/ae9d8636-b424-4235-95f0-07a0e5bb5268" />
 
-**Wireframe:**
-
-<img width="478" height="761" alt="Wireframe" src="https://github.com/user-attachments/assets/8c255e9a-42ca-4582-bf83-00d2f8deba88" />
-
 ### Core Tables
 
+#### Users & Authentication
 - **users** - User accounts with email, username, and password hash
+  - UUID primary key
+  - Unique constraints on email and username
+  - Case-insensitive indexes for lookups
+
+#### Groups & Membership
 - **groups** - Movie groups with visibility settings
+  - Owner reference, name, description
+  - `is_visible` flag for public/private groups
+  - Automatic owner addition via trigger
+
 - **group_members** - Membership with roles (owner, admin, member)
+  - Composite primary key (group_id, user_id)
+  - Role enum for access control
+
 - **group_join_requests** - Pending join requests with status
+  - Status enum: pending, accepted, rejected
+  - Unique constraint on pending requests
+
 - **group_movies** - Movies associated with groups (stores TMDB IDs)
+  - Supports both movies and TV shows via `media_type`
+  - Tracks who added each item
+
+#### Reviews & Ratings
 - **reviews** - User movie reviews with 1-5 star ratings
+  - Unique constraint: one review per user per movie
+  - Text reviews optional, rating required
+  - Indexed by movie ID for fast lookups
+
+#### Favorite Lists
 - **favorite_lists** - User-created movie lists
+  - Title and description
+  - Unique per user (user_id, title)
+
 - **favorite_list_items** - Movies in lists with positioning
+  - Position field for custom ordering
+  - Unique constraint prevents duplicates
+
 - **favorite_list_shares** - Shareable links with expiration
+  - Share tokens for public access
+  - Expiration and active status tracking
 
 ### Key Features
 
@@ -256,8 +320,10 @@ docker-compose down -v
 - ✅ Cascading deletes for data integrity
 - ✅ Performance-optimized indexes
 - ✅ Enum types for roles and statuses
-- ✅ Timestamp tracking
+- ✅ Timestamp tracking (created_at, joined_at)
 - ✅ Unique constraints to prevent duplicates
+- ✅ Automatic owner membership via database trigger
+- ✅ Case-insensitive email/username lookups
 
 ---
 
@@ -273,47 +339,76 @@ http://localhost:3001/api
 #### User Management
 - `POST /api/users/register` - Register new user
   - Body: `{ email, username, password }`
-  - Returns: User object
+  - Password requirements: 8+ chars, 1 uppercase, 1 number
+  - Returns: User object (without password)
+
 - `POST /api/users/login` - User login
   - Body: `{ email, password }`
-  - Returns: `{ user, token }`
+  - Returns: `{ user, token }` (JWT token for authorization)
+
+- `GET /api/users/me` - Get current logged-in user (protected)
+  - Headers: `Authorization: Bearer <token>`
+  - Returns: Current user profile
+
 - `GET /api/users/:id` - Get user profile (protected)
   - Headers: `Authorization: Bearer <token>`
-  - Returns: User profile
+  - Returns: User profile data
+
 - `PUT /api/users/:id` - Update user profile (protected)
   - Headers: `Authorization: Bearer <token>`
-  - Body: Fields to update
+  - Body: Fields to update (email, username)
   - Returns: Updated user
+
+- `PUT /api/users/:id/password` - Change password (protected)
+  - Headers: `Authorization: Bearer <token>`
+  - Body: `{ oldPassword, newPassword }`
+  - Returns: Success message
 
 ### Movie Endpoints
 
 #### Movie Discovery & Search
-- `GET /api/movies/byId/:id` - Get movie details by ID
+- `GET /api/movies/byId/:id` - Get movie details by TMDB ID
+
 - `GET /api/movies/:searchType` - Get movies by category
   - Valid types: `popular`, `now_playing`, `top_rated`, `upcoming`
   - Query params: `page`, `region` (e.g., `?region=FI`)
+
 - `GET /api/movies/search?q=query&page=1` - Search movies
+
 - `GET /api/movies/discover` - Discover movies with filters
   - Query params: `with_genres`, `sort_by`, `page`, `year`, `with_cast`, `with_crew`, `vote_average_gte`, `vote_average_lte`
+
 - `GET /api/movies/:id/credits` - Get movie cast and crew
+
 - `GET /api/movies/:id/videos` - Get movie trailers and videos
+
 - `GET /api/movies/:id/similar?page=1` - Get similar movies
+
 - `GET /api/movies/:id/recommendations?page=1` - Get movie recommendations
+
 - `GET /api/movies/genres` - Get all movie genres
 
 ### TV Show Endpoints
 
 #### TV Discovery & Search
-- `GET /api/tv/:id` - Get TV show details by ID
+- `GET /api/tv/:id` - Get TV show details by TMDB ID
+
 - `GET /api/tv/list/:searchType` - Get TV shows by category
   - Valid types: `popular`, `top_rated`, `on_the_air`, `airing_today`
+
 - `GET /api/tv/search?q=query&page=1` - Search TV shows
+
 - `GET /api/tv/discover` - Discover TV shows with filters
   - Query params: `with_genres`, `sort_by`, `page`, `year`, `vote_average_gte`, `vote_average_lte`, `with_networks`
+
 - `GET /api/tv/:id/season/:season_number` - Get TV season details
+
 - `GET /api/tv/:id/credits` - Get TV show cast and crew
+
 - `GET /api/tv/:id/videos` - Get TV show trailers
+
 - `GET /api/tv/:id/similar?page=1` - Get similar TV shows
+
 - `GET /api/tv/:id/recommendations?page=1` - Get TV show recommendations
 
 ### Genre Endpoints
@@ -332,31 +427,91 @@ http://localhost:3001/api
   - time_window: `day`, `week`
 
 ### Review Endpoints
-- `GET /api/reviews/movie/:movieId` - Get reviews for a movie (public)
+
+**Public Endpoints:**
+- `GET /api/reviews/movie/:movieId` - Get reviews for a movie
   - Query params: `page`, `limit`
-- `GET /api/reviews/movie/:movieId/average` - Get average rating (public)
-- `GET /api/reviews/user/:userId` - Get user's reviews (public)
+
+- `GET /api/reviews/movie/:movieId/average` - Get average rating
+
+- `GET /api/reviews/user/:userId` - Get user's reviews
   - Query params: `page`, `limit`
+
+**Protected Endpoints:**
 - `POST /api/reviews` - Create review (protected)
   - Headers: `Authorization: Bearer <token>`
   - Body: `{ user_id, movie_external_id, rating, review_text }`
+
 - `PUT /api/reviews/:id` - Update review (protected)
   - Headers: `Authorization: Bearer <token>`
   - Body: `{ rating, review_text }`
+
 - `DELETE /api/reviews/:id` - Delete review (protected)
+  - Headers: `Authorization: Bearer <token>`
+
+### Group Endpoints (Protected)
+
+**Group Management:**
+- `GET /api/groups` - Get all public groups
+
+- `GET /api/groups/my` - Get user's groups (member or owner)
+  - Headers: `Authorization: Bearer <token>`
+
+- `GET /api/groups/:id` - Get single group details
+  - Headers: `Authorization: Bearer <token>`
+  - Returns: Group with members array
+
+- `POST /api/groups` - Create new group
+  - Headers: `Authorization: Bearer <token>`
+  - Body: `{ name, description }`
+
+- `PUT /api/groups/:id` - Update group (owner only)
+  - Headers: `Authorization: Bearer <token>`
+  - Body: `{ name?, description?, isVisible? }`
+
+- `DELETE /api/groups/:id` - Delete group (owner only)
+  - Headers: `Authorization: Bearer <token>`
+
+**Join Request System:**
+- `POST /api/groups/:id/join-request` - Send join request
+  - Headers: `Authorization: Bearer <token>`
+
+- `GET /api/groups/:id/join-requests` - Get pending requests (owner only)
+  - Headers: `Authorization: Bearer <token>`
+
+- `PATCH /api/groups/:id/join-requests/:requestId/accept` - Accept request (owner only)
+  - Headers: `Authorization: Bearer <token>`
+
+- `PATCH /api/groups/:id/join-requests/:requestId/reject` - Reject request (owner only)
+  - Headers: `Authorization: Bearer <token>`
+
+**Group Movies:**
+- `POST /api/groups/:id/movies` - Add movie to group (members only)
+  - Headers: `Authorization: Bearer <token>`
+  - Query params: `movieId`, `mediaType`
+
+- `DELETE /api/groups/:id/movies` - Remove movie from group (members only)
+  - Headers: `Authorization: Bearer <token>`
+  - Query params: `movieId`, `mediaType`
+
+- `GET /api/groups/:id/movies` - List group movies (members only)
   - Headers: `Authorization: Bearer <token>`
 
 ### Favorite List Endpoints (Protected)
 - `POST /api/favorite-lists` - Create favorite list
   - Headers: `Authorization: Bearer <token>`
   - Body: `{ title, description }`
+
 - `GET /api/favorite-lists` - Get user's lists
   - Headers: `Authorization: Bearer <token>`
+
 - `GET /api/favorite-lists/:listId/items` - Get items in list
   - Headers: `Authorization: Bearer <token>`
+
 - `POST /api/favorite-lists/:listId/items` - Add movie to list
   - Headers: `Authorization: Bearer <token>`
   - Body: `{ movieId, position }`
+
 - `DELETE /api/favorite-lists/items/:itemId` - Remove movie from list
   - Headers: `Authorization: Bearer <token>`
 
@@ -371,7 +526,7 @@ Web_projekti_R13/
 │   │   ├── assets/
 │   │   │   └── favicon.ico
 │   │   ├── components/               # Reusable UI components
-│   │   │   ├── GetCast.jsx           # Cast member search component with debounce.       Props: onSelect (callback), disabled (boolean)
+│   │   │   ├── GetCast.jsx           # Cast search with debounce                         Props: onSelect (callback), disabled (boolean)
 │   │   │   ├── GetGenre.jsx          # Genre dropdown component.                         Props: onSelect (callback), selectedGenre (id), mediaType ('movie'|'tv')
 │   │   │   ├── GetImage.jsx          # TMDB image component with configurable size.      Props: path (string), title (string), size (string), style (object), onClick (function)
 │   │   │   ├── GetMoviesSeries.jsx   # Grid/list component for movies/TV shows.     (1/2)Props: type (string), page (number), pages (number),
@@ -390,17 +545,8 @@ Web_projekti_R13/
 │   │   │   ├── Register.jsx          # User registration page
 │   │   │   └── SearchResult.jsx      # Search results page                                                                                              Query param: search (string)
 │   │   ├── styles/                   # CSS stylesheets
-│   │   │   ├── Account.css           # Account page styles
-│   │   │   ├── App.css               # Global styles and CSS variables
-│   │   │   ├── Auth.css              # Login/Register page styles
-│   │   │   ├── discover.css          # Discover page and filter styles
-│   │   │   ├── home.css              # Home page styles
-│   │   │   ├── movie-detail.css      # Movie detail page styles
-│   │   │   ├── Navbar.css            # Navigation bar styles
-│   │   │   ├── search-result.css     # Search results page styles
-│   │   │   └── index.css             # Base CSS imports
-│   │   ├── App.jsx                   # Main app component with routes
-│   │   └── main.jsx                  # Entry point with BrowserRouter
+│   │   ├── App.jsx                   # Main app with routes
+│   │   └── main.jsx                  # Entry point
 │   ├── Dockerfile
 │   ├── package.json
 │   └── vite.config.js
@@ -439,13 +585,45 @@ Web_projekti_R13/
 │   ├── Dockerfile
 │   ├── index.js                      # Server entry point                      Configures Express, CORS, routes, error handling
 │   └── package.json
-├── init_moviedb.sql                  # Database schema initialization
-├── docker-compose.yml                # Multi-container configuration
-├── .env                              # Environment variables (not in git)
+├── init_moviedb.sql                  # Database schema
+├── docker-compose.yml                # Container orchestration
+├── .env                              # Environment variables
 ├── .env.example                      # Environment template
-├── README.md                         # This file
-└── DEBUGGING.md                      # Troubleshooting guide
+└── README.md                         # This file
 ```
+
+---
+
+## Development Status
+
+### ✅ Completed Features
+- **Full TMDB API integration** for movies and TV shows
+- **User authentication system** with JWT and bcrypt
+- **Advanced discovery page** with genre, year, cast, and sort filters
+- **Search functionality** with dropdown suggestions and multi-search
+- **Detailed movie/TV pages** with trailers, cast, and recommendations
+- **Reviews system** with full CRUD operations
+- **Groups functionality** with complete join request workflow
+- **Favorite lists** with backend infrastructure
+- **Responsive UI** with modern dark theme
+- **Person search** and credits viewing
+- **Trending content** tracking
+- **Role-based access control** for groups (owner/admin/member)
+- **Password validation** and change functionality
+
+### 🚧 In Progress
+- Group movie collections UI integration
+- Account page enhancements
+- Account managment
+- Review UI components
+- Favorite list management UI
+- Group detail page improvements
+- Movie detail page buttons
+
+### 📋 Planned Features
+- Password reset functionality
+- Movie watchlist
+- Mobile friendly UI/UX
 
 ---
 
@@ -454,10 +632,10 @@ Web_projekti_R13/
 ### Making Changes
 
 1. **Backend changes** - Edit files in `server/` directory
-   - Nodemon will automatically restart the server
+   - Nodemon automatically restarts the server
    
 2. **Frontend changes** - Edit files in `client/src/` directory
-   - Vite HMR will update the browser automatically
+   - Vite HMR updates the browser automatically
 
 3. **Database changes** - Edit `init_moviedb.sql`
    - Requires container restart: `docker-compose down -v && docker-compose up --build`
@@ -477,46 +655,6 @@ docker-compose logs db
 docker-compose logs -f server
 ```
 
----
-
-## Current Development Status
-
-### ✅ Completed Features
-- Full TMDB API integration for movies and TV shows
-- User authentication system with JWT
-- Advanced discovery page with multiple filters
-- Search functionality with dropdown suggestions
-- Detailed movie/TV show pages with trailers and cast
-- Reviews system (backend complete)
-- Favorite lists (backend complete)
-- Responsive UI with dark theme
-- Person search and credits viewing
-- Trending content tracking
-
-### 🚧 In Progress
-- Groups functionality (backend ready, frontend placeholder)
-- Account page enhancements
-- Review UI integration
-- Favorite list management UI
-
-### 📋 Planned Features
-- Group movie collections
-- Social features (sharing lists, group discussions)
-- User reviews UI
-- Advanced filtering in account page
-- Mobile app considerations
-
----
-
-## Additional Resources
-
-### Documentation
-- **[DEBUGGING.md](./DEBUGGING.md)** - Troubleshooting common issues
-- **TMDB API** - [Documentation](https://developers.themoviedb.org/3)
-- **React** - [Documentation](https://react.dev/)
-- **Express** - [Documentation](https://expressjs.com/)
-- **PostgreSQL** - [Documentation](https://www.postgresql.org/docs/)
-
 ### Useful Commands
 
 ```powershell
@@ -531,7 +669,42 @@ docker-compose exec db psql -U postgres -d moviedb
 # Clean restart
 docker-compose down -v
 docker-compose up --build
+
+# Remove all containers and volumes
+docker-compose down -v --rmi all
 ```
+
+---
+
+## Troubleshooting
+
+### Common Issues
+
+**Port already in use:**
+```powershell
+# Check what's using the port
+netstat -ano | findstr :3001  # Windows
+lsof -i :3001                 # macOS/Linux
+
+# Kill the process or change port in .env
+```
+
+**Database connection errors:**
+```powershell
+# Check if database container is running
+docker-compose ps
+
+# Restart database
+docker-compose restart db
+
+# View database logs
+docker-compose logs db
+```
+
+**TMDB API errors:**
+- Verify your API key in `.env`
+- Check API usage limits at TMDB
+- Ensure network connectivity
 
 ---
 
@@ -550,6 +723,4 @@ This project is created for educational purposes as part of a web development co
 
 ---
 
-**Last Updated:** November 19, 2024
-
-For questions or issues, please refer to [DEBUGGING.md](./DEBUGGING.md) or create an issue on the GitHub repository.
+**Last Updated:** November 24, 2024
