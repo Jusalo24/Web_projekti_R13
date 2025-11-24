@@ -1,33 +1,45 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import "../styles/Auth.css";
 
-
 export default function Login() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const navigate = useNavigate()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
 
   const handleLogin = async () => {
-    const res = await fetch("/api/users/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
-    })
+    try {
+      const res = await fetch(`${baseURL}/api/users/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = await res.json()
+      const data = await res.json();
 
-    if (!res.ok) {
-      alert(data.error)
-      return
+      if (!res.ok) {
+        alert(data.error || "Login failed");
+        return;
+      }
+
+      // Oletus: backend palauttaa { user: {...}, token: "..." }
+      if (!data.user || !data.token) {
+        alert("Invalid login response from server.");
+        return;
+      }
+
+      // ⭐ TÄRKEÄ: käytä AuthContextia
+      login(data.user, data.token);
+
+      navigate("/account"); // tai "/" jos haluat etusivulle
+    } catch (err) {
+      console.error("Login error:", err);
+      alert("Login failed");
     }
-
-    // Save token + userId
-    localStorage.setItem("token", data.token)
-    localStorage.setItem("userId", data.user.id)
-
-    navigate("/account")  // redirect to profile page
-  }
+  };
 
   return (
     <div className="auth-container">
@@ -58,5 +70,5 @@ export default function Login() {
         <Link to="/register">Create Account</Link>
       </p>
     </div>
-  )
+  );
 }

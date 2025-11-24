@@ -21,7 +21,7 @@ export default function MovieDetail() {
   const { user, token } = useAuth(); // Get authenticated user
   const { request } = useApi(); // Custom hook for API requests
 
-  // Review states (UI uses 0-10, backend expects 1-5 -> mapped on submit)
+  // Review states
   const [reviews, setReviews] = useState([]);
   const [average, setAverage] = useState(null);
   const [rating, setRating] = useState(5);
@@ -83,7 +83,6 @@ export default function MovieDetail() {
       
       setMediaType(currentMediaType);
       setDetails(detailsData);
-      setDetails(detailsData);
 
       // Fetch credits
       const creditsEndpoint = currentMediaType === "movie" 
@@ -124,69 +123,67 @@ export default function MovieDetail() {
   };
 
   const loadReviews = async () => {
-    try {
-      const rev = await request(`/api/reviews/movie/${id}?page=1&limit=20`);
-      const avg = await request(`/api/reviews/movie/${id}/average`);
-      setReviews(rev.reviews || []);
-      setAverage(avg || null);
+  try {
+    const rev = await request(`/api/reviews/movie/${id}?page=1&limit=20`);
+    const avg = await request(`/api/reviews/movie/${id}/average`);
+    setReviews(rev.reviews || []);
+    setAverage(avg || null);
 
-      if (user) {
-        const mine = (rev.reviews || []).find(r => r.user_id === user.id);
-        if (mine) {
-          setMyReviewId(mine.id);
-          setRating(Math.min(10, mine.rating * 2)); // map stored 1-5 scale to UI 0-10
-          setText(mine.review_text || "");
-        } else {
-          setMyReviewId(null);
-          setRating(5);
-          setText("");
-        }
-      }
-      setReviewError(null);
-    } catch (err) {
-      setReviewError(err.message);
-    }
-  };
-
-  const submitReview = async () => {
-    if (!token) { setReviewError("Login required"); return; }
-    try {
-      const normalizedRating = Math.max(1, Math.min(5, Math.round(rating / 2)));
-
-      if (myReviewId) {
-        await request(`/api/reviews/${myReviewId}`, {
-          method: "PUT",
-          body: JSON.stringify({ rating: normalizedRating, review_text: text })
-        });
+    if (user) {
+      const mine = (rev.reviews || []).find(r => r.user_id === user.id);
+      if (mine) {
+        setMyReviewId(mine.id);
+        setRating(mine.rating);
+        setText(mine.review_text || "");
       } else {
-        await request(`/api/reviews`, {
-          method: "POST",
-          body: JSON.stringify({
-            user_id: user.id,
-            movie_external_id: id,
-            rating: normalizedRating,
-            review_text: text
-          })
-        });
+        setMyReviewId(null);
+        setRating(5);
+        setText("");
       }
-      await loadReviews();
-    } catch (err) {
-      setReviewError(err.message);
     }
-  };
+    setReviewError(null);
+  } catch (err) {
+    setReviewError(err.message);
+  }
+};
 
-  const deleteReview = async () => {
-    if (!token || !myReviewId) return;
-    try {
-      await request(`/api/reviews/${myReviewId}`, { method: "DELETE" });
-      setMyReviewId(null);
-      setRating(5);
-      setText("");
-      await loadReviews();
-    } catch (err) {
-      setReviewError(err.message);
+const submitReview = async () => {
+  if (!token) { setReviewError("Login required"); return; }
+  try {
+    if (myReviewId) {
+      await request(`/api/reviews/${myReviewId}`, {
+        method: "PUT",
+        body: JSON.stringify({ rating, review_text: text })
+      });
+    } else {
+      await request(`/api/reviews`, {
+        method: "POST",
+        body: JSON.stringify({
+          user_id: user.id,
+          movie_external_id: id,
+          rating,
+          review_text: text
+        })
+      });
     }
-  };
+    await loadReviews();
+  } catch (err) {
+    setReviewError(err.message);
+  }
+};
+
+const deleteReview = async () => {
+  if (!token || !myReviewId) return;
+  try {
+    await request(`/api/reviews/${myReviewId}`, { method: "DELETE" });
+    setMyReviewId(null);
+    setRating(5);
+    setText("");
+    await loadReviews();
+  } catch (err) {
+    setReviewError(err.message);
+  }
+};
 
 
   const getTitle = () => {
@@ -428,16 +425,13 @@ export default function MovieDetail() {
 
   {average && (
     <p className="movie-detail__average">
-      Avg {(average.average_rating * 2).toFixed(1)}/10 ({average.total_reviews} reviews)
+      Avg {average.average_rating} ({average.total_reviews} reviews)
     </p>
   )}
 
-  {reviewError && (
-    <p className="movie-detail__error">{reviewError}</p>
-  )}
+  {reviewError && <p className="movie-detail__error">{reviewError}</p>}
 
   <div className="review-wrap review-grid">
-    {/* Vasen puoli: lomake */}
     <div>
       {user ? (
         <div className="review-form">
@@ -445,26 +439,22 @@ export default function MovieDetail() {
             Rating
             <input
               type="number"
-              min="0"
-              max="10"
+              min="1"
+              max="5"
               value={rating}
               onChange={(e) => setRating(Number(e.target.value))}
             />
           </label>
-
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Write your thoughts..."
           />
-
           <div style={{ display: "flex", gap: "0.5rem" }}>
             <button onClick={submitReview}>
               {myReviewId ? "Update review" : "Post review"}
             </button>
-            {myReviewId && (
-              <button onClick={deleteReview}>Delete my review</button>
-            )}
+            {myReviewId && <button onClick={deleteReview}>Delete my review</button>}
           </div>
         </div>
       ) : (
@@ -472,14 +462,13 @@ export default function MovieDetail() {
       )}
     </div>
 
-    {/* Oikea puoli: arvostelulista */}
     <div className="reviews-list">
       {reviews.length === 0 && <p>No reviews yet.</p>}
       {reviews.map((r) => (
         <div key={r.id} className="review-card">
           <div className="review-card__header">
             <strong>{r.username || r.user_id}</strong>
-            <span className="review-card__rating">{(r.rating * 2).toFixed(1)}/10</span>
+            <span className="review-card__rating">{r.rating}/5</span>
           </div>
           <p>{r.review_text || "(no text)"}</p>
           <small>{new Date(r.created_at).toLocaleString()}</small>

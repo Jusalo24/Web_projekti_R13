@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import "../styles/Auth.css";
+import { useAuth } from "../context/AuthContext";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -10,6 +11,8 @@ export default function Register() {
   const [successMessage, setSuccessMessage] = useState("");
 
   const navigate = useNavigate();
+  const { login } = useAuth();
+  const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
 
   // Password validation
   const isValidPassword = (password) => {
@@ -37,23 +40,42 @@ export default function Register() {
       return;
     }
 
-    // SEND DATA TO BACKEND
-    const res = await fetch("/api/users/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, username, password }),
-    });
+    try {
+      // SEND DATA TO BACKEND
+      const res = await fetch(`${baseURL}/api/users/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, username, password }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!res.ok) {
-      setErrorMessage(data.error || "Registration failed.");
-      return;
+      if (!res.ok) {
+        setErrorMessage(data.error || "Registration failed.");
+        return;
+      }
+
+      // Try auto-login to avoid forcing user back through the form
+      const loginRes = await fetch(`${baseURL}/api/users/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const loginData = await loginRes.json();
+
+      if (loginRes.ok && loginData.user && loginData.token) {
+        login(loginData.user, loginData.token);
+        navigate("/account");
+        return;
+      }
+
+      // Fallback: redirect to login if auto-login fails
+      setSuccessMessage("Account created successfully! Redirecting to login...");
+      setTimeout(() => navigate("/login"), 1500);
+    } catch (err) {
+      console.error("Registration error:", err);
+      setErrorMessage("Registration failed.");
     }
-
-    // SUCCESS
-    setSuccessMessage("Account created successfully! Redirecting...");
-    setTimeout(() => navigate("/login"), 1500);
   };
 
   return (
