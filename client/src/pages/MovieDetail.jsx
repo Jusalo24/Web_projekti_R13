@@ -15,6 +15,7 @@ export default function MovieDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mediaType, setMediaType] = useState("movie"); // Default to movie
+  const imageSize = "original"; // Size of poster images: w780, w500, w342, w185, w154, w92, original
 
   const baseURL = import.meta.env.VITE_API_BASE_URL;
 
@@ -191,7 +192,7 @@ export default function MovieDetail() {
               <GetImage
                 path={details.poster_path}
                 title={getTitle()}
-                size="w500"
+                size={imageSize}
               />
             ) : (
               <div className="movie-detail__poster-placeholder">No Image</div>

@@ -44,12 +44,15 @@ export default function SearchBar({ onSearch }) {
   // Handle selecting an item from dropdown
   const handleSelect = (item) => {
     const title = movieHelpers.getTitle(item);
+    const type = item.media_type || 'movie'; // movie / tv
+
     setQuery(title);
     setShowDropdown(false);
 
-    // Navigate to search results page using selected title
-    navigate(`/SearchResult?search=${encodeURIComponent(title)}`);
+    // Navigate directly to movie/series detail page
+    navigate(`/movies/${item.id}?type=${type}`);
   };
+
 
   // Simple text icons for media type
   const getMediaIcon = (mediaType) => {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import react, { useEffect, useState } from "react";
 
 export function useSearchApi({
     type = "now_playing",   // Type of content to fetch (e.g. now_playing, discover, etc.)

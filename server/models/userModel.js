@@ -26,6 +26,14 @@ export const getUserById = async (id) => {
     return result.rows[0]
 }
 
+export const getUserByIdWithPassword_hash = async (id) => {
+    const result = await pool.query(
+        'SELECT id, email, username, password_hash FROM users WHERE id = $1',
+        [id]
+    )
+    return result.rows[0]
+}
+
 export const updateUser = async (id, fields) => {
     const keys = Object.keys(fields)
     if (keys.length === 0) return null

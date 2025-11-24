@@ -7,7 +7,7 @@ export default function GetMoviesSeries({
   type = "now_playing",  // Type of movies/series to fetch
   page = 1,              // Current page number
   pages = 1,             // Total pages to fetch (if paginated)
-  imageSize = "w500",    // Size of poster images
+  imageSize = "w500",    // Size of poster images: w780, w500, w342, w185, w154, w92, original
   limit = null,          // Optional limit on number of results
   query = "",            // Search query
   ...discoverParams      // Additional parameters for discovery API
