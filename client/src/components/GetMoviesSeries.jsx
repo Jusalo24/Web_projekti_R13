@@ -57,7 +57,7 @@ export default function GetMoviesSeries({
     if (onDataChanged) onDataChanged(); // reload site
   }
 
-  // Handle clicking on a movie/TV show plus button. Adds to latest group
+  // Handle clicking on a movie/TV show plus button       TÄMÄN KOHDAN VOI MUUTTAA FAVORITE LIST
   const handleAddToGroupClick = async (movie) => {
     await fetchMyGroups();
     if (!myGroups || myGroups.length === 0) {
@@ -68,7 +68,7 @@ export default function GetMoviesSeries({
       return;
     }
     const itemMediaType = movie.media_type || media_type || 'movie';
-    const result = await addMovieToGroup(myGroups[0].id, movie.id, itemMediaType);
+    const result = await addMovieToGroup(myGroups[0].id, movie.id, itemMediaType); // Adds to latest group
 
     // If backend returns an error
     if (!result || result.error) {
@@ -123,7 +123,7 @@ export default function GetMoviesSeries({
                   className="movie-card__add-to-group"
                   key={uniqueKey}
                   onClick={(e) => {
-                    e.stopPropagation(); // Prevent card click
+                    e.stopPropagation(); // Prevent card click    TÄMÄN KOHDAN VOI MUUTTAA FAVORITE LIST
                     handleAddToGroupClick(movie);
                   }}
                 >

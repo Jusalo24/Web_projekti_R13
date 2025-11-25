@@ -158,3 +158,190 @@
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
+
+@media (max-width: 1024px) {
+  .account-container {
+    width: 95%;
+    gap: 1.5rem;
+  }
+
+  .account-sidebar {
+    width: 220px;
+    padding: 1.2rem;
+  }
+
+  .account-main {
+    padding: 1.5rem;
+  }
+
+  .modal-box {
+    width: 320px;
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .account-container {
+    flex-direction: column;
+    width: 90%;
+    gap: 1.5rem;
+  }
+
+  .account-sidebar {
+    width: 100%;
+    padding: 1.2rem;
+  }
+
+  .account-main {
+    width: 100%;
+    padding: 1.5rem;
+  }
+
+  .side-btn {
+    padding: 0.7rem;
+    font-size: 0.9rem;
+  }
+
+  .modal-box {
+    width: 85%;
+    padding: 1.3rem;
+  }
+
+  .modal-btn {
+    padding: 0.6rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .account-container {
+    width: 95%;
+    margin: 1.2rem auto;
+  }
+
+  .account-sidebar {
+    padding: 1rem;
+    border-radius: 8px;
+  }
+
+  .side-btn {
+    padding: 0.6rem;
+    font-size: 0.85rem;
+  }
+
+  .account-main {
+    padding: 1.2rem;
+  }
+
+  .info-box h3 {
+    font-size: 1.1rem;
+  }
+
+  .list li {
+    padding: 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  .modal-box {
+    width: 90%;
+    padding: 1rem;
+    border-radius: 8px;
+  }
+
+  .modal-box input {
+    padding: 0.6rem;
+    font-size: 0.9rem;
+  }
+
+  .modal-btn {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.8rem;
+  }
+
+  .modal-buttons {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Search bar smaller */
+  .search__form {
+    gap: var(--spacing-xs);
+  }
+
+  .search__input {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.85rem;
+  }
+
+  .search__button {
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-size: 0.85rem;
+  }
+
+  /* Dropdown items tighter */
+  .search__dropdown-movie {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    gap: var(--spacing-sm);
+  }
+
+  .search__dropdown-thumb {
+    width: 32px;
+    height: 48px;
+  }
+
+  .search__dropdown-title {
+    font-size: 0.85rem;
+  }
+
+  .search__dropdown-year {
+    font-size: 0.75rem;
+  }
+
+  /* Movies grid spacing */
+  .movies-grid {
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs);
+  }
+
+  /* Movie card scale down */
+  .movie-card {
+    min-width: 120px;
+    max-width: 120px;
+    border-radius: var(--radius-md);
+  }
+
+  .movie-card__title {
+    font-size: 0.85rem;
+    -webkit-line-clamp: 2;
+  }
+
+  .movie-card__info {
+    padding: var(--spacing-sm);
+  }
+
+  .movie-card__footer {
+    margin-top: var(--spacing-xs);
+    padding-top: var(--spacing-xs);
+  }
+
+  .movie-card__year,
+  .movie-card__type {
+    font-size: 0.7rem;
+  }
+
+  /* Add-to-group / delete icons smaller */
+  .movie-card__add-to-group,
+  .movie-card__delete-from-group {
+    top: 6px;
+    right: 6px;
+    padding: 4px;
+    border-radius: 5px;
+  }
+
+  .movie-card__add-to-group svg,
+  .movie-card__delete-from-group svg {
+    width: 18px;
+    height: 18px;
+  }
+}
