@@ -206,7 +206,7 @@ export function useGroupApi() {
   const addMovieToGroup = async (groupId, movieId, mediaType) => { // Add movie to group
     try {
       const res = await fetch(
-        `${baseURL}/api/groups/${groupId}/movies`,
+        `${baseURL}/api/groups/${groupId}/movies?movieId=${movieId}&mediaType=${mediaType}`,
         {
           method: "POST",
           headers: {
@@ -227,7 +227,7 @@ export function useGroupApi() {
   const removeMovieFromGroup = async (groupId, movieId, mediaType) => { // Remove movie from group
     try {
       const res = await fetch(
-        `${baseURL}/api/groups/${groupId}/movies`,
+        `${baseURL}/api/groups/${groupId}/movies?movieId=${movieId}&mediaType=${mediaType}`,
         {
           method: "DELETE",
           headers: {
@@ -236,6 +236,7 @@ export function useGroupApi() {
           query: { movieId, mediaType }
         }
       );
+      console.log("Fetch URL:", `${baseURL}/api/groups/${groupId}/movies?movieId=${movieId}&mediaType=${mediaType}`);
       const data = await res.json();
       return data;
     } catch (err) {

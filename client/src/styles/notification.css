@@ -22,9 +22,9 @@
 }
 
 .notification--error {
-  background: #e44848;
+  background: var(--color-error);
 }
 
 .notification--success {
-  background: #3abf3a;
+  background: var(--color-success);
 }

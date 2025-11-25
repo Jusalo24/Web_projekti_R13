@@ -1,7 +1,9 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { Trash2 } from "lucide-react";
 import GetImage from "./GetImage";
 import { useSearchApi, movieHelpers } from "../hooks/useSearchApi";
+import { useGroupApi } from "../hooks/useGroupApi";
 
 export default function GetMoviesSeries({
   type = "now_playing",  // Type of movies/series to fetch
@@ -11,9 +13,13 @@ export default function GetMoviesSeries({
   limit = null,          // Optional limit on number of results
   query = "",            // Search query
   movieIds = [],         // Specific movie IDs to fetch
-  ...discoverParams      // Additional parameters for discovery API
+  groupId = null,        // Group ID for group-related actions
+  onDataChanged, // Callback when data changes (e.g. movie removed)
+  ...discoverParams     // Additional parameters for discovery API
 }) {
   const navigate = useNavigate(); // For navigation to detail page
+
+  const { removeMovieFromGroup } = useGroupApi();
 
   // Custom hook to fetch movies/series based on params
   const { movies, loading, error } = useSearchApi({
@@ -36,6 +42,14 @@ export default function GetMoviesSeries({
     navigate(`/movies/${movie.id}?type=${itemMediaType}`);
   };
 
+  // Handle clicking on a movie/TV show delete button
+  const handleDeleteFromGroupClick = (movie) => {
+    // Determine the actual media type of this item
+    const itemMediaType = movie.media_type || media_type || 'movie';
+    removeMovieFromGroup(groupId, movie.id, itemMediaType);
+    if (onDataChanged) onDataChanged(); // reload site
+  }
+
   // Display loading, error, or empty states
   if (loading) return <div className="movies-loading">Loading...</div>;
   if (error) return <div className="movies-error">Error: {error}</div>;
@@ -53,10 +67,21 @@ export default function GetMoviesSeries({
             key={uniqueKey} 
             className="movie-card"
             onClick={() => handleCardClick(movie)}
-            style={{ cursor: 'pointer' }}
           >
             {/* Poster image */}
             <div className="movie-card__poster">
+              {type === "group_movies" && (
+                <button 
+                  className="movie-card__delete-from-group"
+                  key={uniqueKey}
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent card click
+                    handleDeleteFromGroupClick(movie);
+                  }}
+                >
+                  <Trash2 size={24} />
+                </button>
+              )}
               <GetImage
                 path={movie.poster_path}
                 title={movieHelpers.getTitle(movie)} // Movie/series title for alt text

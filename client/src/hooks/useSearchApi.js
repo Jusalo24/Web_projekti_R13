@@ -73,9 +73,11 @@ export function useSearchApi({
                                 // Parse the response JSON
                                 const data = await response.json();
 
-                                if (data) {
-                                    // Push either `data.result` (if backend wraps it) or the raw data
-                                    allResults.push(data.result || data);
+                                // Add media_type
+                                if (item.type === "movie") {
+                                    allResults.push({ ...data, media_type: "movie" });
+                                } else {
+                                    allResults.push({ ...data, media_type: "tv" });
                                 }
 
                             } catch (err) {

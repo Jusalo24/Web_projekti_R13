@@ -76,6 +76,23 @@
   margin-top: var(--spacing-md);
 }
 
+.member-card__kick-member__button {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: var(--color-error);
+  color: var(--color-text-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  white-space: nowrap;
+}
+
+.member-card__kick-member__button:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
 .member-card {
   background: var(--color-bg-tertiary);
   border: 1px solid var(--color-border);
@@ -117,4 +134,30 @@
   border: 1px solid var(--color-border);
   padding: var(--spacing-lg);
   box-shadow: var(--shadow-sm);
+}
+
+.movie-card__delete-from-group {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 9999;
+    pointer-events: auto;
+    background: rgba(0, 0, 0, 0.6);
+    border: none;
+    padding: 6px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: white;
+    transform: scale(1);
+    transition: 
+        background 0.25s ease,
+        transform 0.2s ease,
+        color 0.5s ease;
+}
+
+.movie-card__delete-from-group:hover {
+    background: var(--color-error);
+    transform: scale(1.1);
+    color: white;
+    opacity: 0.9;
 }
