@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useGroupApi } from "../hooks/useGroupApi";
 import "../styles/groupDetails.css";
+import GetMoviesSeries from "../components/GetMoviesSeries";
 
 export default function GroupDetails() {
     const { id } = useParams();
-    const { fetchGroupById, ownerId } = useGroupApi();
+    const { fetchGroupById, ownerId, fetchMoviesByGroup } = useGroupApi();
+    const imageSize = "w342"; // Size of poster images: w780, w500, w342, w185, w154, w92, original
 
     const [group, setGroup] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -14,7 +16,8 @@ export default function GroupDetails() {
         async function load() {
             setLoading(true);
             const data = await fetchGroupById(id);
-            setGroup(data);
+            const movies = await fetchMoviesByGroup(id);
+            setGroup({ ...data, movies });
             setLoading(false);
         }
         load();
@@ -44,10 +47,10 @@ export default function GroupDetails() {
                 </div>
             </section>
 
-            <section className="group-details__content">
-                <h3>Members</h3>
+            <h3 className="group-details__title">Members</h3>
+            <div className="group-details__members-container">
                 {group.members && group.members.length > 0 ? (
-                    <div className="members-list">
+                    <div className="group-details__members-list">
                         {group.members.map((m) => (
                             <div className="member-card" key={m.id}>
                                 <div className="member-info">
@@ -63,9 +66,24 @@ export default function GroupDetails() {
                 ) : (
                     <p>No members yet...</p>
                 )}
-                <h3>Movies</h3>
-                <p>Movies listing will come here...</p>
-            </section>
+            </div>
+
+            <h3 className="group-details__title">Movies</h3>
+            <div className="group-details__movies-container">
+                {group.movies && group.movies.length > 0 ? (
+                    <GetMoviesSeries
+                        type="group_movies"
+                        movieIds={group.movies.map((movie) => ({
+                            id: movie.movie_external_id,
+                            type: movie.media_type
+                        }))}
+                        imageSize={imageSize}
+                    />
+                ) : (
+                    <p>No movies added yet...</p>
+                )}
+            </div>
         </main>
     );
+
 }

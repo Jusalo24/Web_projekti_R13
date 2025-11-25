@@ -10,6 +10,7 @@ export default function GetMoviesSeries({
   imageSize = "w500",    // Size of poster images: w780, w500, w342, w185, w154, w92, original
   limit = null,          // Optional limit on number of results
   query = "",            // Search query
+  movieIds = [],         // Specific movie IDs to fetch
   ...discoverParams      // Additional parameters for discovery API
 }) {
   const navigate = useNavigate(); // For navigation to detail page
@@ -21,6 +22,7 @@ export default function GetMoviesSeries({
     pages,
     limit,
     query,
+    movieIds,
     discoverParams
   });
 

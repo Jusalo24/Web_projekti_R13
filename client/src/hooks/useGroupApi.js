@@ -201,6 +201,66 @@ export function useGroupApi() {
     }
   };
 
+  // POST /api/groups/:id/movies | query: { movieId, mediaType }
+  const addMovieToGroup = async (groupId, movieId, mediaType) => { // Add movie to group
+    try {
+      const res = await fetch(
+        `${baseURL}/api/groups/${groupId}/movies`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          query: { movieId, mediaType }
+        }
+      );
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      console.error("Failed to add movie to group", err);
+    }
+  };
+
+  // DELETE /api/groups/:id/movies | query: { movieId, mediaType }
+  const removeMovieFromGroup = async (groupId, movieId, mediaType) => { // Remove movie from group
+    try {
+      const res = await fetch(
+        `${baseURL}/api/groups/${groupId}/movies`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          query: { movieId, mediaType }
+        }
+      );
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      console.error("Failed to remove movie from group", err);
+    }
+  };
+
+  // GET /api/groups/:id/movies
+  const fetchMoviesByGroup = async (groupId) => { // List movies in group
+    try {
+      const res = await fetch(
+        `${baseURL}/api/groups/${groupId}/movies`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        }
+      );
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      console.error("Failed to get movies by group", err);
+    }
+  };
+
   const showError = (msg) => { // Show red popup
     setNotification({ message: msg, type: "error" });
     setTimeout(() => setNotification({ message: null }), 3000);
@@ -235,5 +295,8 @@ export function useGroupApi() {
     rejectJoin, // Reject request
     fetchGroupById, // Fetch single group
     setNotification, // Allow manual popup control
+    addMovieToGroup, // Add movie to group
+    removeMovieFromGroup, // Remove movie from group
+    fetchMoviesByGroup, // List movies in group
   };
 }

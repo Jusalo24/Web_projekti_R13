@@ -6,6 +6,7 @@ export function useSearchApi({
     pages = 1,              // How many pages to load
     limit = null,           // Optional limit for total results
     query = "",             // Search query
+    movieIds = [],        // Specific movie IDs for group_movies type
     discoverParams = {}     // Extra parameters for discovery-based searches
 }) {
     const [movies, setMovies] = useState([]);    // Stores fetched movie/TV results
@@ -21,6 +22,11 @@ export function useSearchApi({
                 setLoading(true);
                 const allResults = []; // To collect results across pages
 
+                console.log("Fetching movies with params:", {
+                    movieIds,
+                });
+
+
                 // Loop through all requested pages
                 for (let p = page; p <= pages; p++) {
                     let url = "";
@@ -29,6 +35,7 @@ export function useSearchApi({
                     if (query) {
                         url = `${baseURL}/api/search/multi?q=${encodeURIComponent(query)}&page=${p}`;
                     }
+
                     // If it's a discover-type request
                     else if (type === "discover") {
                         const queryString = new URLSearchParams({ page: p, ...discoverParams }).toString();
@@ -40,6 +47,47 @@ export function useSearchApi({
                             url = `${baseURL}/api/movies/discover?${queryString}`;
                         }
                     }
+
+                    // If it's a group movies request
+                    else if (type === "group_movies" && movieIds.length > 0) {
+
+                        // Loop through each movie/TV item individually
+                        for (const item of movieIds) {
+
+                            // Determine whether to call the movie or TV endpoint
+                            const endpoint =
+                                item.type === "movie"
+                                    ? `${baseURL}/api/movies/byId/${item.id}`
+                                    : `${baseURL}/api/tv/byId/${item.id}`;
+
+                            try {
+                                // Fetch a single item by ID
+                                const response = await fetch(endpoint);
+
+                                // If the request fails, log it and continue with the next item
+                                if (!response.ok) {
+                                    console.error("Fetch error:", response.status, endpoint);
+                                    continue;
+                                }
+
+                                // Parse the response JSON
+                                const data = await response.json();
+
+                                if (data) {
+                                    // Push either `data.result` (if backend wraps it) or the raw data
+                                    allResults.push(data.result || data);
+                                }
+
+                            } catch (err) {
+                                // Catch any network/parse errors and continue
+                                console.error("Exception fetching:", endpoint, err);
+                            }
+                        }
+
+                        // Skip the default page-based fetching logic
+                        continue;
+                    }
+                    
                     // Default movie/TV endpoints (e.g. now_playing, popular)
                     else {
                         if (media_type === "tv" || type.startsWith("tv_")) {
