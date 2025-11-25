@@ -12,7 +12,8 @@ import {
     getJoinRequests,
     acceptJoin,
     rejectJoin,
-    getMyGroups
+    getMyGroups,
+    removeMember
 } from "../controllers/groupController.js";
 
 import { requireOwner, requireMemberOrOwner } from '../helpers/groupRoles.js';
@@ -35,7 +36,7 @@ groupRouter.post("/groups/", auth, createGroup);
 
 // Update group by id (auth)
 // PUT /api/groups/:id | params: { id }  body: { name?, description?, isVisible? }
-groupRouter.put("/groups/:id", auth, updateGroup);
+groupRouter.put("/groups/:id", auth, requireOwner, updateGroup);
 
 // Get groups the user owns or is member of
 // GET /api/groups/my
@@ -43,11 +44,15 @@ groupRouter.get("/groups/my", auth, getMyGroups);
 
 // Delete group by id (auth)
 // DELETE /api/groups/:id | params: { id }  no body
-groupRouter.delete("/groups/:id", auth, deleteGroup);
+groupRouter.delete("/groups/:id", auth, requireOwner, deleteGroup);
 
 // Add member to group (auth)
-// POST /api/groups/:id/members | params: { id }  body: { userId }
-groupRouter.post("/groups/:id/members", auth, addMember);
+// POST /api/groups/:id/members | params: { id }  query: { userId }
+groupRouter.post("/groups/:id/members", auth, requireOwner, addMember);
+
+// Remove member from group (auth)
+// DELETE /api/groups/:id/members | params: { id }  query: { userId }
+groupRouter.delete("/groups/:id/members", auth, requireOwner, removeMember);
 
 // Send join request to group (auth)
 // POST /api/groups/:id/join-request | params: { id }  no body
@@ -59,7 +64,7 @@ groupRouter.get("/groups/:id/join-requests", auth, getJoinRequests);
 
 // Get single group by id (auth)
 // GET /api/groups/:id | params: { id }  no body
-groupRouter.get("/groups/:id", auth, getGroupById);
+groupRouter.get("/groups/:id", auth, requireMemberOrOwner,getGroupById);
 
 // Accept join request (owner)
 // PATCH /api/groups/:id/join-requests/:requestId/accept

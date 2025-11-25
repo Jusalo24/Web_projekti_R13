@@ -6,7 +6,7 @@ import GetMoviesSeries from "../components/GetMoviesSeries";
 
 export default function GroupDetails() {
     const { id } = useParams();
-    const { fetchGroupById, loggedInId, fetchMoviesByGroup } = useGroupApi();
+    const { fetchGroupById, loggedInId, fetchMoviesByGroup, removeMemberFromGroup } = useGroupApi();
     const imageSize = "w342"; // Size of poster images: w780, w500, w342, w185, w154, w92, original
 
     const [group, setGroup] = useState(null); // Stores full group data
@@ -24,6 +24,12 @@ export default function GroupDetails() {
         setLoading(false); // Stop loading
         console.log("Group details:", { ...data, movies }); // Debug log
     };
+
+    // Handle clicking on a kick member button
+    const handleKickMemberClick = async (member) => {
+        await removeMemberFromGroup(group.id, member.user_id);
+        await load();
+    }
 
     if (loading) return <p>Loading...</p>; // Show while loading
     if (!group) return <p>Group not found</p>; // Show if group doesn't exist
@@ -53,19 +59,25 @@ export default function GroupDetails() {
             <div className="group-details__members-container">
                 {group.members && group.members.length > 0 ? (
                     <div className="group-details__members-list">
-                        {group.members.map((m) => (
-                            <div className="member-card" key={m.id}>
+                        {group.members.map((member) => (
+                            <div className="member-card" key={member.id}>
                                 <div className="member-info">
                                     <span className="member-name">
-                                        {m.username || m.id}
-                                        {m.user_id === loggedInId ? " (You)" : ""}
+                                        {member.username || member.id}
+                                        {member.user_id === loggedInId ? " (You)" : ""}
                                     </span>
-                                    <span className="member-role">{m.role}</span>
+                                    <span className="member-role">{member.role}</span>
                                 </div>
 
                                 {/* Kick button visible only for group owner */}
-                                {group.owner_id === loggedInId && m.user_id !== loggedInId && (
-                                    <button className="member-card__kick-member__button">
+                                {group.owner_id === loggedInId && member.user_id !== loggedInId && (
+                                    <button 
+                                        className="member-card__kick-member__button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleKickMemberClick(member);
+                                        }}
+                                    >
                                         Kick
                                     </button>
                                 )}

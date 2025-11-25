@@ -130,6 +130,15 @@ export async function addMember(groupId, userId, role = "member") {
     return result.rows[0];
 }
 
+// Remove member from group
+// SQL: DELETE FROM group_members WHERE group_id=$1 AND user_id=$2 | params: groupId, userId
+export async function removeMember(groupId, userId) {
+    await db.query(
+        `DELETE FROM group_members WHERE group_id = $1 AND user_id = $2`,
+        [groupId, userId]
+    );
+}
+
 // Create a join request
 // SQL: INSERT INTO group_join_requests | params: groupId, userId
 export async function createJoinRequest(groupId, userId) {

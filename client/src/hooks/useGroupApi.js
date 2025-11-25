@@ -202,6 +202,22 @@ export function useGroupApi() {
     }
   };
 
+  const removeMemberFromGroup = async (groupId, userId) => { // Kick member from group
+    try {
+      const res = await fetch(
+        `${baseURL}/api/groups/${groupId}/members?userId=${userId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      console.error("Failed to remove member from group", err);
+    }
+  };
+
   // POST /api/groups/:id/movies | query: { movieId, mediaType }
   const addMovieToGroup = async (groupId, movieId, mediaType) => { // Add movie to group
     try {
@@ -300,5 +316,6 @@ export function useGroupApi() {
     addMovieToGroup, // Add movie to group
     removeMovieFromGroup, // Remove movie from group
     fetchMoviesByGroup, // List movies in group
+    removeMemberFromGroup // Remove member from group
   };
 }
