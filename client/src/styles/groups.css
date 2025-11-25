@@ -10,7 +10,6 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--spacing-xl);
-  margin-bottom: var(--spacing-2xl);
 }
 
 /* --- Title --- */
@@ -21,6 +20,7 @@
   color: var(--color-text-primary);
   position: relative;
   padding-bottom: var(--spacing-md);
+  padding-top: var(--spacing-md);
 }
 
 .groups__title::after {
