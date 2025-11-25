@@ -48,14 +48,14 @@ export default function GroupDetails() {
                 <h3>Members</h3>
                 {group.members && group.members.length > 0 ? (
                     <div className="members-list">
-                        {group.members.map((m) => (
-                            <div className="member-card" key={m.id}>
+                        {group.members.map((member) => (
+                            <div className="member-card" key={member.user_id}>
                                 <div className="member-info">
                                     <span className="member-name">
-                                        {m.username || m.id}
-                                        {m.id === ownerId ? " (You)" : ""}
+                                        {member.username || member.user_id}
+                                        {member.user_id === ownerId ? " (You)" : ""}
                                     </span>
-                                    <span className="member-role">{m.role}</span>
+                                    <span className="member-role">{member.role}</span>
                                 </div>
                             </div>
                         ))}

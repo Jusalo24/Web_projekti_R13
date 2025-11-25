@@ -2,11 +2,12 @@ import React from "react";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import GetImage from "../components/GetImage";
+import AddToGroupModal from "../components/AddToGroupModal";
 import "../styles/movie-detail.css";
 
 export default function MovieDetail() {
-  const { id } = useParams(); // Get movie/TV ID from URL
-  const [searchParams] = useSearchParams(); // Get query parameters
+  const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [details, setDetails] = useState(null);
   const [credits, setCredits] = useState(null);
@@ -14,15 +15,28 @@ export default function MovieDetail() {
   const [similar, setSimilar] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [mediaType, setMediaType] = useState("movie"); // Default to movie
-  const imageSize = "original"; // Size of poster images: w780, w500, w342, w185, w154, w92, original
-
+  const [mediaType, setMediaType] = useState("movie");
+  const [showGroupModal, setShowGroupModal] = useState(false);
+  const [notification, setNotification] = useState({ message: null, type: "success" });
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [checkingFavorite, setCheckingFavorite] = useState(true);
+  
+  const imageSize = "original";
   const baseURL = import.meta.env.VITE_API_BASE_URL;
+  const token = localStorage.getItem("token");
+  const isLoggedIn = !!token;
 
   // Determine if this is a movie or TV show based on query parameter
   useEffect(() => {
     fetchDetails();
   }, [id, searchParams]);
+
+  // Separate effect for checking favorites after mediaType is set
+  useEffect(() => {
+    if (isLoggedIn && mediaType && id) {
+      checkIfFavorite();
+    }
+  }, [id, mediaType, isLoggedIn]);
 
   const fetchDetails = async () => {
     try {
@@ -62,9 +76,7 @@ export default function MovieDetail() {
       }
       
       detailsData = await detailsRes.json();
-      
       setMediaType(currentMediaType);
-      setDetails(detailsData);
       setDetails(detailsData);
 
       // Fetch credits
@@ -103,6 +115,159 @@ export default function MovieDetail() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const checkIfFavorite = async () => {
+    try {
+      setCheckingFavorite(true);
+      const res = await fetch(`${baseURL}/api/favorite-lists`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!res.ok) {
+        setCheckingFavorite(false);
+        return;
+      }
+
+      const lists = await res.json();
+      const movieId = `${mediaType}:${id}`;
+      
+      // Check all lists for this movie
+      for (const list of lists) {
+        const itemsRes = await fetch(`${baseURL}/api/favorite-lists/${list.id}/items`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (itemsRes.ok) {
+          const items = await itemsRes.json();
+          if (items.some(item => item.movie_external_id === movieId)) {
+            setIsFavorite(true);
+            return; // Exit early once found
+          }
+        }
+      }
+      
+      // If we get here, movie is not in any list
+      setIsFavorite(false);
+    } catch (err) {
+      console.error("Error checking favorite:", err);
+    } finally {
+      setCheckingFavorite(false);
+    }
+  };
+
+  const handleAddToFavorites = async () => {
+    if (!isLoggedIn) {
+      showNotification("Please login to add favorites", "error");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      // Get or create default favorites list
+      const listsRes = await fetch(`${baseURL}/api/favorite-lists`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      let lists = [];
+      if (listsRes.ok) {
+        lists = await listsRes.json();
+      }
+
+      // Find or create "My Favorites" list
+      let defaultList = lists.find(list => list.title === "My Favorites");
+      
+      if (!defaultList) {
+        const createRes = await fetch(`${baseURL}/api/favorite-lists`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            title: "My Favorites",
+            description: "My favorite movies and TV shows"
+          })
+        });
+
+        if (!createRes.ok) {
+          throw new Error("Failed to create favorites list");
+        }
+
+        defaultList = await createRes.json();
+      }
+
+      // Add movie to list
+      const movieId = `${mediaType}:${id}`;
+      const addRes = await fetch(`${baseURL}/api/favorite-lists/${defaultList.id}/items`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          movieId: movieId,
+          position: 0
+        })
+      });
+
+      if (!addRes.ok) {
+        const errorData = await addRes.json();
+        throw new Error(errorData.error || "Failed to add to favorites");
+      }
+
+      setIsFavorite(true);
+      showNotification("Added to favorites!", "success");
+    } catch (err) {
+      console.error("Error adding to favorites:", err);
+      showNotification(err.message || "Failed to add to favorites", "error");
+    }
+  };
+
+  const handleRemoveFromFavorites = async () => {
+    try {
+      const listsRes = await fetch(`${baseURL}/api/favorite-lists`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!listsRes.ok) return;
+
+      const lists = await listsRes.json();
+      const movieId = `${mediaType}:${id}`;
+
+      // Find and remove from all lists
+      for (const list of lists) {
+        const itemsRes = await fetch(`${baseURL}/api/favorite-lists/${list.id}/items`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (itemsRes.ok) {
+          const items = await itemsRes.json();
+          const item = items.find(i => i.movie_external_id === movieId);
+          
+          if (item) {
+            const deleteRes = await fetch(`${baseURL}/api/favorite-lists/items/${item.id}`, {
+              method: "DELETE",
+              headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (deleteRes.ok) {
+              setIsFavorite(false);
+              showNotification("Removed from favorites", "success");
+              return;
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Error removing from favorites:", err);
+      showNotification("Failed to remove from favorites", "error");
+    }
+  };
+
+  const showNotification = (message, type = "success") => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification({ message: null }), 3000);
   };
 
   const getTitle = () => {
@@ -167,6 +332,14 @@ export default function MovieDetail() {
 
   return (
     <div className="movie-detail">
+      {/* Notification */}
+      {notification.message && (
+        <div className={`movie-detail__notification movie-detail__notification--${notification.type}`}>
+          <span>{notification.message}</span>
+          <button onClick={() => setNotification({ message: null })}>✕</button>
+        </div>
+      )}
+
       {/* Backdrop Section */}
       <div className="movie-detail__backdrop">
         {details.backdrop_path && (
@@ -228,6 +401,32 @@ export default function MovieDetail() {
                 </span>
               )}
             </div>
+
+            {/* Action Buttons */}
+            {isLoggedIn && (
+              <div className="movie-detail__actions">
+                <button
+                  className={`movie-detail__action-btn ${isFavorite ? 'movie-detail__action-btn--active' : ''}`}
+                  onClick={isFavorite ? handleRemoveFromFavorites : handleAddToFavorites}
+                  disabled={checkingFavorite}
+                >
+                  {checkingFavorite ? (
+                    "..."
+                  ) : isFavorite ? (
+                    <>❤️ Remove from Favorites</>
+                  ) : (
+                    <>🤍 Add to Favorites</>
+                  )}
+                </button>
+
+                <button
+                  className="movie-detail__action-btn"
+                  onClick={() => setShowGroupModal(true)}
+                >
+                  ➕ Add to Group
+                </button>
+              </div>
+            )}
 
             {/* Genres */}
             {details.genres && details.genres.length > 0 && (
@@ -340,6 +539,20 @@ export default function MovieDetail() {
           </div>
         )}
       </div>
+
+      {/* Add to Group Modal */}
+      {showGroupModal && (
+        <AddToGroupModal
+          movieId={id}
+          mediaType={mediaType}
+          movieTitle={getTitle()}
+          onClose={() => setShowGroupModal(false)}
+          onSuccess={(groupName) => {
+            setShowGroupModal(false);
+            showNotification(`Added to "${groupName}"!`, "success");
+          }}
+        />
+      )}
     </div>
   );
 }

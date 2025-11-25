@@ -462,3 +462,113 @@
     height: 250px;
   }
 }
+
+/* Notification Toast */
+.movie-detail__notification {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  padding: 14px 18px;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 2000;
+  min-width: 220px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.movie-detail__notification button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  margin-left: auto;
+}
+
+.movie-detail__notification--success {
+  background: linear-gradient(135deg, #3abf3a 0%, #2ea02e 100%);
+}
+
+.movie-detail__notification--error {
+  background: linear-gradient(135deg, #e44848 0%, #c43030 100%);
+}
+
+/* Action Buttons Section */
+.movie-detail__actions {
+  display: flex;
+  gap: var(--spacing-md);
+  margin: var(--spacing-xl) 0;
+  flex-wrap: wrap;
+}
+
+.movie-detail__action-btn {
+  padding: var(--spacing-md) var(--spacing-xl);
+  background: linear-gradient(135deg, var(--color-accent) 0%, #4a8ef5 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  white-space: nowrap;
+}
+
+.movie-detail__action-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--color-accent-hover) 0%, var(--color-accent) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(92, 158, 255, 0.4);
+}
+
+.movie-detail__action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.movie-detail__action-btn--active {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+}
+
+.movie-detail__action-btn--active:hover:not(:disabled) {
+  background: linear-gradient(135deg, #ff8787 0%, #ff6b6b 100%);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .movie-detail__notification {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    min-width: auto;
+  }
+
+  .movie-detail__actions {
+    flex-direction: column;
+  }
+
+  .movie-detail__action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
