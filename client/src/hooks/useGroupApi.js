@@ -7,7 +7,7 @@ export function useGroupApi() {
   const [loading, setLoading] = useState(false); // Loading state for API calls
   const [error, setError] = useState(null); // Error message (optional)
   const [notification, setNotification] = useState({ message: null, type: "error" }); // Popup notification state
-  const [ownerId, setOwnerId] = useState(null);    // Logged-in user's ID
+  const [loggedInId, setloggedInId] = useState(null);    // Logged-in user's ID
   const [ownerName, setOwnerName] = useState(null); // Logged-in user's username
 
 
@@ -17,16 +17,17 @@ export function useGroupApi() {
   useEffect(() => {
     if (token) {
       const payload = JSON.parse(atob(token.split(".")[1]));
-      setOwnerId(payload.id);  // Save logged-in user ID
+      setloggedInId(payload.id);  // Save logged-in user ID
+      console.log("Logged-in user ID:", payload.id);
     }
   }, [token]);
 
-  // Call fetchOwnerInfo, when ownerId is known
+  // Call fetchOwnerInfo, when loggedInId is known
   useEffect(() => {
-    if (ownerId) {
-      fetchOwnerInfo(ownerId);
+    if (loggedInId) {
+      fetchOwnerInfo(loggedInId);
     }
-  }, [ownerId]);
+  }, [loggedInId]);
 
 
   const fetchOwnerInfo = async (id) => {  // Get logged-in user's name
@@ -284,7 +285,7 @@ export function useGroupApi() {
     loading, // Loading state
     error, // Error state
     notification, // Popup message
-    ownerId, // Logged-in user's ID
+    loggedInId, // Logged-in user's ID
     ownerName, // Logged-in user's username
     fetchGroups, // Refresh public groups
     fetchMyGroups, // Refresh user's groups

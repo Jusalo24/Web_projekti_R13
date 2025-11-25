@@ -58,7 +58,7 @@ export function useSearchApi({
                             const endpoint =
                                 item.type === "movie"
                                     ? `${baseURL}/api/movies/byId/${item.id}`
-                                    : `${baseURL}/api/tv/byId/${item.id}`;
+                                    : `${baseURL}/api/tv/${item.id}`;
 
                             try {
                                 // Fetch a single item by ID

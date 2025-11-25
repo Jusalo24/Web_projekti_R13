@@ -6,7 +6,7 @@ import GetMoviesSeries from "../components/GetMoviesSeries";
 
 export default function GroupDetails() {
     const { id } = useParams();
-    const { fetchGroupById, ownerId, fetchMoviesByGroup } = useGroupApi();
+    const { fetchGroupById, loggedInId, fetchMoviesByGroup } = useGroupApi();
     const imageSize = "w342"; // Size of poster images: w780, w500, w342, w185, w154, w92, original
 
     const [group, setGroup] = useState(null);
@@ -19,6 +19,7 @@ export default function GroupDetails() {
             const movies = await fetchMoviesByGroup(id);
             setGroup({ ...data, movies });
             setLoading(false);
+            console.log("Group details:", { ...data, movies });
         }
         load();
     }, [id]);
@@ -35,9 +36,9 @@ export default function GroupDetails() {
                 <div className="group-details__info">
                     <p>
                         <strong>Owner:</strong>{" "}
-                        {group.owner_id === ownerId
+                        {group.owner_id === loggedInId
                             ? "You"
-                            : group.owner_name || group.owner_id}
+                            : group.owner_name}
                     </p>
 
                     <p>
@@ -56,7 +57,7 @@ export default function GroupDetails() {
                                 <div className="member-info">
                                     <span className="member-name">
                                         {m.username || m.id}
-                                        {m.id === ownerId ? " (You)" : ""}
+                                        {m.user_id === loggedInId ? " (You)" : ""}
                                     </span>
                                     <span className="member-role">{m.role}</span>
                                 </div>
