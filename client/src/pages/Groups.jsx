@@ -96,7 +96,7 @@ export default function Groups() {
                     <strong>Group:</strong> {req.groupName}
                   </p>
                   <p>
-                    <strong>User:</strong> {req.user_id.slice(0, 6)}...
+                    <strong>User:</strong> {req.username}
                   </p>
 
                   <div className="request-actions">

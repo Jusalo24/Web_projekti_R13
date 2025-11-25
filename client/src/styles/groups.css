@@ -120,6 +120,11 @@
   border: none;
   cursor: pointer;
   font-weight: 600;
+  transition: transform 0.2s ease;
+}
+
+.accept-btn:hover {
+  transform: scale(1.03);
 }
 
 .reject-btn {
@@ -129,6 +134,11 @@
   border: none;
   cursor: pointer;
   font-weight: 600;
+  transition: transform 0.2s ease;
+}
+
+.reject-btn:hover {
+  transform: scale(1.03);
 }
 
 /* --- Group List Wrapper --- */

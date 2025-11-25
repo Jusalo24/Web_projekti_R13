@@ -8,7 +8,7 @@ export function useGroupApi() {
   const [error, setError] = useState(null); // Error message (optional)
   const [notification, setNotification] = useState({ message: null, type: "error" }); // Popup notification state
   const [loggedInId, setloggedInId] = useState(null);    // Logged-in user's ID
-  const [ownerName, setOwnerName] = useState(null); // Logged-in user's username
+  const [loggedInName, setloggedInName] = useState(null); // Logged-in user's username
 
 
   const baseURL = import.meta.env.VITE_API_BASE_URL; // API base URL
@@ -39,7 +39,7 @@ export function useGroupApi() {
       const data = await res.json();
 
       if (res.ok) {
-        setOwnerName(data.username);  // Save username
+        setloggedInName(data.username);  // Save username
       }
     } catch (err) {
       console.error("Failed to fetch owner info", err);
@@ -303,7 +303,7 @@ export function useGroupApi() {
     error, // Error state
     notification, // Popup message
     loggedInId, // Logged-in user's ID
-    ownerName, // Logged-in user's username
+    loggedInName, // Logged-in user's username
     fetchGroups, // Refresh public groups
     fetchMyGroups, // Refresh user's groups
     fetchJoinRequests, // Refresh join requests
