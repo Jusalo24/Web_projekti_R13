@@ -1,3 +1,4 @@
+import React from "react";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import "../styles/Auth.css";
@@ -84,16 +85,28 @@ export default function Register() {
 
       <form className="auth-form" onSubmit={handleRegister}>
         <label>Email</label>
-        <input type="email" placeholder="Enter email..." value={email}
-         onChange={(e) => setEmail(e.target.value)}/>
+        <input
+          type="email"
+          placeholder="Enter email..."
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
         <label>Username</label>
-        <input type="text" placeholder="Choose username..." value={username}
-          onChange={(e) => setUsername(e.target.value)}/>
+        <input
+          type="text"
+          placeholder="Choose username..."
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
 
         <label>Password</label>
-        <input type="password" placeholder="Create password..." value={password}
-          onChange={(e) => setPassword(e.target.value)}/>
+        <input
+          type="password"
+          placeholder="Create password..."
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
         {/* Show error message */}
         {errorMessage && <p className="auth-error">{errorMessage}</p>}
