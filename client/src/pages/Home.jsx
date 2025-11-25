@@ -9,7 +9,7 @@ export default function Home() {
       <section className="home__section">
         <h2 className="home__section-title">Now Playing in Finland</h2>
         <div className="home__movies-container">
-          <GetMoviesSeries type="now_playing" region="FI" page={1} pages={3} imageSize={imageSize} />
+          <GetMoviesSeries type="now_playing" region="FI" page={1} pages={1} imageSize={imageSize} />
         </div>
       </section>
 
@@ -30,14 +30,14 @@ export default function Home() {
       <section className="home__section">
         <h2 className="home__section-title">Upcoming Movies</h2>
         <div className="home__movies-container">
-          <GetMoviesSeries type="upcoming" page={1} pages={2} imageSize={imageSize} />
+          <GetMoviesSeries type="upcoming" page={1} pages={1} imageSize={imageSize} />
         </div>
       </section>
 
       <section className="home__section">
         <h2 className="home__section-title">Popular Movies</h2>
         <div className="home__movies-container">
-          <GetMoviesSeries type="popular" page={1} pages={2} imageSize={imageSize} />
+          <GetMoviesSeries type="popular" page={1} pages={1} imageSize={imageSize} />
         </div>
       </section>
     </main>

@@ -304,6 +304,8 @@ export function useGroupApi() {
     notification, // Popup message
     loggedInId, // Logged-in user's ID
     loggedInName, // Logged-in user's username
+    showError,
+    showSuccess,
     fetchGroups, // Refresh public groups
     fetchMyGroups, // Refresh user's groups
     fetchJoinRequests, // Refresh join requests

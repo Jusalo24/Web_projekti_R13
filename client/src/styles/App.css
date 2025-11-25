@@ -334,6 +334,32 @@ body {
   font-weight: 500;
 }
 
+.movie-card__add-to-group {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 9999;
+    pointer-events: auto;
+    background: rgba(0, 0, 0, 0.6);
+    border: none;
+    padding: 6px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: white;
+    transform: scale(1);
+    transition: 
+        background 0.25s ease,
+        transform 0.2s ease,
+        color 0.5s ease;
+}
+
+.movie-card__add-to-group:hover {
+    background: var(--color-success);
+    transform: scale(1.1);
+    color: white;
+    opacity: 0.9;
+}
+
 /* Loading, Error & Empty States */
 .movies-loading,
 .movies-error,

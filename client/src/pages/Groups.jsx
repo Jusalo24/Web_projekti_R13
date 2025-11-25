@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import "../styles/groups.css";
 import { useGroupApi } from "../hooks/useGroupApi";
 import GroupList from "../components/GroupList";
-import Notification from "../components/Notification";
+import AppNotification from "../components/AppNotification";
 
 export default function Groups() {
   const {
@@ -49,12 +49,11 @@ export default function Groups() {
 
   return (
     <main className="groups">
-      <Notification
+      <AppNotification
         message={notification.message}   // Notification text
         type={notification.type}         // Notification type (success/error)
         onClose={() => setNotification({ message: null })} // Close popup
       />
-
       <section className="groups__section">
         <h2 className="groups__title">Groups</h2>
 
