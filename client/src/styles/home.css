@@ -129,3 +129,42 @@
     font-size: 1rem;
   }
 }
+
+@media (max-width: 480px) {
+  .home {
+    padding: var(--spacing-md) var(--spacing-sm);
+  }
+
+  .home__section {
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .home__section-title {
+    font-size: 1.25rem;
+    margin-bottom: var(--spacing-sm);
+    padding-bottom: var(--spacing-xs);
+  }
+
+  .home__section-title::after {
+    width: 60px;
+    height: 3px;
+  }
+
+  .home__movies-container {
+    padding: var(--spacing-xs);
+    border-radius: var(--radius-sm);
+  }
+
+  .home__featured {
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+  }
+
+  .home__featured-title {
+    font-size: 1.5rem;
+  }
+
+  .home__featured-subtitle {
+    font-size: 0.9rem;
+  }
+}

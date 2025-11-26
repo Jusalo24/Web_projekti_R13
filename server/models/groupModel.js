@@ -130,6 +130,15 @@ export async function addMember(groupId, userId, role = "member") {
     return result.rows[0];
 }
 
+// Remove member from group
+// SQL: DELETE FROM group_members WHERE group_id=$1 AND user_id=$2 | params: groupId, userId
+export async function removeMember(groupId, userId) {
+    await db.query(
+        `DELETE FROM group_members WHERE group_id = $1 AND user_id = $2`,
+        [groupId, userId]
+    );
+}
+
 // Create a join request
 // SQL: INSERT INTO group_join_requests | params: groupId, userId
 export async function createJoinRequest(groupId, userId) {
@@ -156,8 +165,18 @@ export async function createJoinRequest(groupId, userId) {
 // SQL: SELECT * FROM group_join_requests WHERE group_id=$1 AND status='pending' | params: groupId
 export async function getJoinRequests(groupId) {
     const result = await db.query(
-        `SELECT * FROM group_join_requests
-         WHERE group_id = $1 AND status = 'pending'`,
+        `SELECT 
+            jr.id,
+            jr.group_id,
+            jr.user_id,
+            u.username,
+            g.name AS group_name,
+            jr.status
+         FROM group_join_requests jr
+         JOIN users u ON u.id = jr.user_id
+         JOIN groups g ON g.id = jr.group_id
+         WHERE jr.group_id = $1
+           AND jr.status = 'pending'`,
         [groupId]
     );
     return result.rows;

@@ -13,8 +13,6 @@ import Login from "./pages/Login"
 import Register from "./pages/Register"
 import GroupDetails from "./pages/GroupDetails"
 
-
-
 function App() {
   return (
     <>

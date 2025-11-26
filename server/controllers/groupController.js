@@ -74,18 +74,33 @@ export async function deleteGroup(req, res) {
 }
 
 // Add a member directly to a group
-// POST /api/groups/groups/:id/members  | params: { id }, body: { userId }
+// POST /api/groups/groups/:id/members  | params: { id }, query: { userId }
 export async function addMember(req, res) {
     try {
         const member = await groupService.addMember(
             req.params.id,
-            req.body.userId
+            req.query.userId
         );
         if (!member)
             return res.status(409).json({ error: "User already in group" });
         res.status(201).json(member);
     } catch (err) {
         res.status(500).json({ error: "Failed to add member" });
+    }
+}
+
+// Remove a member from a group
+// DELETE /api/groups/:id/members | params: { id }  query: { userId }
+
+export async function removeMember(req, res) {
+    try {
+        await groupService.removeMember(
+            req.params.id,
+            req.query.userId
+        );
+        res.status(204).send();
+    } catch (err) {
+        res.status(500).json({ error: "Failed to remove member" });
     }
 }
 
