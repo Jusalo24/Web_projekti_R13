@@ -1,6 +1,8 @@
 import React from "react";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { useApi } from "../hooks/useApi";
 import GetImage from "../components/GetImage";
 import "../styles/movie-detail.css";
 
@@ -16,6 +18,17 @@ export default function MovieDetail() {
   const [error, setError] = useState(null);
   const [mediaType, setMediaType] = useState("movie"); // Default to movie
   const imageSize = "original"; // Size of poster images: w780, w500, w342, w185, w154, w92, original
+  
+  const { user, token } = useAuth(); // Get authenticated user
+  const { request } = useApi(); // Custom hook for API requests
+
+  // Review states
+  const [reviews, setReviews] = useState([]);
+  const [average, setAverage] = useState(null);
+  const [rating, setRating] = useState(5);
+  const [text, setText] = useState("");
+  const [myReviewId, setMyReviewId] = useState(null);
+  const [reviewError, setReviewError] = useState(null);
 
   const baseURL = import.meta.env.VITE_API_BASE_URL;
 
@@ -23,6 +36,12 @@ export default function MovieDetail() {
   useEffect(() => {
     fetchDetails();
   }, [id, searchParams]);
+
+  // Load reviews when details or user changes
+  useEffect(() => {
+  if (details) {loadReviews();}
+  }, [details, user]);
+
 
   const fetchDetails = async () => {
     try {
@@ -65,7 +84,6 @@ export default function MovieDetail() {
       
       setMediaType(currentMediaType);
       setDetails(detailsData);
-      setDetails(detailsData);
 
       // Fetch credits
       const creditsEndpoint = currentMediaType === "movie" 
@@ -104,6 +122,70 @@ export default function MovieDetail() {
       setLoading(false);
     }
   };
+
+  const loadReviews = async () => {
+  try {
+    const rev = await request(`/api/reviews/movie/${id}?page=1&limit=20`);
+    const avg = await request(`/api/reviews/movie/${id}/average`);
+    setReviews(rev.reviews || []);
+    setAverage(avg || null);
+
+    if (user) {
+      const mine = (rev.reviews || []).find(r => r.user_id === user.id);
+      if (mine) {
+        setMyReviewId(mine.id);
+        setRating(mine.rating);
+        setText(mine.review_text || "");
+      } else {
+        setMyReviewId(null);
+        setRating(5);
+        setText("");
+      }
+    }
+    setReviewError(null);
+  } catch (err) {
+    setReviewError(err.message);
+  }
+};
+
+const submitReview = async () => {
+  if (!token) { setReviewError("Login required"); return; }
+  try {
+    if (myReviewId) {
+      await request(`/api/reviews/${myReviewId}`, {
+        method: "PUT",
+        body: JSON.stringify({ rating, review_text: text })
+      });
+    } else {
+      await request(`/api/reviews`, {
+        method: "POST",
+        body: JSON.stringify({
+          user_id: user.id,
+          movie_external_id: id,
+          rating,
+          review_text: text
+        })
+      });
+    }
+    await loadReviews();
+  } catch (err) {
+    setReviewError(err.message);
+  }
+};
+
+const deleteReview = async () => {
+  if (!token || !myReviewId) return;
+  try {
+    await request(`/api/reviews/${myReviewId}`, { method: "DELETE" });
+    setMyReviewId(null);
+    setRating(5);
+    setText("");
+    await loadReviews();
+  } catch (err) {
+    setReviewError(err.message);
+  }
+};
+
 
   const getTitle = () => {
     return details?.title || details?.name || "Unknown Title";
@@ -339,6 +421,65 @@ export default function MovieDetail() {
             </div>
           </div>
         )}
+<div className="movie-detail__section">
+  <h2 className="movie-detail__section-title">Reviews</h2>
+
+  {average && (
+    <p className="movie-detail__average">
+      Avg {average.average_rating} ({average.total_reviews} reviews)
+    </p>
+  )}
+
+  {reviewError && <p className="movie-detail__error">{reviewError}</p>}
+
+  <div className="review-wrap review-grid">
+    <div>
+      {user ? (
+        <div className="review-form">
+          <label>
+            Rating
+            <input
+              type="number"
+              min="1"
+              max="5"
+              value={rating}
+              onChange={(e) => setRating(Number(e.target.value))}
+            />
+          </label>
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Write your thoughts..."
+          />
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            <button onClick={submitReview}>
+              {myReviewId ? "Update review" : "Post review"}
+            </button>
+            {myReviewId && <button onClick={deleteReview}>Delete my review</button>}
+          </div>
+        </div>
+      ) : (
+        <p>Login to write a review.</p>
+      )}
+    </div>
+
+    <div className="reviews-list">
+      {reviews.length === 0 && <p>No reviews yet.</p>}
+      {reviews.map((r) => (
+        <div key={r.id} className="review-card">
+          <div className="review-card__header">
+            <strong>{r.username || r.user_id}</strong>
+            <span className="review-card__rating">{r.rating}/5</span>
+          </div>
+          <p>{r.review_text || "(no text)"}</p>
+          <small>{new Date(r.created_at).toLocaleString()}</small>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
+
+
       </div>
     </div>
   );
