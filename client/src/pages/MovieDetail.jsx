@@ -1,6 +1,8 @@
 import React from "react";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { useApi } from "../hooks/useApi";
 import GetImage from "../components/GetImage";
 import AddToGroupModal from "../components/AddToGroupModal";
 import "../styles/movie-detail.css";
@@ -9,6 +11,8 @@ export default function MovieDetail() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  
+  // Movie/TV details
   const [details, setDetails] = useState(null);
   const [credits, setCredits] = useState(null);
   const [videos, setVideos] = useState(null);
@@ -16,60 +20,75 @@ export default function MovieDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mediaType, setMediaType] = useState("movie");
+  
+  // UI state
   const [showGroupModal, setShowGroupModal] = useState(false);
   const [notification, setNotification] = useState({ message: null, type: "success" });
+  
+  // Favorites state
   const [isFavorite, setIsFavorite] = useState(false);
   const [checkingFavorite, setCheckingFavorite] = useState(true);
   
+  // Reviews state
+  const [reviews, setReviews] = useState([]);
+  const [average, setAverage] = useState(null);
+  const [rating, setRating] = useState(5);
+  const [text, setText] = useState("");
+  const [myReviewId, setMyReviewId] = useState(null);
+  const [reviewError, setReviewError] = useState(null);
+  
   const imageSize = "original";
   const baseURL = import.meta.env.VITE_API_BASE_URL;
-  const token = localStorage.getItem("token");
+  
+  // Auth context
+  const { user, token } = useAuth();
+  const { request } = useApi();
   const isLoggedIn = !!token;
 
-  // Determine if this is a movie or TV show based on query parameter
+  // Fetch movie/TV details
   useEffect(() => {
     fetchDetails();
   }, [id, searchParams]);
 
-  // Separate effect for checking favorites after mediaType is set
+  // Check if favorited after mediaType is set
   useEffect(() => {
     if (isLoggedIn && mediaType && id) {
       checkIfFavorite();
     }
   }, [id, mediaType, isLoggedIn]);
 
+  // Load reviews when details or user changes
+  useEffect(() => {
+    if (details) {
+      loadReviews();
+    }
+  }, [details, user]);
+
   const fetchDetails = async () => {
     try {
       setLoading(true);
-      setError(null); // Clear previous errors
+      setError(null);
       
-      // Get media type from query parameter, default to 'movie'
       const typeParam = searchParams.get('type') || 'movie';
       let currentMediaType = typeParam;
       
-      // Fetch based on the media type
       let detailsRes;
       let detailsData;
       
       if (typeParam === 'tv') {
         detailsRes = await fetch(`${baseURL}/api/tv/${id}`);
-        
-        // If TV fetch fails, try as movie
         if (!detailsRes.ok) {
           detailsRes = await fetch(`${baseURL}/api/movies/byId/${id}`);
           currentMediaType = "movie";
         }
       } else {
         detailsRes = await fetch(`${baseURL}/api/movies/byId/${id}`);
-        
-        // If movie fetch fails, try as TV
         if (!detailsRes.ok) {
           detailsRes = await fetch(`${baseURL}/api/tv/${id}`);
           currentMediaType = "tv";
         }
       }
       
-      // If both attempts failed, show error
       if (!detailsRes.ok) {
         const errorData = await detailsRes.json().catch(() => ({}));
         throw new Error(errorData.error || "Content not found");
@@ -132,7 +151,6 @@ export default function MovieDetail() {
       const lists = await res.json();
       const movieId = `${mediaType}:${id}`;
       
-      // Check all lists for this movie
       for (const list of lists) {
         const itemsRes = await fetch(`${baseURL}/api/favorite-lists/${list.id}/items`, {
           headers: { Authorization: `Bearer ${token}` }
@@ -142,12 +160,11 @@ export default function MovieDetail() {
           const items = await itemsRes.json();
           if (items.some(item => item.movie_external_id === movieId)) {
             setIsFavorite(true);
-            return; // Exit early once found
+            return;
           }
         }
       }
       
-      // If we get here, movie is not in any list
       setIsFavorite(false);
     } catch (err) {
       console.error("Error checking favorite:", err);
@@ -164,7 +181,6 @@ export default function MovieDetail() {
     }
 
     try {
-      // Get or create default favorites list
       const listsRes = await fetch(`${baseURL}/api/favorite-lists`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -174,7 +190,6 @@ export default function MovieDetail() {
         lists = await listsRes.json();
       }
 
-      // Find or create "My Favorites" list
       let defaultList = lists.find(list => list.title === "My Favorites");
       
       if (!defaultList) {
@@ -197,7 +212,6 @@ export default function MovieDetail() {
         defaultList = await createRes.json();
       }
 
-      // Add movie to list
       const movieId = `${mediaType}:${id}`;
       const addRes = await fetch(`${baseURL}/api/favorite-lists/${defaultList.id}/items`, {
         method: "POST",
@@ -235,7 +249,6 @@ export default function MovieDetail() {
       const lists = await listsRes.json();
       const movieId = `${mediaType}:${id}`;
 
-      // Find and remove from all lists
       for (const list of lists) {
         const itemsRes = await fetch(`${baseURL}/api/favorite-lists/${list.id}/items`, {
           headers: { Authorization: `Bearer ${token}` }
@@ -262,6 +275,74 @@ export default function MovieDetail() {
     } catch (err) {
       console.error("Error removing from favorites:", err);
       showNotification("Failed to remove from favorites", "error");
+    }
+  };
+
+  const loadReviews = async () => {
+    try {
+      const rev = await request(`/api/reviews/movie/${id}?page=1&limit=20`);
+      const avg = await request(`/api/reviews/movie/${id}/average`);
+      setReviews(rev.reviews || []);
+      setAverage(avg || null);
+
+      if (user) {
+        const mine = (rev.reviews || []).find(r => r.user_id === user.id);
+        if (mine) {
+          setMyReviewId(mine.id);
+          setRating(mine.rating);
+          setText(mine.review_text || "");
+        } else {
+          setMyReviewId(null);
+          setRating(5);
+          setText("");
+        }
+      }
+      setReviewError(null);
+    } catch (err) {
+      setReviewError(err.message);
+    }
+  };
+
+  const submitReview = async () => {
+    if (!token) {
+      setReviewError("Login required");
+      return;
+    }
+    try {
+      if (myReviewId) {
+        await request(`/api/reviews/${myReviewId}`, {
+          method: "PUT",
+          body: JSON.stringify({ rating, review_text: text })
+        });
+      } else {
+        await request(`/api/reviews`, {
+          method: "POST",
+          body: JSON.stringify({
+            user_id: user.id,
+            movie_external_id: id,
+            rating,
+            review_text: text
+          })
+        });
+      }
+      await loadReviews();
+      showNotification(myReviewId ? "Review updated!" : "Review posted!", "success");
+    } catch (err) {
+      setReviewError(err.message);
+    }
+  };
+
+  const deleteReview = async () => {
+    if (!token || !myReviewId) return;
+    try {
+      await request(`/api/reviews/${myReviewId}`, { method: "DELETE" });
+      setMyReviewId(null);
+      setRating(5);
+      setText("");
+      await loadReviews();
+      showNotification("Review deleted", "success");
+    } catch (err) {
+      setReviewError(err.message);
     }
   };
 
@@ -297,7 +378,6 @@ export default function MovieDetail() {
   };
 
   const handleSimilarClick = (itemId, itemMediaType) => {
-    // Determine media type from the item or use current media type as fallback
     const targetMediaType = itemMediaType || mediaType;
     navigate(`/movies/${itemId}?type=${targetMediaType}`);
     window.scrollTo(0, 0);
@@ -478,6 +558,65 @@ export default function MovieDetail() {
             </div>
           </div>
         )}
+
+        {/* Reviews Section */}
+        <div className="movie-detail__section">
+          <h2 className="movie-detail__section-title">Reviews</h2>
+
+          {average && (
+            <p className="movie-detail__average">
+              Average {average.average_rating}/5 ({average.total_reviews} reviews)
+            </p>
+          )}
+
+          {reviewError && <p className="movie-detail__error">{reviewError}</p>}
+
+          <div className="review-wrap review-grid">
+            <div>
+              {user ? (
+                <div className="review-form">
+                  <label>
+                    Rating (1-5)
+                    <input
+                      type="number"
+                      min="1"
+                      max="5"
+                      value={rating}
+                      onChange={(e) => setRating(Number(e.target.value))}
+                    />
+                  </label>
+                  <textarea
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    placeholder="Write your thoughts..."
+                  />
+                  <div style={{ display: "flex", gap: "0.5rem" }}>
+                    <button onClick={submitReview}>
+                      {myReviewId ? "Update review" : "Post review"}
+                    </button>
+                    {myReviewId && <button onClick={deleteReview}>Delete my review</button>}
+                  </div>
+                </div>
+              ) : (
+                <p>Login to write a review.</p>
+              )}
+            </div>
+
+            <div className="reviews-list">
+              {reviews.length === 0 && <p>No reviews yet.</p>}
+              {reviews.map((r) => (
+                <div key={r.id} className="review-card">
+                  <div className="review-card__header">
+                    <strong>{r.username || r.user_id}</strong>
+                    <span className="review-card__rating">{r.rating}/5</span>
+                  </div>
+                  <p>{r.review_text || "(no text)"}</p>
+                  <small>{new Date(r.created_at).toLocaleString()}</small>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
 
         {/* Cast Section */}
         {credits?.cast && credits.cast.length > 0 && (
