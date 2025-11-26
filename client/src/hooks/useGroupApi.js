@@ -229,7 +229,6 @@ export function useGroupApi() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          query: { movieId, mediaType }
         }
       );
       const data = await res.json();

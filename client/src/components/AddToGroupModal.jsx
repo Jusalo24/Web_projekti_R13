@@ -1,67 +1,48 @@
 import React, { useState, useEffect } from "react";
 import "../styles/addToGroupModal.css";
+import { useGroupApi } from "../hooks/useGroupApi";
 
-export default function AddToGroupModal({ movieId, mediaType, movieTitle, onClose, onSuccess }) {
-  const [groups, setGroups] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+export default function AddToGroupModal({
+  movieId,
+  mediaType,
+  movieTitle,
+  onClose,
+  onSuccess
+}) {
+  const {
+    myGroups,
+    fetchMyGroups,
+    addMovieToGroup,
+    loading,
+    error,
+    showSuccess,
+    showError
+  } = useGroupApi();
+
   const [addingToGroup, setAddingToGroup] = useState(null);
 
-  const baseURL = import.meta.env.VITE_API_BASE_URL;
-  const token = localStorage.getItem("token");
-
+  // Load user's groups when the modal opens
   useEffect(() => {
-    fetchUserGroups();
+    fetchMyGroups();
   }, []);
-
-  const fetchUserGroups = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(`${baseURL}/api/groups/my`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to fetch groups");
-      }
-
-      const data = await res.json();
-      setGroups(data);
-    } catch (err) {
-      console.error("Error fetching groups:", err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleAddToGroup = async (groupId, groupName) => {
     try {
       setAddingToGroup(groupId);
-      
-      const externalMovieId = `${mediaType}:${movieId}`;
-      
-      const res = await fetch(
-        `${baseURL}/api/groups/${groupId}/movies?movieId=${encodeURIComponent(externalMovieId)}&mediaType=${mediaType}`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to add movie to group");
+      const result = await addMovieToGroup(groupId, movieId, mediaType);
+
+      if (!result || result.error) {
+        showError(result?.error || "Failed to add movie to group");
+        return;
       }
 
-      onSuccess(groupName);
+      showSuccess(`Added to ${groupName}!`);
+      if (onSuccess) onSuccess(groupName);
+
     } catch (err) {
-      console.error("Error adding to group:", err);
-      alert(err.message);
+      console.error(err);
+      showError("Unexpected error adding movie");
     } finally {
       setAddingToGroup(null);
     }
@@ -69,10 +50,15 @@ export default function AddToGroupModal({ movieId, mediaType, movieTitle, onClos
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box add-to-group-modal" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="modal-box add-to-group-modal"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="modal-header">
           <h3>Add to Group</h3>
-          <button className="modal-close" onClick={onClose}>✕</button>
+          <button className="modal-close" onClick={onClose}>
+            ✕
+          </button>
         </div>
 
         <div className="modal-body">
@@ -80,29 +66,33 @@ export default function AddToGroupModal({ movieId, mediaType, movieTitle, onClos
             <strong>{movieTitle}</strong>
           </p>
 
+          {/* Loading state */}
           {loading && (
             <div className="modal-loading">Loading your groups...</div>
           )}
 
+          {/* Error state */}
           {error && (
             <div className="modal-error">
-              <p>Error: {error}</p>
-              <button onClick={fetchUserGroups}>Retry</button>
+              <p>Error loading groups.</p>
+              <button onClick={fetchMyGroups}>Retry</button>
             </div>
           )}
 
-          {!loading && !error && groups.length === 0 && (
+          {/* No groups */}
+          {!loading && !error && myGroups.length === 0 && (
             <div className="modal-empty">
               <p>You don't have any groups yet.</p>
               <p className="modal-empty-hint">
-                Create a group first from the Groups page to add movies to it.
+                Create one from the Groups page first.
               </p>
             </div>
           )}
 
-          {!loading && !error && groups.length > 0 && (
+          {/* Groups list */}
+          {!loading && !error && myGroups.length > 0 && (
             <div className="groups-list">
-              {groups.map((group) => (
+              {myGroups.map((group) => (
                 <div key={group.id} className="group-item">
                   <div className="group-info">
                     <h4 className="group-name">{group.name}</h4>
@@ -110,10 +100,11 @@ export default function AddToGroupModal({ movieId, mediaType, movieTitle, onClos
                       <p className="group-description">{group.description}</p>
                     )}
                   </div>
+
                   <button
                     className="add-btn"
-                    onClick={() => handleAddToGroup(group.id, group.name)}
                     disabled={addingToGroup === group.id}
+                    onClick={() => handleAddToGroup(group.id, group.name)}
                   >
                     {addingToGroup === group.id ? "Adding..." : "Add"}
                   </button>
