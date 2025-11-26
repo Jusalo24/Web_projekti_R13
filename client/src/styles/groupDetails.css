@@ -12,6 +12,24 @@
   box-shadow: var(--shadow-sm);
 }
 
+.group-details__delete-group-button {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  float: right;
+  background: var(--color-error);
+  color: var(--color-text-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  white-space: nowrap;
+}
+
+.group-details__delete-group-button:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
 .group-details__header h2 {
   font-size: 2rem;
   margin-bottom: var(--spacing-md);

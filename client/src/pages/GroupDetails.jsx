@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useGroupApi } from "../hooks/useGroupApi";
 import "../styles/groupDetails.css";
 import GetMoviesSeries from "../components/GetMoviesSeries";
 
 export default function GroupDetails() {
     const { id } = useParams();
-    const { fetchGroupById, loggedInId, fetchMoviesByGroup, removeMemberFromGroup } = useGroupApi();
+    const { fetchGroupById, loggedInId, fetchMoviesByGroup, removeMemberFromGroup, deleteGroup } = useGroupApi();
     const imageSize = "w342"; // Size of poster images: w780, w500, w342, w185, w154, w92, original
+    const [showConfirmDelete, setShowConfirmDelete] = useState(false); // Boolean for modal group deleting
 
     const [group, setGroup] = useState(null); // Stores full group data
     const [loading, setLoading] = useState(true); // Loading state for group fetch
+
+    const navigate = useNavigate(); // For navigation to groups page
 
     useEffect(() => {
         load();
@@ -38,6 +41,17 @@ export default function GroupDetails() {
         <main className="group-details">
             {/* Group header section */}
             <section className="group-details__header">
+                {group.owner_id === loggedInId && (
+                    <button
+                        className="group-details__delete-group-button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setShowConfirmDelete(true);
+                        }}
+                    >
+                        Delete group
+                    </button>
+                )}
                 <h2>{group.name}</h2>
                 <p className="group-details__description">{group.description}</p>
 
@@ -71,7 +85,7 @@ export default function GroupDetails() {
 
                                 {/* Kick button visible only for group owner */}
                                 {group.owner_id === loggedInId && member.user_id !== loggedInId && (
-                                    <button 
+                                    <button
                                         className="member-card__kick-member__button"
                                         onClick={(e) => {
                                             e.stopPropagation();
@@ -107,6 +121,33 @@ export default function GroupDetails() {
                     <p>No movies added yet...</p>
                 )}
             </div>
+            {showConfirmDelete && (
+                <div className="modal-overlay">
+                    <div className="modal-box">
+                        <h3>Delete this group?</h3>
+                        <p>This action cannot be undone.</p>
+
+                        <div className="modal-buttons">
+                            <button
+                                className="modal-btn cancel"
+                                onClick={() => setShowConfirmDelete(false)}
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                className="modal-btn"
+                                onClick={async () => {
+                                    await deleteGroup(group.id);
+                                    navigate("/groups");
+                                }}
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </main>
     );
 }

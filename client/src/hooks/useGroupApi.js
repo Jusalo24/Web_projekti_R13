@@ -1,4 +1,4 @@
-import react, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 export function useGroupApi() {
   const [groups, setGroups] = useState([]); // All visible/public groups
@@ -260,6 +260,23 @@ export function useGroupApi() {
     }
   };
 
+  // DELETE /api/groups/:id
+  const deleteGroup = async (groupId) => {
+    try {
+      const res = await fetch(
+        `${baseURL}/api/groups/${groupId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      console.error("Failed to delete group", err);
+    }
+  }
+
   // GET /api/groups/:id/movies
   const fetchMoviesByGroup = async (groupId) => { // List movies in group
     try {
@@ -318,6 +335,7 @@ export function useGroupApi() {
     addMovieToGroup, // Add movie to group
     removeMovieFromGroup, // Remove movie from group
     fetchMoviesByGroup, // List movies in group
-    removeMemberFromGroup // Remove member from group
+    removeMemberFromGroup, // Remove member from group
+    deleteGroup // Delete
   };
 }
