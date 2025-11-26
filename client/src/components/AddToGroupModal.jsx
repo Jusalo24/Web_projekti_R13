@@ -7,7 +7,8 @@ export default function AddToGroupModal({
   mediaType,
   movieTitle,
   onClose,
-  onSuccess
+  onSuccess,
+  onError
 }) {
   const {
     myGroups,
@@ -33,16 +34,27 @@ export default function AddToGroupModal({
       const result = await addMovieToGroup(groupId, movieId, mediaType);
 
       if (!result || result.error) {
-        showError(result?.error || "Failed to add movie to group");
+        const msg = result?.error || "Failed to add movie to group";
+        
+        showError(msg);
+
+        // NEW: announce error to parent
+        if (onError) onError(msg);
+
         return;
       }
 
       showSuccess(`Added to ${groupName}!`);
+
       if (onSuccess) onSuccess(groupName);
 
     } catch (err) {
       console.error(err);
       showError("Unexpected error adding movie");
+
+      // trigger parent error callback
+      if (onError) onError("Unexpected error adding movie");
+
     } finally {
       setAddingToGroup(null);
     }

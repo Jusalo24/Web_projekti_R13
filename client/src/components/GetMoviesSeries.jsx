@@ -5,6 +5,7 @@ import GetImage from "./GetImage";
 import { useSearchApi, movieHelpers } from "../hooks/useSearchApi";
 import { useGroupApi } from "../hooks/useGroupApi";
 import AppNotification from "../components/AppNotification";
+import { useFavoritesApi } from "../hooks/useFavoritesApi";
 
 export default function GetMoviesSeries({
   type = "now_playing",  // Type of movies/series to fetch
@@ -20,7 +21,18 @@ export default function GetMoviesSeries({
 }) {
   const navigate = useNavigate(); // For navigation to detail page
 
-  const { removeMovieFromGroup, addMovieToGroup, fetchMyGroups, myGroups, setNotification, notification, showSuccess, showError } = useGroupApi();
+  const token = localStorage.getItem("token");
+
+  const { removeMovieFromGroup, addMovieToGroup, fetchMyGroups, myGroups } = useGroupApi();
+
+  const {
+    addToFavorites,
+    removeFromFavorites,
+    isFavorite,
+    notification: favNotification,
+    setNotification: setFavNotification,
+  } = useFavoritesApi(token);
+
 
   // Custom hook to fetch movies/series based on params
   const { movies, loading, error } = useSearchApi({
@@ -57,29 +69,26 @@ export default function GetMoviesSeries({
     if (onDataChanged) onDataChanged(); // reload site
   }
 
-  // Handle clicking on a movie/TV show plus button       TÄMÄN KOHDAN VOI MUUTTAA FAVORITE LIST
-  const handleAddToGroupClick = async (movie) => {
-    await fetchMyGroups();
-    if (!myGroups || myGroups.length === 0) {
-      setNotification({
-        message: "You are not a member of any groups!",
+  // Handle clicking on a movie/TV show plus button
+  const handleAddToFavoritesClick = async (movie) => {
+    const itemMediaType = movie.media_type || media_type || "movie";
+
+    const result = await addToFavorites(itemMediaType, movie.id);
+
+    if (result?.error) {
+      setFavNotification({
+        message: "Already in favorites!",
         type: "error"
       });
       return;
     }
-    const itemMediaType = movie.media_type || media_type || 'movie';
-    const result = await addMovieToGroup(myGroups[0].id, movie.id, itemMediaType); // Adds to latest group
 
-    // If backend returns an error
-    if (!result || result.error) {
-      showError(result?.error || "Failed to add movie to group");
-      return;
-    }
-    setNotification({
-      message: "Movie added to latest group",
+    setFavNotification({
+      message: "Added to favorites!",
       type: "success"
     });
-  }
+  };
+
 
   // Display loading, error, or empty states
   if (loading) return <div className="movies-loading">Loading...</div>;
@@ -90,9 +99,9 @@ export default function GetMoviesSeries({
   return (
     <div className="movies-grid">
       <AppNotification
-        message={notification.message}   // Notification text
-        type={notification.type}         // Notification type (success/error)
-        onClose={() => setNotification({ message: null })} // Close popup
+        message={favNotification.message}   // Notification text
+        type={favNotification.type}         // Notification type (success/error)
+        onClose={() => setFavNotification({ message: null })} // Close popup
       />
       {movies.map((movie, index) => {
         // Use both media type, ID, and index to ensure uniqueness even for duplicates
@@ -124,7 +133,7 @@ export default function GetMoviesSeries({
                   key={uniqueKey}
                   onClick={(e) => {
                     e.stopPropagation(); // Prevent card click    TÄMÄN KOHDAN VOI MUUTTAA FAVORITE LIST
-                    handleAddToGroupClick(movie);
+                    handleAddToFavoritesClick(movie);
                   }}
                 >
                   <PlusCircle size={24} />
