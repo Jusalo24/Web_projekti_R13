@@ -1,122 +1,178 @@
 import React from "react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import GetImage from "../components/GetImage";
 import "../styles/Account.css";
 
-
 export default function Account() {
-  const [profile, setProfile] = useState(null)
-  const [favorites, setFavorites] = useState([])
-  const [modalOpen, setModalOpen] = useState(false)
-  const [newListTitle, setNewListTitle] = useState("")
+  const [profile, setProfile] = useState(null);
+  const [favoriteLists, setFavoriteLists] = useState([]);
+  const [favoriteMovies, setFavoriteMovies] = useState([]);
+  const [loadingFavorites, setLoadingFavorites] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [newListTitle, setNewListTitle] = useState("");
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
+  const navigate = useNavigate();
+  const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
+  const token = localStorage.getItem("token");
 
-const authHeaders = {
-  "Content-Type": "application/json",
-  Authorization: `Bearer ${localStorage.getItem("token")}`,
-};
+  const authHeaders = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    const fetchProfile = async () => {
-      try {
-        const res = await fetch(`${API}/api/users/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        const data = await res.json();
-        if (res.ok) {
-          setProfile(data);
-        } else {
-          console.error("Profile fetch error:", data);
-        }
-      } catch (err) {
-        console.error("Profile error:", err);
-      }
-    };
-
-    const fetchFavorites = async () => {
-      try {
-        const res = await fetch(`${API}/api/favorites`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        const data = await res.json();
-        if (res.ok) {
-          setFavorites(data);
-        } else {
-          setFavorites([]);
-        }
-      } catch (err) {
-        console.error("Favorites error:", err);
-      }
-    };
+    if (!token) {
+      navigate("/login");
+      return;
+    }
 
     fetchProfile();
     fetchFavorites();
   }, []);
-
-
 
   useEffect(() => {
     const handleEsc = (event) => {
       if (event.key === "Escape") {
         setShowChangePassword(false);
         setShowDeleteConfirm(false);
-        setModalOpen(false); // favorite list modal
+        setModalOpen(false);
       }
     };
 
     window.addEventListener("keydown", handleEsc);
-
-    return () => {
-      window.removeEventListener("keydown", handleEsc);
-    };
+    return () => window.removeEventListener("keydown", handleEsc);
   }, []);
 
-
-  const handleCreateFavoriteList = async () => {
-    if (!newListTitle.trim()) return
-
-    const token = localStorage.getItem("token")
-
+  const fetchProfile = async () => {
     try {
-      const res = await fetch("/api/favorite-lists", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({ title: newListTitle })
-      })
+      const res = await fetch(`${API}/api/users/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-      if (!res.ok) {
-        console.error("Error creating list")
-        return
+      const data = await res.json();
+      if (res.ok) {
+        setProfile(data);
+      } else {
+        console.error("Profile fetch error:", data);
+      }
+    } catch (err) {
+      console.error("Profile error:", err);
+    }
+  };
+
+  const fetchFavorites = async () => {
+    try {
+      setLoadingFavorites(true);
+      
+      // Fetch user's favorite lists
+      const listsRes = await fetch(`${API}/api/favorite-lists`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!listsRes.ok) {
+        setLoadingFavorites(false);
+        return;
       }
 
-      const newList = await res.json()
+      const lists = await listsRes.json();
+      setFavoriteLists(lists);
 
-      // Lisää lista UI:hin
-      setLists(prev => [...prev, newList])
-      setModalOpen(false)
-      setNewListTitle("")
+      // Fetch all favorite movies from all lists
+      const allMovies = [];
+      for (const list of lists) {
+        const itemsRes = await fetch(`${API}/api/favorite-lists/${list.id}/items`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
 
+        if (itemsRes.ok) {
+          const items = await itemsRes.json();
+          
+          // Fetch movie details from TMDB for each item
+          for (const item of items) {
+            const [mediaType, movieId] = item.movie_external_id.split(":");
+            
+            try {
+              const endpoint = mediaType === "tv" 
+                ? `${API}/api/tv/${movieId}`
+                : `${API}/api/movies/byId/${movieId}`;
+              
+              const movieRes = await fetch(endpoint);
+              if (movieRes.ok) {
+                const movieData = await movieRes.json();
+                allMovies.push({
+                  ...movieData,
+                  media_type: mediaType,
+                  list_name: list.title,
+                  item_id: item.id
+                });
+              }
+            } catch (err) {
+              console.error("Error fetching movie details:", err);
+            }
+          }
+        }
+      }
+
+      setFavoriteMovies(allMovies);
     } catch (err) {
-      console.error("Create list error", err)
+      console.error("Favorites error:", err);
+    } finally {
+      setLoadingFavorites(false);
     }
-  }
+  };
+
+  const handleCreateFavoriteList = async () => {
+    if (!newListTitle.trim()) return;
+
+    try {
+      const res = await fetch(`${API}/api/favorite-lists`, {
+        method: "POST",
+        headers: authHeaders,
+        body: JSON.stringify({ 
+          title: newListTitle,
+          description: "My favorite movies and shows"
+        })
+      });
+
+      if (!res.ok) {
+        console.error("Error creating list");
+        return;
+      }
+
+      const newList = await res.json();
+      setFavoriteLists(prev => [...prev, newList]);
+      setModalOpen(false);
+      setNewListTitle("");
+    } catch (err) {
+      console.error("Create list error", err);
+    }
+  };
+
+  const handleRemoveFromFavorites = async (itemId) => {
+    try {
+      const res = await fetch(`${API}/api/favorite-lists/items/${itemId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        setFavoriteMovies(prev => prev.filter(movie => movie.item_id !== itemId));
+      }
+    } catch (err) {
+      console.error("Error removing from favorites:", err);
+    }
+  };
+
+  const handleMovieClick = (movie) => {
+    const mediaType = movie.media_type || "movie";
+    navigate(`/movies/${movie.id}?type=${mediaType}`);
+  };
 
   const handlePasswordChange = async () => {
     if (!oldPassword || !newPassword || !confirmPassword) {
@@ -129,56 +185,46 @@ const authHeaders = {
       return;
     }
 
-    // Password strength check
-    if (!isValidPassword(newPassword)) {
+    if (newPassword.length < 8 || !/[A-Z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
       alert("Password must be at least 8 characters long and contain one uppercase letter and one number.");
       return;
     }
 
-    const token = localStorage.getItem("token");
-    const userId = localStorage.getItem("userId");
+    try {
+      const userId = profile.id;
+      const res = await fetch(`${API}/api/users/${userId}/password`, {
+        method: "PUT",
+        headers: authHeaders,
+        body: JSON.stringify({ oldPassword, newPassword })
+      });
 
-    const res = await fetch(`/api/users/${userId}/password`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        oldPassword,
-        newPassword
-      })
-    });
+      const data = await res.json();
 
-    const data = await res.json();
+      if (!res.ok) {
+        alert(data.error);
+        return;
+      }
 
-    if (!res.ok) { alert(data.error); return; }
-
-    alert("Password updated!");
-
-    // Reset and close modal
-    setShowChangePassword(false);
-    setOldPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
+      alert("Password updated!");
+      setShowChangePassword(false);
+      setOldPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err) {
+      console.error("Password change error:", err);
+      alert("Failed to update password");
+    }
   };
-
 
   const handleDeleteAccount = () => {
     console.log("Account deleted");
-
     // TODO: backend call here
-
     setShowDeleteConfirm(false);
   };
 
-
-
-
   return (
     <div className="account-container">
-
-      {/* SIVUPANEELI */}
+      {/* SIDEBAR */}
       <aside className="account-sidebar">
         <h2>Settings</h2>
         <button className="side-btn" onClick={() => setModalOpen(true)}>
@@ -190,58 +236,105 @@ const authHeaders = {
         <button className="side-btn delete" onClick={() => setShowDeleteConfirm(true)}>
           Delete Account
         </button>
-
-        
       </aside>
 
-      {/* PÄÄSISÄLTÖ */}
+      {/* MAIN CONTENT */}
       <main className="account-main">
         <h1>Your Profile</h1>
 
-        {/* --- PROFILE INFO --- */}
+        {/* PROFILE INFO */}
         <section className="info-box">
-          <h3>Name:</h3>
+          <h3>Username:</h3>
           <p>{profile ? profile.username : "Loading..."}</p>
         </section>
 
-        {/* --- FAVORITES LIST --- */}
         <section className="info-box">
-          <h3>Your Favorites</h3>
-
-          <div className="home__movies-container">
-            {favorites.length === 0 && <p>No favorites yet.</p>}
-
-            {favorites.map((item) => (
-              <div key={item.id} className="movie-card">
-                <h4>{item.title}</h4>
-                <p>{item.year}</p>
-                <p>{item.type === "movie" ? "Movie" : "Series"}</p>
-              </div>
-            ))}
-          </div>
+          <h3>Email:</h3>
+          <p>{profile ? profile.email : "Loading..."}</p>
         </section>
 
-        {/* --- GROUPS --- */}
-        <section className="info-box">
-          <h3>Your Groups</h3>
-          <ul className="list">
-            <li>Group A</li>
-          </ul>
+        {/* FAVORITE LISTS INFO */}
+        {favoriteLists.length > 0 && (
+          <section className="info-box">
+            <h3>Your Lists ({favoriteLists.length})</h3>
+            <ul className="list">
+              {favoriteLists.map(list => (
+                <li key={list.id}>{list.title}</li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* FAVORITES SECTION */}
+        <section className="info-box favorites-section">
+          <h3>Your Favorite Movies & Shows</h3>
+
+          {loadingFavorites ? (
+            <div className="favorites-loading">Loading favorites...</div>
+          ) : favoriteMovies.length === 0 ? (
+            <div className="favorites-empty">
+              <p>No favorites yet.</p>
+              <p className="favorites-empty-hint">
+                Start adding movies and shows to your favorites from their detail pages!
+              </p>
+            </div>
+          ) : (
+            <div className="favorites-grid">
+              {favoriteMovies.map((movie) => (
+                <div key={movie.item_id} className="favorite-card">
+                  <div 
+                    className="favorite-card__poster"
+                    onClick={() => handleMovieClick(movie)}
+                  >
+                    {movie.poster_path ? (
+                      <GetImage
+                        path={movie.poster_path}
+                        title={movie.title || movie.name}
+                        size="w342"
+                      />
+                    ) : (
+                      <div className="favorite-card__placeholder">No Image</div>
+                    )}
+                  </div>
+                  <div className="favorite-card__info">
+                    <h4 className="favorite-card__title">
+                      {movie.title || movie.name}
+                    </h4>
+                    <div className="favorite-card__meta">
+                      <span className="favorite-card__type">
+                        {movie.media_type === "tv" ? "TV Show" : "Movie"}
+                      </span>
+                      <span className="favorite-card__list">{movie.list_name}</span>
+                    </div>
+                    <button 
+                      className="favorite-card__remove"
+                      onClick={() => handleRemoveFromFavorites(movie.item_id)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
       </main>
+
+      {/* CREATE LIST MODAL */}
       {modalOpen && (
         <div className="modal-overlay" onClick={() => setModalOpen(false)}>
           <div className="modal-box" onClick={(e) => e.stopPropagation()}>
             <h3>Create Favorite List</h3>
-
-            <input type="text" placeholder="List name" value={newListTitle}
-              onChange={(e) => setNewListTitle(e.target.value)}/>
-
+            <input 
+              type="text" 
+              placeholder="List name" 
+              value={newListTitle}
+              onChange={(e) => setNewListTitle(e.target.value)}
+            />
             <div className="modal-buttons">
               <button className="modal-btn" onClick={handleCreateFavoriteList}>
                 Create
               </button>
-
               <button className="modal-btn cancel" onClick={() => setModalOpen(false)}>
                 Cancel
               </button>
@@ -250,61 +343,58 @@ const authHeaders = {
         </div>
       )}
 
+      {/* CHANGE PASSWORD MODAL */}
       {showChangePassword && (
         <div className="modal-overlay" onClick={() => setShowChangePassword(false)}>
           <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-
             <h3>Change Password</h3>
-
             <label>Old Password</label>
-            <input type="password" value={oldPassword}
-             onChange={(e) => setOldPassword(e.target.value)}/>
-
+            <input 
+              type="password" 
+              value={oldPassword}
+              onChange={(e) => setOldPassword(e.target.value)}
+            />
             <label>New Password</label>
-            <input type="password" value={newPassword} 
-              onChange={(e) => setNewPassword(e.target.value)}/>
-
+            <input 
+              type="password" 
+              value={newPassword} 
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
             <label>Re-enter New Password</label>
-            <input type="password" value={confirmPassword} 
-              onChange={(e) => setConfirmPassword(e.target.value)}/>
-
+            <input 
+              type="password" 
+              value={confirmPassword} 
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
             <div className="modal-buttons">
               <button className="modal-btn" onClick={handlePasswordChange}>
                 Apply
               </button>
-
               <button className="modal-btn cancel" onClick={() => setShowChangePassword(false)}>
                 Cancel
               </button>
             </div>
-
           </div>
         </div>
       )}
 
+      {/* DELETE ACCOUNT MODAL */}
       {showDeleteConfirm && (
         <div className="modal-overlay" onClick={() => setShowDeleteConfirm(false)}>
           <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-
             <h3>Delete Account</h3>
             <p>Are you sure you want to delete your account?</p>
-
             <div className="modal-buttons">
               <button className="modal-btn" onClick={handleDeleteAccount}>
                 Confirm
               </button>
-
               <button className="modal-btn cancel" onClick={() => setShowDeleteConfirm(false)}>
                 No
               </button>
             </div>
-
           </div>
         </div>
       )}
-
-
-
     </div>
-  )
+  );
 }

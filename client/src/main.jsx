@@ -5,9 +5,14 @@ import { StrictMode } from 'react'
 import './styles/index.css'
 import './styles/Navbar.css'
 import App from './App.jsx'
+import { AuthProvider } from "./context/AuthContext"
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <BrowserRouter>
-    <App />
-  </BrowserRouter>
-)
+ <StrictMode>
+    <AuthProvider>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </AuthProvider>
+  </StrictMode>
+);
