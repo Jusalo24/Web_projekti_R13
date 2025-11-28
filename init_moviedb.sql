@@ -61,6 +61,7 @@ CREATE TABLE group_movies (
   group_id UUID NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
   movie_external_id VARCHAR(100) NOT NULL,
   media_type VARCHAR(10) NOT NULL DEFAULT 'movie',
+  added_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
   added_by UUID REFERENCES users(id) ON DELETE SET NULL
 );
 CREATE INDEX idx_group_movies_movieid ON group_movies (movie_external_id);
@@ -90,6 +91,7 @@ CREATE TABLE favorite_list_items (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   favorite_list_id UUID NOT NULL REFERENCES favorite_lists(id) ON DELETE CASCADE,
   movie_external_id VARCHAR(100) NOT NULL,
+  media_type VARCHAR(10) NOT NULL DEFAULT 'movie',
   position INTEGER DEFAULT 0
 );
 CREATE INDEX idx_favitems_movieid ON favorite_list_items (movie_external_id);

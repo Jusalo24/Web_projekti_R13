@@ -232,3 +232,64 @@
     font-size: 0.85rem;
   }
 }
+
+@media (max-width: 480px) {
+  .search-result {
+    padding: var(--spacing-md) var(--spacing-sm);
+  }
+
+  .search-result__header {
+    margin-bottom: var(--spacing-sm);
+    padding-bottom: var(--spacing-sm);
+  }
+
+  .search-result__title {
+    font-size: 1.3rem;
+  }
+
+  .search-result__movies {
+    padding: var(--spacing-xs);
+    border-radius: var(--radius-sm);
+  }
+
+  .search-result__movies .movies-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: var(--spacing-sm);
+    padding: var(--spacing-xs);
+  }
+
+  .search-result__filters {
+    padding: var(--spacing-xs);
+    gap: var(--spacing-xs);
+  }
+
+  .search-result__filter-button {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.8rem;
+  }
+
+  /* Tyhjä tila */
+  .search-result__empty-title {
+    font-size: 1.2rem;
+  }
+
+  .search-result__empty-text {
+    font-size: 0.85rem;
+  }
+
+  .search-result__empty-suggestion {
+    font-size: 0.8rem;
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+
+  /* Latausanimaatio pienemmäksi */
+  .search-result__loading-spinner {
+    width: 40px;
+    height: 40px;
+    border-width: 3px;
+  }
+
+  .search-result__loading-text {
+    font-size: 0.95rem;
+  }
+}

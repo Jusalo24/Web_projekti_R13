@@ -27,7 +27,7 @@ export async function removeMovieFromGroup(req, res) {
         const { movieId, mediaType } = req.query;
 
         if (!movieId || !mediaType) {
-            console.log('❌ Missing parameters');
+            console.log('Missing parameters');
             return res.status(400).json({
                 error: "movieId and mediaType are required as query parameters"
             });
@@ -40,10 +40,10 @@ export async function removeMovieFromGroup(req, res) {
             mediaType
         );
 
-        console.log('✅ Movie removed successfully');
+        console.log('Movie removed successfully');
         res.status(201).json({ message: "Movie removed successfully" });
     } catch (err) {
-        console.error('❌ Remove movie error:', err);
+        console.error('Remove movie error:', err);
         res.status(500).json({ error: "Failed to remove movie", details: err.message });
     }
 }

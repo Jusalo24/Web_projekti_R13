@@ -1,8 +1,8 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom"
-import './styles/app.css'
+import './styles/App.css'
 import './styles/Navbar.css'
-import Navbar from "./components/navbar"
+import Navbar from "./components/Navbar"
 import Home from "./pages/Home"
 import Discover from "./pages/Discover"
 import Groups from "./pages/Groups"
@@ -12,8 +12,6 @@ import MovieDetail from "./pages/MovieDetail"
 import Login from "./pages/Login"
 import Register from "./pages/Register"
 import GroupDetails from "./pages/GroupDetails"
-
-
 
 function App() {
   return (

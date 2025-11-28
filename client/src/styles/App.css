@@ -9,7 +9,7 @@
   --color-text-secondary: #b8c5d6;
   --color-text-muted: #8895a7;
   --color-border: #2a3251;
-  --color-error: #ff6b6b;
+  --color-error: #fc2121;
   --color-success: #51cf66;
   
   --spacing-xs: 0.5rem;
@@ -242,6 +242,7 @@ body {
 .movie-card {
   min-width: 200px;
   max-width: 200px;
+  position: relative;
   flex-shrink: 0;
   background-color: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
@@ -255,6 +256,8 @@ body {
   transform: translateY(-8px);
   box-shadow: var(--shadow-lg);
   border-color: var(--color-accent);
+  opacity: 1;
+  z-index: 10;
 }
 
 .movie-card__poster {
@@ -329,6 +332,32 @@ body {
   color: var(--color-text-muted);
   font-size: 0.85rem;
   font-weight: 500;
+}
+
+.movie-card__add-to-group {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 10;
+    pointer-events: auto;
+    background: rgba(0, 0, 0, 0.6);
+    border: none;
+    padding: 6px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: white;
+    transform: scale(1);
+    transition: 
+        background 0.25s ease,
+        transform 0.2s ease,
+        color 0.5s ease;
+}
+
+.movie-card__add-to-group:hover {
+    background: var(--color-success);
+    transform: scale(1.1);
+    color: white;
+    opacity: 0.9;
 }
 
 /* Loading, Error & Empty States */

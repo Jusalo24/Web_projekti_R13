@@ -1,4 +1,4 @@
-import react, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 export function useGroupApi() {
   const [groups, setGroups] = useState([]); // All visible/public groups
@@ -7,8 +7,8 @@ export function useGroupApi() {
   const [loading, setLoading] = useState(false); // Loading state for API calls
   const [error, setError] = useState(null); // Error message (optional)
   const [notification, setNotification] = useState({ message: null, type: "error" }); // Popup notification state
-  const [ownerId, setOwnerId] = useState(null);    // Logged-in user's ID
-  const [ownerName, setOwnerName] = useState(null); // Logged-in user's username
+  const [loggedInId, setloggedInId] = useState(null);    // Logged-in user's ID
+  const [loggedInName, setloggedInName] = useState(null); // Logged-in user's username
 
 
   const baseURL = import.meta.env.VITE_API_BASE_URL; // API base URL
@@ -17,16 +17,17 @@ export function useGroupApi() {
   useEffect(() => {
     if (token) {
       const payload = JSON.parse(atob(token.split(".")[1]));
-      setOwnerId(payload.id);  // Save logged-in user ID
+      setloggedInId(payload.id);  // Save logged-in user ID
+      console.log("Logged-in user ID:", payload.id);
     }
   }, [token]);
 
-  // Call fetchOwnerInfo, when ownerId is known
+  // Call fetchOwnerInfo, when loggedInId is known
   useEffect(() => {
-    if (ownerId) {
-      fetchOwnerInfo(ownerId);
+    if (loggedInId) {
+      fetchOwnerInfo(loggedInId);
     }
-  }, [ownerId]);
+  }, [loggedInId]);
 
 
   const fetchOwnerInfo = async (id) => {  // Get logged-in user's name
@@ -38,7 +39,7 @@ export function useGroupApi() {
       const data = await res.json();
 
       if (res.ok) {
-        setOwnerName(data.username);  // Save username
+        setloggedInName(data.username);  // Save username
       }
     } catch (err) {
       console.error("Failed to fetch owner info", err);
@@ -201,6 +202,99 @@ export function useGroupApi() {
     }
   };
 
+  const removeMemberFromGroup = async (groupId, userId) => { // Kick member from group
+    try {
+      const res = await fetch(
+        `${baseURL}/api/groups/${groupId}/members?userId=${userId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      console.error("Failed to remove member from group", err);
+    }
+  };
+
+  // POST /api/groups/:id/movies | query: { movieId, mediaType }
+  const addMovieToGroup = async (groupId, movieId, mediaType) => { // Add movie to group
+    try {
+      const res = await fetch(
+        `${baseURL}/api/groups/${groupId}/movies?movieId=${movieId}&mediaType=${mediaType}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      console.error("Failed to add movie to group", err);
+    }
+  };
+
+  // DELETE /api/groups/:id/movies | query: { movieId, mediaType }
+  const removeMovieFromGroup = async (groupId, movieId, mediaType) => { // Remove movie from group
+    try {
+      const res = await fetch(
+        `${baseURL}/api/groups/${groupId}/movies?movieId=${movieId}&mediaType=${mediaType}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          query: { movieId, mediaType }
+        }
+      );
+      console.log("Fetch URL:", `${baseURL}/api/groups/${groupId}/movies?movieId=${movieId}&mediaType=${mediaType}`);
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      console.error("Failed to remove movie from group", err);
+    }
+  };
+
+  // DELETE /api/groups/:id
+  const deleteGroup = async (groupId) => {
+    try {
+      const res = await fetch(
+        `${baseURL}/api/groups/${groupId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      console.error("Failed to delete group", err);
+    }
+  }
+
+  // GET /api/groups/:id/movies
+  const fetchMoviesByGroup = async (groupId) => { // List movies in group
+    try {
+      const res = await fetch(
+        `${baseURL}/api/groups/${groupId}/movies`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        }
+      );
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      console.error("Failed to get movies by group", err);
+    }
+  };
+
   const showError = (msg) => { // Show red popup
     setNotification({ message: msg, type: "error" });
     setTimeout(() => setNotification({ message: null }), 3000);
@@ -224,8 +318,10 @@ export function useGroupApi() {
     loading, // Loading state
     error, // Error state
     notification, // Popup message
-    ownerId, // Logged-in user's ID
-    ownerName, // Logged-in user's username
+    loggedInId, // Logged-in user's ID
+    loggedInName, // Logged-in user's username
+    showError,
+    showSuccess,
     fetchGroups, // Refresh public groups
     fetchMyGroups, // Refresh user's groups
     fetchJoinRequests, // Refresh join requests
@@ -235,5 +331,10 @@ export function useGroupApi() {
     rejectJoin, // Reject request
     fetchGroupById, // Fetch single group
     setNotification, // Allow manual popup control
+    addMovieToGroup, // Add movie to group
+    removeMovieFromGroup, // Remove movie from group
+    fetchMoviesByGroup, // List movies in group
+    removeMemberFromGroup, // Remove member from group
+    deleteGroup // Delete
   };
 }

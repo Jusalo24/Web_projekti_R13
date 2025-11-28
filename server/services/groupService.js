@@ -10,7 +10,8 @@ import {
     acceptJoinRequest,
     rejectJoinRequest,
     getGroupsForUser,
-    isUserInGroup
+    isUserInGroup,
+    removeMember
 } from "../models/groupModel.js";
 
 export default {
@@ -41,6 +42,10 @@ export default {
 
     addMember: async (groupId, userId) => {
         return await addMember(groupId, userId);
+    },
+
+    removeMember: async (groupId, userId) => {
+        return await removeMember(groupId, userId);
     },
 
     // Join request logic
