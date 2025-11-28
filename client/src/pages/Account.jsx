@@ -16,6 +16,8 @@ export default function Account() {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [deleteSuccess, setDeleteSuccess] = useState(false);
+
 
   const navigate = useNavigate();
   const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
@@ -216,11 +218,42 @@ export default function Account() {
     }
   };
 
-  const handleDeleteAccount = () => {
-    console.log("Account deleted");
-    // TODO: backend call here
+  const handleDeleteAccount = async () => {
+    if (!profile) return;
+
+    try {
+      const res = await fetch(`${API}/api/users/${profile.id}`, {
+        method: "DELETE",
+        headers: authHeaders
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error("Delete failed:", data.error);
+        return;
+      }
+
+      setDeleteSuccess(true);
+
+
+      // Poista kaikki istuntotiedot
+      localStorage.removeItem("token");
+
+      // Vie käyttäjä login-sivulle
+      setTimeout(() => {
+        setDeleteSuccess(false);
+        navigate("/login");
+      }, 2000);
+
+    } catch (err) {
+      console.error("Delete error:", err);
+
+    }
+
     setShowDeleteConfirm(false);
   };
+
 
   return (
     <div className="account-container">
@@ -395,6 +428,13 @@ export default function Account() {
           </div>
         </div>
       )}
+
+        {deleteSuccess && (
+          <div className="success-toast">
+            Account deleted successfully!
+          </div>
+        )}
+
     </div>
   );
 }
