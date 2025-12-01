@@ -162,8 +162,12 @@ export default function MovieDetail() {
   // Reviews
   const loadReviews = async () => {
     try {
-      const rev = await request(`/api/reviews/movie/${id}?page=1&limit=20`);
-      const avg = await request(`/api/reviews/movie/${id}/average`);
+      const rev = await request(
+        `/api/reviews/movie/${id}?page=1&limit=20&media_type=${mediaType}`
+      );
+      const avg = await request(
+        `/api/reviews/movie/${id}/average?media_type=${mediaType}`
+      );
 
       setReviews(rev.reviews || []);
       setAverage(avg || null);
@@ -202,6 +206,7 @@ export default function MovieDetail() {
           body: JSON.stringify({
             user_id: user.id,
             movie_external_id: id,
+            media_type: mediaType,
             rating,
             review_text: text
           })
