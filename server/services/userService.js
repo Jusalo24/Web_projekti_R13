@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import { createUser, getUserByEmail, getUserById, getUserByIdWithPassword_hash, updateUser, updateUserPassword } from '../models/userModel.js'
+import { createUser, getUserByEmail, getUserById, getUserByIdWithPassword_hash, updateUser, updateUserPassword, deleteUserById } from '../models/userModel.js'
 import { validatePassword } from './passwordValidator.js'
 
 export const registerUser = async (email, username, password) => {
@@ -78,4 +78,11 @@ export const changeUserPassword = async (userId, oldPassword, newPassword) => {
 
   return true
 }
+
+
+export const deleteUserFromDb = async (id) => {
+  const deleted = await deleteUserById(id);
+  if (!deleted) throw new Error("User not found or already deleted");
+  return true;
+};
 

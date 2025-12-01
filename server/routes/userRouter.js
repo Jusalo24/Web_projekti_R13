@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { createUser, userLogin, getUserById, updateUser, updatePassword } from '../controllers/userController.js'
+import { createUser, userLogin, getUserById, updateUser, updatePassword, deleteUser } from '../controllers/userController.js'
 import { auth } from '../helpers/auth.js'
 
 
@@ -28,5 +28,8 @@ userRouter.put('/users/:id', auth, updateUser)
 
 // Update user password
 userRouter.put('/users/:id/password', auth, updatePassword)
+
+// Delete user
+userRouter.delete('/users/:id', auth, deleteUser);
 
 export default userRouter
