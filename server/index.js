@@ -12,6 +12,42 @@ import genreRouter from './routes/genreRouter.js'
 import groupRouter from './routes/groupRouter.js'
 import favoriteListRouter from './routes/favoriteListRouter.js'
 
+// Define allowed origins for CORS
+const allowedOrigins = [
+  'http://localhost:5173',        // Local Vite dev
+  'http://localhost:3000',        // Alternative local dev
+  'http://localhost:5174',        // Alternative Vite port
+  process.env.CLIENT_URL,         // Railway frontend URL (add this env var)
+  /\.railway\.app$/,              // Allow all Railway domains
+  /\.up\.railway\.app$/           // Alternative Railway domain format
+];
+
+// Configure CORS with dynamic origin checking
+app.use(cors({
+  origin: function(origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin is in allowed list
+    const isAllowed = allowedOrigins.some(allowed => {
+      if (allowed instanceof RegExp) {
+        return allowed.test(origin);
+      }
+      return allowed === origin;
+    });
+    
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      console.log(`CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,  // Allow cookies and auth headers
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 dotenv.config()
 
 const app = express()
