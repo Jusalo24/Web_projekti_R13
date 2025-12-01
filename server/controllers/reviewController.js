@@ -7,12 +7,18 @@ import pool from '../helpers/db.js'
  */
 export const createReview = async (req, res) => {
     try {
-        const { user_id, movie_external_id, rating, review_text } = req.body
+        const { user_id, movie_external_id, media_type, rating, review_text } = req.body
 
         // Validate required fields
         if (!user_id || !movie_external_id || !rating) {
             return res.status(400).json({
-                error: 'user_id, movie_external_id, and rating are required'
+                error: 'user_id, movie_external_id, media_type, and rating are required'
+            })
+        }
+
+        if (!['movie', 'tv'].includes(media_type)) {
+            return res.status(400).json({
+                error: 'media_type must be either "movie" or "tv"'
             })
         }
 
@@ -24,10 +30,10 @@ export const createReview = async (req, res) => {
         }
 
         const result = await pool.query(
-            `INSERT INTO reviews (user_id, movie_external_id, rating, review_text)
-             VALUES ($1, $2, $3, $4)
-             RETURNING id, user_id, movie_external_id, rating, review_text, created_at`,
-            [user_id, movie_external_id, rating, review_text]
+            `INSERT INTO reviews (user_id, movie_external_id, media_type, rating, review_text)
+             VALUES ($1, $2, $3, $4, $5)
+             RETURNING id, user_id, movie_external_id, media_type, rating, review_text, created_at`,
+            [user_id, movie_external_id, media_type, rating, review_text]
         )
 
         res.status(201).json(result.rows[0])
@@ -50,7 +56,13 @@ export const createReview = async (req, res) => {
 export const getReviewsByMovieId = async (req, res) => {
     try {
         const { movieId } = req.params
-        const { page = 1, limit = 10 } = req.query
+        const { page = 1, limit = 10, media_type } = req.query
+
+        if (!media_type || !['movie', 'tv'].includes(media_type)) {
+            return res.status(400).json({
+                error: 'Valid media_type (movie or tv) is required'
+            })
+        }
 
         const pageNum = parseInt(page, 10)
         const limitNum = parseInt(limit, 10)
@@ -69,6 +81,7 @@ export const getReviewsByMovieId = async (req, res) => {
                 r.id,
                 r.user_id,
                 r.movie_external_id,
+                r.media_type,
                 r.rating,
                 r.review_text,
                 r.created_at,
@@ -76,15 +89,16 @@ export const getReviewsByMovieId = async (req, res) => {
              FROM reviews r
              LEFT JOIN users u ON r.user_id = u.id
              WHERE r.movie_external_id = $1
+             AND r.media_type = $2
              ORDER BY r.created_at DESC
-             LIMIT $2 OFFSET $3`,
-            [movieId, limitNum, offset]
+             LIMIT $3 OFFSET $4`,
+            [movieId, media_type, limitNum, offset]
         )
 
         // Get total count for pagination
         const countResult = await pool.query(
-            'SELECT COUNT(*) FROM reviews WHERE movie_external_id = $1',
-            [movieId]
+            'SELECT COUNT(*) FROM reviews WHERE movie_external_id = $1 AND media_type = $2',
+            [movieId, media_type]
         )
 
         const totalReviews = parseInt(countResult.rows[0].count, 10)
@@ -130,6 +144,7 @@ export const getReviewsByUserId = async (req, res) => {
                 id,
                 user_id,
                 movie_external_id,
+                media_type,
                 rating,
                 review_text,
                 created_at
@@ -206,7 +221,7 @@ export const updateReview = async (req, res) => {
             `UPDATE reviews
              SET ${updates.join(', ')}
              WHERE id = $${paramCount}
-             RETURNING id, user_id, movie_external_id, rating, review_text, created_at`,
+             RETURNING id, user_id, movie_external_id, media_type, rating, review_text, created_at`,
             values
         )
 
@@ -259,6 +274,13 @@ export const deleteReview = async (req, res) => {
 export const getMovieAverageRating = async (req, res) => {
     try {
         const { movieId } = req.params
+        const {media_type} = req.query
+
+        if (!media_type || !['movie', 'tv'].includes(media_type)) {
+            return res.status(400).json({
+                error: 'Valid media_type (movie or tv) is required'
+            })
+        }
 
         if (!movieId) {
             return res.status(400).json({ error: 'Movie ID is required' })
@@ -269,8 +291,9 @@ export const getMovieAverageRating = async (req, res) => {
                 AVG(rating)::NUMERIC(10,2) as average_rating,
                 COUNT(*) as total_reviews
              FROM reviews
-             WHERE movie_external_id = $1`,
-            [movieId]
+             WHERE movie_external_id = $1
+             AND media_type = $2`,
+            [movieId, media_type]
         )
 
         res.status(200).json({

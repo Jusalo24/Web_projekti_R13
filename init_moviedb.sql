@@ -71,11 +71,12 @@ CREATE TABLE reviews (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   movie_external_id VARCHAR(100) NOT NULL,
+  media_type VARCHAR(10) NOT NULL DEFAULT 'movie',
   rating SMALLINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
   review_text TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
-CREATE INDEX idx_reviews_movieid ON reviews (movie_external_id);
+CREATE INDEX idx_reviews_movieid ON reviews (movie_external_id, media_type);
 
 -- Favorite lists
 CREATE TABLE favorite_lists (
@@ -123,7 +124,7 @@ ALTER TABLE favorite_list_items ADD CONSTRAINT ux_list_item
   UNIQUE (favorite_list_id, movie_external_id);
 
 ALTER TABLE reviews ADD CONSTRAINT ux_user_movie_review
-  UNIQUE (user_id, movie_external_id);
+  UNIQUE (user_id, movie_external_id, media_type);
 
 CREATE INDEX idx_users_email_lower ON users (lower(email));
 CREATE INDEX idx_users_username_lower ON users (lower(username));
