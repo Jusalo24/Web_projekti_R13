@@ -1,4 +1,6 @@
-import { registerUser, loginUser, getUserProfile, updateUserProfile, changeUserPassword } from '../services/userService.js'
+import { registerUser, loginUser, getUserProfile, updateUserProfile, changeUserPassword, deleteUserFromDb } from '../services/userService.js'
+
+
 
 export const createUser = async (req, res) => {
     try {
@@ -93,3 +95,20 @@ export const updatePassword = async (req, res) => {
     res.status(400).json({ error: err.message })
   }
 }
+
+export const deleteUser = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    // Vain oma tili voidaan poistaa
+    if (req.user.id !== userId) {
+      return res.status(403).json({ error: "You can only delete your own account" });
+    }
+
+    await deleteUserFromDb(userId);
+
+    res.status(200).json({ message: "Account deleted" });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
