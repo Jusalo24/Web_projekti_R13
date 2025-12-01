@@ -16,7 +16,6 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-xl);
-  width: 100%;
 }
 
 .navbar__logo {
@@ -84,14 +83,7 @@
   min-width: 300px;
 }
 
-
-.navbar__links {
-  display: flex;
-  gap: 1.5rem;
-  list-style: none;
-}
-
-
+.search__button,
 .navbar__login-btn {
   padding: var(--spacing-sm) var(--spacing-lg);
   background: linear-gradient(135deg, var(--color-accent) 0%, #4a8ef5 100%);
@@ -102,14 +94,26 @@
   cursor: pointer;
   transition: all var(--transition-normal);
   white-space: nowrap;
+  font-size: 1rem;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
+.search__button:hover,
 .navbar__login-btn:hover {
   background: linear-gradient(135deg, var(--color-accent-hover) 0%, var(--color-accent) 100%);
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
 
+.search__button:active,
+.navbar__login-btn:active {
+  transform: translateY(0);
+}
+
+/* Tablet Screens */
 @media (max-width: 1024px) {
   .navbar__container {
     padding: var(--spacing-md) var(--spacing-lg);
@@ -127,8 +131,17 @@
   .navbar__search {
     min-width: 220px;
   }
+
+  /* MATCHED: Both buttons resize identically */
+  .search__button,
+  .navbar__login-btn {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.95rem;
+    height: 40px;
+  }
 }
 
+/* Mobile Screens */
 @media (max-width: 768px) {
   .navbar__container {
     flex-wrap: wrap;
@@ -157,12 +170,15 @@
     order: 2;
   }
 
+  .search__button,
   .navbar__login-btn {
-    padding: var(--spacing-xs) var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
     font-size: 0.9rem;
+    height: 38px;
   }
 }
 
+/* Small Mobile Screens */
 @media (max-width: 480px) {
   .navbar__container {
     padding: var(--spacing-sm) var(--spacing-md);
@@ -186,8 +202,10 @@
     padding: var(--spacing-xs) var(--spacing-sm);
   }
 
+  .search__button,
   .navbar__login-btn {
-    padding: var(--spacing-xs) var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
     font-size: 0.85rem;
+    height: 36px;
   }
 }
