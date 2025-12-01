@@ -17,6 +17,9 @@ export default function Account() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [deleteSuccess, setDeleteSuccess] = useState(false);
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
+
 
 
   const navigate = useNavigate();
@@ -177,18 +180,20 @@ export default function Account() {
   };
 
   const handlePasswordChange = async () => {
+    setPasswordError("");
+
     if (!oldPassword || !newPassword || !confirmPassword) {
-      alert("Please fill all fields.");
+      setPasswordError("Please fill all fields.");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      alert("New passwords do not match.");
+      setPasswordError("New passwords do not match.");
       return;
     }
 
     if (newPassword.length < 8 || !/[A-Z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
-      alert("Password must be at least 8 characters long and contain one uppercase letter and one number.");
+      setPasswordError("Password must be 8+ chars, 1 uppercase letter, and 1 number.");
       return;
     }
 
@@ -203,20 +208,28 @@ export default function Account() {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.error);
+        setPasswordError(data.error || "Failed to update password");
         return;
       }
 
-      alert("Password updated!");
-      setShowChangePassword(false);
+      // Success!
+      setPasswordSuccess(true);
+
+      // Clear fields & close modal
+      setTimeout(() => {
+        setShowChangePassword(false);
+        setPasswordSuccess(false);
+      }, 2000);
+
       setOldPassword("");
       setNewPassword("");
       setConfirmPassword("");
+
     } catch (err) {
-      console.error("Password change error:", err);
-      alert("Failed to update password");
+      setPasswordError("Server error while updating password");
     }
   };
+
 
   const handleDeleteAccount = async () => {
     if (!profile) return;
@@ -434,6 +447,15 @@ export default function Account() {
             Account deleted successfully!
           </div>
         )}
+
+        {passwordSuccess && (
+           <div className="success-toast">Password updated successfully!</div>
+        )}
+
+        {passwordError && (
+           <div className="error-toast">{passwordError}</div>
+        )}
+
 
     </div>
   );
