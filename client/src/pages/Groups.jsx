@@ -48,16 +48,6 @@ export default function Groups() {
     fetchJoinRequests();
   }, []);
 
-  if (!loggedInId) {
-    return (
-      <main className="groups">
-        <div className="groups__not-logged">
-          <p>Log in to see groups</p>
-        </div>
-      </main>
-    );
-  }
-
   return (
     <main className="groups">
       <AppNotification
