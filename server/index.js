@@ -12,6 +12,13 @@ import genreRouter from './routes/genreRouter.js'
 import groupRouter from './routes/groupRouter.js'
 import favoriteListRouter from './routes/favoriteListRouter.js'
 
+// Load environment variables FIRST
+dotenv.config()
+
+// Create Express app
+const app = express()
+const PORT = process.env.PORT || 3001
+
 // Define allowed origins for CORS
 const allowedOrigins = [
   'http://localhost:5173',        // Local Vite dev
@@ -22,7 +29,7 @@ const allowedOrigins = [
   /\.up\.railway\.app$/           // Alternative Railway domain format
 ];
 
-// Configure CORS with dynamic origin checking
+// Configure CORS middleware
 app.use(cors({
   origin: function(origin, callback) {
     // Allow requests with no origin (mobile apps, Postman, etc.)
@@ -48,13 +55,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-dotenv.config()
-
-const app = express()
-const PORT = process.env.PORT || 3001
-
-// Middleware
-app.use(cors())
+// Body parsing middleware
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
