@@ -36,7 +36,6 @@ export default function GetMoviesSeries({
     setNotification: setFavNotification,
   } = useFavoritesApi(token);
 
-
   // Custom hook to fetch movies/series based on params
   const { movies, loading, error } = useSearchApi({
     type,

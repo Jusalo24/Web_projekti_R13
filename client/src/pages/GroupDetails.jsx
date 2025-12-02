@@ -74,7 +74,7 @@ export default function GroupDetails() {
                 {group.members && group.members.length > 0 ? (
                     <div className="group-details__members-list">
                         {group.members.map((member) => (
-                            <div className="member-card" key={member.id}>
+                            <div className="member-card" key={member.user_id}>
                                 <div className="member-info">
                                     <span className="member-name">
                                         {member.username || member.id}

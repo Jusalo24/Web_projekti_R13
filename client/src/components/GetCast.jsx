@@ -19,6 +19,15 @@ export default function GetCast({
 
     const baseURL = import.meta.env.VITE_API_BASE_URL; // API base URL
 
+    // FIXED: Add cleanup effect for debounce timer
+    useEffect(() => {
+        return () => {
+            if (debounceTimer.current) {
+                clearTimeout(debounceTimer.current);
+            }
+        };
+    }, []);
+
     // Function to fetch cast members from API based on query
     const fetchCast = async (name) => {
         if (!name) {

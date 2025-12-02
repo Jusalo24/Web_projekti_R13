@@ -90,7 +90,6 @@ export function useSearchApi({
                         // Skip the default page-based fetching logic
                         continue;
                     }
-
                     // Default movie/TV endpoints (e.g. now_playing, popular)
                     else {
                         if (media_type === "tv" || type.startsWith("tv_")) {

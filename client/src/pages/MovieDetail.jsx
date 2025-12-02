@@ -32,7 +32,14 @@ export default function MovieDetail() {
   const [checkingFavorite, setCheckingFavorite] = useState(true);
 
   // Review state
-  const [rating, setRating] = useState(5);
+  const [rating, setRating] = useState("5");
+
+  const handleRatingChange = (value) => {
+  if (value === "") return setRating(""); // sallii tyhjentämisen
+  const clamped = Math.min(5, Math.max(1, Number(value)));
+  setRating(String(clamped));
+};
+
   const [text, setText] = useState("");
   const [myReviewId, setMyReviewId] = useState(null);
   const [reviewError, setReviewError] = useState(null);
@@ -162,8 +169,12 @@ export default function MovieDetail() {
   // Reviews
   const loadReviews = async () => {
     try {
-      const rev = await request(`/api/reviews/movie/${id}?page=1&limit=20`);
-      const avg = await request(`/api/reviews/movie/${id}/average`);
+      const rev = await request(
+        `/api/reviews/movie/${id}?page=1&limit=20&media_type=${mediaType}`
+      );
+      const avg = await request(
+        `/api/reviews/movie/${id}/average?media_type=${mediaType}`
+      );
 
       setReviews(rev.reviews || []);
       setAverage(avg || null);
@@ -191,10 +202,11 @@ export default function MovieDetail() {
     if (!token) return;
 
     try {
+      const numericRating = Math.min(5, Math.max(1, Number(rating))) || 1;
       if (myReviewId) {
         await request(`/api/reviews/${myReviewId}`, {
           method: "PUT",
-          body: JSON.stringify({ rating, review_text: text })
+          body: JSON.stringify({ rating: numericRating, review_text: text })
         });
       } else {
         await request(`/api/reviews`, {
@@ -202,7 +214,8 @@ export default function MovieDetail() {
           body: JSON.stringify({
             user_id: user.id,
             movie_external_id: id,
-            rating,
+            media_type: mediaType,
+            rating: numericRating,
             review_text: text
           })
         });
@@ -378,7 +391,7 @@ export default function MovieDetail() {
                       min="1"
                       max="5"
                       value={rating}
-                      onChange={(e) => setRating(Number(e.target.value))}
+                      onChange={(e) => handleRatingChange(e.target.value)}
                     />
                   </label>
                   <textarea
