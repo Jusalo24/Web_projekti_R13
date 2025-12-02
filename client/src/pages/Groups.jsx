@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "../styles/groups.css";
+import '../styles/App.css'
 import { useGroupApi } from "../hooks/useGroupApi";
 import GroupList from "../components/GroupList";
 import AppNotification from "../components/AppNotification";
@@ -19,7 +20,8 @@ export default function Groups() {
     setNotification,       // Setter for notification
     fetchGroups,           // Refresh public groups
     fetchMyGroups,         // Refresh user's groups
-    fetchJoinRequests      // Refresh join requests  
+    fetchJoinRequests,     // Refresh join requests  
+    loggedInId             // Current logged-in user ID
   } = useGroupApi();
 
   const [form, setForm] = useState({ name: "", description: "" }); // Create-group form state
@@ -46,6 +48,15 @@ export default function Groups() {
     fetchJoinRequests();
   }, []);
 
+  if (!loggedInId) {
+    return (
+      <main className="groups">
+        <div className="groups__not-logged">
+          <p>Log in to see groups</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="groups">
