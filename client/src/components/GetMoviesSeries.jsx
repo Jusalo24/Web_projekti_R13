@@ -26,6 +26,7 @@ export default function GetMoviesSeries({
   const [currentPage, setCurrentPage] = useState(1);
   const loadMoreRef = useRef(null);
   const infiniteScrollEnabled = !limit; // Disable infinite scroll if limit is set
+  const hasMounted = useRef(false);
 
   const {
     addToFavorites,
@@ -105,6 +106,10 @@ export default function GetMoviesSeries({
 
     const observer = new IntersectionObserver(
       entries => {
+        if (!hasMounted.current) {
+          hasMounted.current = true;
+          return;
+        }
         if (entries[0].isIntersecting) {
           setCurrentPage(prev => prev + 1);
         }
