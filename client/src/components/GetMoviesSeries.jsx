@@ -89,6 +89,12 @@ export default function GetMoviesSeries({
     });
   };
 
+  // Only include movies & TV shows (multi-search also returns people)
+  const filteredResults = movies.filter(
+    item => item.media_type === 'movie' || item.media_type === 'tv'
+  );
+
+  const listToRender = query ? filteredResults : movies;
 
   // Display loading, error, or empty states
   if (loading) return <div className="movies-loading">Loading...</div>;
@@ -103,7 +109,7 @@ export default function GetMoviesSeries({
         type={favNotification.type}         // Notification type (success/error)
         onClose={() => setFavNotification({ message: null })} // Close popup
       />
-      {movies.map((movie, index) => {
+      {listToRender.map((movie, index) => {
         // Use both media type, ID, and index to ensure uniqueness even for duplicates
         const uniqueKey = `${movieHelpers.getUniqueKey(movie, media_type)}-${index}`;
 
