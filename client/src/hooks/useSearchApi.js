@@ -7,7 +7,8 @@ export function useSearchApi({
     limit = null,           // Optional limit for total results
     query = "",             // Search query
     movieIds = [],        // Specific movie IDs for group_movies type
-    discoverParams = {}     // Extra parameters for discovery-based searches
+    discoverParams = {},     // Extra parameters for discovery-based searches
+    append = false        // Whether to append results on pagination
 }) {
     const [movies, setMovies] = useState([]);    // Stores fetched movie/TV results
     const [loading, setLoading] = useState(true); // Tracks loading state
@@ -89,15 +90,16 @@ export function useSearchApi({
                         // Skip the default page-based fetching logic
                         continue;
                     }
-                    
+
                     // Default movie/TV endpoints (e.g. now_playing, popular)
                     else {
                         if (media_type === "tv" || type.startsWith("tv_")) {
-                            // Remove the "tv_" prefix to match backend endpoint
                             const tvType = type.replace("tv_", "");
-                            url = `${baseURL}/api/tv/${tvType}?page=${p}`;
+                            const queryString = new URLSearchParams({ page: p, ...discoverParams }).toString();
+                            url = `${baseURL}/api/tv/${tvType}?${queryString}`;
                         } else {
-                            url = `${baseURL}/api/movies/${type}?page=${p}`;
+                            const queryString = new URLSearchParams({ page: p, ...discoverParams }).toString();
+                            url = `${baseURL}/api/movies/${type}?${queryString}`;
                         }
                     }
 
@@ -112,7 +114,9 @@ export function useSearchApi({
                 }
 
                 // Apply optional result limit
-                setMovies(limit ? allResults.slice(0, limit) : allResults);
+                setMovies(prev =>
+                    append ? [...prev, ...allResults] : (limit ? allResults.slice(0, limit) : allResults)
+                );
             } catch (err) {
                 console.error("Error fetching movies:", err);
                 setError(err.message);

@@ -180,8 +180,6 @@ export default function Discover() {
         <GetMoviesSeries
           type="discover"
           {...queryParams}
-          page={1}
-          pages={2}
           imageSize={imageSize}
         />
       </div>
