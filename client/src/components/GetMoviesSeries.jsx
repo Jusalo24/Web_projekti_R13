@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Trash2, PlusCircle } from "lucide-react";
+import { Trash2, PlusCircle, ImageOff } from "lucide-react";
 import GetImage from "./GetImage";
 import { useSearchApi, movieHelpers } from "../hooks/useSearchApi";
 import { useGroupApi } from "../hooks/useGroupApi";
@@ -145,11 +145,19 @@ export default function GetMoviesSeries({
                   <PlusCircle size={24} />
                 </button>
               )}
-              <GetImage
-                path={movie.poster_path}
-                title={movieHelpers.getTitle(movie)} // Movie/series title for alt text
-                size={imageSize}
-              />
+              {movie.poster_path ? (
+                <GetImage
+                  path={movie.poster_path}
+                  title={movieHelpers.getTitle(movie)} // Movie/series title for alt text
+                  size={imageSize}
+                />
+                ) : (
+                  <div className="movie-card__placeholder">
+                    <ImageOff size={72} />
+                    <span className="movie-card__no-image-text">No Image</span>
+                  </div>
+                )
+              }
             </div>
 
             {/* Movie/series info */}
