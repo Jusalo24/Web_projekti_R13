@@ -42,14 +42,14 @@ export default function Discover() {
       isInitialRender.current = false;
       return;
     }
-
-    // Use timeout to ensure state updates have completed
-    const timeoutId = setTimeout(() => {
-      handleFilterChange();
-    }, 0);
-
-    return () => clearTimeout(timeoutId);
-  }, [selectedGenre, selectedReleaseYear, withCast, selectedSortBy, selectedMediaType]);
+    handleFilterChange();
+  }, [
+    selectedGenre,
+    selectedReleaseYear,
+    withCast,
+    selectedSortBy,
+    selectedMediaType
+  ]);
 
   // Initial filter setup
   useEffect(() => {
