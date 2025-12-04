@@ -104,6 +104,31 @@ export async function removeMember(req, res) {
     }
 }
 
+// Member leaves group themself
+// DELETE /api/groups/:id/leave | params: { id }
+export async function leaveGroup(req, res) {
+    try {
+        const groupId = req.params.id;
+        const userId = req.user.id;
+
+        // Ensure group exists
+        const group = await groupService.getGroupById(groupId);
+        if (!group) return res.status(404).json({ error: "Group not found" });
+
+        // Prevent owner from leaving (owner should transfer ownership or delete group)
+        if (group.owner_id === userId) {
+            return res.status(400).json({ error: "Owner cannot leave group. Transfer ownership or delete the group." });
+        }
+
+        // Remove the member
+        await groupService.removeMember(groupId, userId);
+        res.status(204).send();
+    } catch (err) {
+        console.error("Failed to leave group", err);
+        res.status(500).json({ error: "Failed to leave group" });
+    }
+}
+
 // Send a join request to the group
 // POST /api/groups/groups/:id/join-request  | params: { id }, no body
 export async function requestJoin(req, res) {
