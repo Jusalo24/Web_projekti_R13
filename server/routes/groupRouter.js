@@ -13,7 +13,8 @@ import {
     acceptJoin,
     rejectJoin,
     getMyGroups,
-    removeMember
+    removeMember,
+    leaveGroup
 } from "../controllers/groupController.js";
 
 import { requireOwner, requireMemberOrOwner } from '../helpers/groupRoles.js';
@@ -53,6 +54,10 @@ groupRouter.post("/groups/:id/members", auth, requireOwner, addMember);
 // Remove member from group (auth)
 // DELETE /api/groups/:id/members | params: { id }  query: { userId }
 groupRouter.delete("/groups/:id/members", auth, requireOwner, removeMember);
+
+// Member leaves group themself (auth)
+// DELETE /api/groups/:id/leave | params: { id }
+groupRouter.delete("/groups/:id/leave", auth, requireMemberOrOwner, leaveGroup);
 
 // Send join request to group (auth)
 // POST /api/groups/:id/join-request | params: { id }  no body
