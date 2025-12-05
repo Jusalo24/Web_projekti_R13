@@ -4,8 +4,8 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
-    // Example: check database connection or other services
-    // await db.query("SELECT 1"); // Uncomment and replace with your DB check
+    // Example: add dependency checks if needed
+    // await db.query("SELECT 1");
 
     res.status(200).json({
       status: "OK",
@@ -13,8 +13,8 @@ router.get("/", async (req, res) => {
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV || "development",
       dependencies: {
-        // database: "ok", // set dynamically if you check DB
-        // cache: "ok",    // set dynamically if you check cache
+        // database: "ok",
+        // cache: "ok"
       }
     });
   } catch (error) {
