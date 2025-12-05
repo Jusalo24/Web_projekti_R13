@@ -1,26 +1,21 @@
-# Server Dockerfile for Railway
 FROM node:22-alpine
 
 WORKDIR /app
 
-# Copy package files
+# Copy only package files first for caching
 COPY package*.json ./
-
-# Verify files (optional, for debug)
-RUN ls -la
 
 # Install production dependencies
 RUN npm ci --omit=dev
 
-# Copy server application code
+# Copy rest of the server code
 COPY . .
 
-# Expose port (Railway overrides PORT env var)
+# Expose port (Railway dynamically assigns $PORT)
 EXPOSE 3001
 
-# Smarter healthcheck
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD curl -s http://localhost:3001/health | grep -q '"status":"OK"' || exit 1
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=5s \
+  CMD wget -qO- http://localhost:3001/health || exit 1
 
-# Start the server
 CMD ["node", "index.js"]
