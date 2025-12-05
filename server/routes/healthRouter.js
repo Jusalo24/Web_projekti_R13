@@ -1,5 +1,4 @@
 import express from "express";
-import os from "os";
 
 const router = express.Router();
 
@@ -9,9 +8,8 @@ router.get("/", (req, res) => {
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || "development",
-    memoryUsage: process.memoryUsage(),
-    cpuLoad: os.loadavg(),
-    pid: process.pid
+    pid: process.pid,
+    memoryUsage: process.memoryUsage()
   });
 });
 
