@@ -6,7 +6,10 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install only production dependencies
+# Verify files (optional, for debug)
+RUN ls -la
+
+# Install production dependencies
 RUN npm ci --omit=dev
 
 # Copy server application code
@@ -17,8 +20,7 @@ EXPOSE 3001
 
 # Smarter healthcheck
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD curl -s http://localhost:3001/health \
-       | grep -q '"status":"OK"' || exit 1
+  CMD curl -s http://localhost:3001/health | grep -q '"status":"OK"' || exit 1
 
 # Start the server
 CMD ["node", "index.js"]
