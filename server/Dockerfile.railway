@@ -1,18 +1,27 @@
+# Use official Node.js 22 Alpine image for minimal size
 FROM node:22-alpine
 
+# Set working directory
 WORKDIR /app
 
-# Copy package files
+# Copy package files and install only production dependencies
 COPY package*.json ./
-
-# Install only production dependencies
 RUN npm ci --only=production
 
-# Copy application code
+# Copy application source code
 COPY . .
 
-# Expose port (Railway will override this with PORT env var)
+# Expose port (Railway will override with PORT env var)
 EXPOSE 3001
 
-# Use node directly (not nodemon) for production
+# Healthcheck: container is healthy only if server responds with status OK
+# --interval=30s: check every 30 seconds
+# --timeout=3s: wait up to 3 seconds for response
+# --start-period=10s: allow container to start before first check
+# --retries=3: require 3 consecutive failures to mark unhealthy
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD curl -s http://localhost:3001/health \
+       | grep -q '"status":"OK"' || exit 1
+
+# Run the Node.js application
 CMD ["node", "index.js"]
