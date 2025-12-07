@@ -17,7 +17,6 @@ export default function GetMoviesSeries({
   onDataChanged,      // Callback when data changes (e.g. movie removed)
   ...discoverParams     // Additional parameters for discovery API
 }) {
-  console.log("[GetMoviesSeries] render - with_cast param:", discoverParams.with_cast, "all discoverParams:", discoverParams);
   const navigate = useNavigate(); // For navigation to detail page
   const token = localStorage.getItem("token");
 

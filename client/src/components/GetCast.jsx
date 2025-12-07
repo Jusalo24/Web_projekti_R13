@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 
 export default function GetCast({ 
     onSelect, 
+    value = "",
     disabled = false 
 }) {
     // State for input query, search results, dropdown visibility, and loading state
@@ -11,7 +12,12 @@ export default function GetCast({
     const [showDropdown, setShowDropdown] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    console.log("[GetCast] render - query:", query, "disabled:", disabled);
+    // Reset query when value prop changes (when parent clears selection)
+    useEffect(() => {
+        if (value === "") {
+            setQuery("");
+        }
+    }, [value]);
 
     // Ref to track component container for detecting clicks outside
     const containerRef = useRef(null);
@@ -45,7 +51,6 @@ export default function GetCast({
             const data = await res.json();
             setResults(data?.results || []); // Save results
         } catch (err) {
-            console.error("Error fetching cast:", err);
             setResults([]); // Clear results on error
         } finally {
             setLoading(false); // Stop loading
@@ -68,7 +73,6 @@ export default function GetCast({
     // Handle selecting a cast member
     const handleSelect = (person) => {
         if (disabled) return;
-        console.log("[GetCast] handleSelect - person.id:", person.id, "person.name:", person.name);
         setQuery(person.name); // Set input to selected name
         setShowDropdown(false); // Hide dropdown
         setResults([]); // Clear results
@@ -77,7 +81,6 @@ export default function GetCast({
 
     // Handle clearing the input and selection
     const handleClear = () => {
-        console.log("[GetCast] handleClear - clearing cast selection");
         setQuery("");
         setResults([]);
         setShowDropdown(false);
@@ -109,6 +112,7 @@ export default function GetCast({
                     }}
                     className="cast-search__input"
                     disabled={disabled}
+                    query={value}
                 />
                 {query && (
                     <button
