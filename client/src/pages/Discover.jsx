@@ -27,6 +27,7 @@ export default function Discover() {
     if (withCast) params.with_cast = withCast;
     if (selectedSortBy) params.sort_by = selectedSortBy;
     if (selectedMediaType) params.media_type = selectedMediaType;
+    console.log("[Discover] handleFilterChange - withCast:", withCast, "params:", params);
     setQueryParams(params); // Update queryParams state
   };
 
@@ -42,6 +43,7 @@ export default function Discover() {
       isInitialRender.current = false;
       return;
     }
+    console.log("[Discover] useEffect triggered - withCast:", withCast);
     handleFilterChange();
   }, [
     selectedGenre,
@@ -84,6 +86,7 @@ export default function Discover() {
 
   // Function to reset all filters to default values
   const handleClearFilters = () => {
+    console.log("[Discover] handleClearFilters called - setting withCast to empty string");
     setSelectedGenre("");
     setSelectedReleaseYear("");
     setWithCast("");
