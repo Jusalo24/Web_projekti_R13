@@ -165,6 +165,7 @@ export default function Discover() {
           <label className="filter-group__label">Cast</label>
           <GetCast
             onSelect={setWithCast}
+            value={withCast}
             disabled={selectedMediaType === "tv"}
           />
         </div>
