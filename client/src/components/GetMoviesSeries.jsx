@@ -125,7 +125,7 @@ export default function GetMoviesSeries({
   // Reset to first page when discover/search parameters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [discoverParams, query, type]);
+  }, [query, type]);
 
   // Display loading, error, or empty states
   if (error) return <div className="movies-error">Error: {error}</div>;
