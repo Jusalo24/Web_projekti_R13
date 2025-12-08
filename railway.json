@@ -5,7 +5,7 @@
       "path": "server",
       "build": {
         "builder": "DOCKERFILE",
-        "dockerfilePath": "Dockerfile.railway"
+        "dockerfilePath": "server/Dockerfile.railway"
       },
       "deploy": {
         "numReplicas": 1,
@@ -19,7 +19,7 @@
       "path": "client",
       "build": {
         "builder": "DOCKERFILE",
-        "dockerfilePath": "Dockerfile.railway"
+        "dockerfilePath": "client/Dockerfile.railway"
       },
       "deploy": {
         "numReplicas": 1,
