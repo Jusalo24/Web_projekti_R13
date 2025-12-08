@@ -8,6 +8,7 @@ import movieRouter from './routes/movieRouter.js'
 import tvRouter from './routes/tvRouter.js'
 import searchRouter from './routes/searchRouter.js'
 import reviewRouter from './routes/reviewRouter.js'
+import replyRouter from './routes/replyRouter.js'
 import genreRouter from './routes/genreRouter.js'
 import groupRouter from './routes/groupRouter.js'
 import favoriteListRouter from './routes/favoriteListRouter.js'
@@ -74,6 +75,7 @@ app.use('/api', reviewRouter)
 app.use('/api', genreRouter)
 app.use('/api', groupRouter)
 app.use('/api', favoriteListRouter)
+app.use('/api', replyRouter)
 
 // 404 handler
 app.use((req, res) => {

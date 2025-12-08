@@ -7,6 +7,7 @@ import {
     deleteReview,
     getMovieAverageRating
 } from '../controllers/reviewController.js'
+import { getRepliesByReviewId } from '../controllers/replyController.js';
 import { auth } from '../helpers/auth.js'
 
 const reviewRouter = Router()
@@ -36,5 +37,9 @@ reviewRouter.put('/reviews/:id', auth, updateReview)
 // Delete a review (protected)
 // DELETE /api/reviews/:id
 reviewRouter.delete('/reviews/:id', auth, deleteReview)
+
+// Get all replies for a specific review (public)
+// GET /api/reviews/:reviewId/replies
+reviewRouter.get('/reviews/:reviewId/replies', getRepliesByReviewId);
 
 export default reviewRouter
