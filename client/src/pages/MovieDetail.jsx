@@ -30,6 +30,10 @@ export default function MovieDetail() {
   // Favorite state
   const [isFavorite, setIsFavorite] = useState(false);
   const [checkingFavorite, setCheckingFavorite] = useState(true);
+  //const [showListModal, setShowListModal] = useState(false);
+  //const [userLists, setUserLists] = useState([]);
+  const [showChooseList, setShowChooseList] = useState[(false)];
+
 
   // Review state
   const [rating, setRating] = useState("5");
@@ -151,15 +155,59 @@ export default function MovieDetail() {
     }
   };
 
-  const handleAddToFavorites = async () => {
-    if (!isLoggedIn) {
-      navigate("/login");
+  const handleAddToSpecificList = async (listId) => {
+    const movieId = `${mediaType}:${id}`;
+
+    const res = await fetch(`${baseURL}/api/favorite-lists/${listId}/items`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ movie_external_id: movieId, position: 0 })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setNotification({ message: data.error || "Failed to add", type: "error" });
       return;
     }
 
-    await addToFavorites(mediaType, id);
-    setIsFavorite(true);
+    setNotification({ message: "Added to list!", type: "success" });
   };
+
+
+  const addMovieToList = async (listId, listName) => {
+    try {
+      const res = await fetch(`${baseURL}/api/favorite-lists/${listId}/items`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          movieId: id,   // <- sinun API käyttää movieId
+          position: 0
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to add movie");
+
+      setShowListModal(false);
+      setIsFavorite(true);
+
+      setNotification({
+        message: `Added to "${listName}"`,
+        type: "success",
+      });
+
+    } catch (err) {
+      console.error(err);
+      setNotification({ message: "Error adding movie", type: "error" });
+    }
+  };
+
 
   const handleRemoveFromFavorites = async () => {
     await removeFromFavorites(mediaType, id);
@@ -326,7 +374,7 @@ export default function MovieDetail() {
 
                 <button
                   className={`movie-detail__action-btn ${isFavorite ? "movie-detail__action-btn--active" : ""}`}
-                  onClick={isFavorite ? handleRemoveFromFavorites : handleAddToFavorites}
+                  onClick={() => setShowChooseList(true)}
                   disabled={checkingFavorite}
                 >
                   {checkingFavorite ? "..." : isFavorite ? "❤️ Remove Favorite" : "🤍 Add Favorite"}
@@ -480,6 +528,34 @@ export default function MovieDetail() {
           }}
         />
       )}
+
+      
+      {showChooseList && (
+        <div className="modal-overlay" onClick={() => setShowChooseList(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <h3>Select Favorite List</h3>
+
+            {favoriteLists.map(list => (
+              <button 
+                key={list.id}
+                className="modal-btn"
+                onClick={() => {
+                  handleAddToSpecificList(list.id);
+                  setShowChooseList(false);
+                }}
+              >
+                {list.title}
+              </button>
+            ))}
+
+            <button className="modal-btn cancel" onClick={() => setShowChooseList(false)}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+
     </div>
   );
 }

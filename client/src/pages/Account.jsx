@@ -19,6 +19,10 @@ export default function Account() {
   const [deleteSuccess, setDeleteSuccess] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [passwordError, setPasswordError] = useState("");
+  const [selectedList, setSelectedList] = useState(null);
+  const [listItems, setListItems] = useState([]);
+  const [showListModal, setShowListModal] = useState(false);
+
 
 
 
@@ -100,7 +104,9 @@ export default function Account() {
           
           // Fetch movie details from TMDB for each item
           for (const item of items) {
-            const [mediaType, movieId] = item.movie_external_id.split(":");
+            const movieId = item.movie_external_id; 
+            const mediaType = item.media_type || "movie"; 
+
             
             try {
               const endpoint = mediaType === "tv" 
@@ -267,6 +273,56 @@ export default function Account() {
     setShowDeleteConfirm(false);
   };
 
+  const openList = async (list) => {
+    setSelectedList(list);
+    setShowListModal(true);
+
+    try {
+      const res = await fetch(`${API}/api/favorite-lists/${list.id}/items`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!res.ok) {
+        console.error("Failed to load list items");
+        return;
+      }
+
+      const items = await res.json();
+
+      // 🔥 HAE TMDB-TIEDOT JOKAISELLE ITEMILLE
+      const detailedItems = [];
+
+      for (const item of items) {
+        const [mediaType, movieId] = item.movie_external_id.split(":");
+
+        try {
+          const endpoint =
+            mediaType === "tv"
+              ? `${API}/api/tv/${movieId}`
+              : `${API}/api/movies/byId/${movieId}`;
+
+          const movieRes = await fetch(endpoint);
+          if (movieRes.ok) {
+            const movieData = await movieRes.json();
+            detailedItems.push({
+              ...movieData,
+              media_type: mediaType,
+              item_id: item.id
+            });
+          }
+        } catch (err) {
+          console.error("Error fetching movie details:", err);
+        }
+      }
+
+      setListItems(detailedItems);
+    } catch (err) {
+      console.error("List load error:", err);
+    }
+  };
+
+
+
 
   return (
     <div className="account-container">
@@ -305,7 +361,9 @@ export default function Account() {
             <h3>Your Lists ({favoriteLists.length})</h3>
             <ul className="list">
               {favoriteLists.map(list => (
-                <li key={list.id}>{list.title}</li>
+                <li key={list.id} className="clickable-list"onClick={() => openList(list)}>
+                  {list.title}
+                </li>
               ))}
             </ul>
           </section>
@@ -441,6 +499,58 @@ export default function Account() {
           </div>
         </div>
       )}
+
+      {showListModal && (
+          <div className="modal-overlay" onClick={() => setShowListModal(false)}>
+            <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+              <h3>{selectedList?.title}</h3>
+
+              {listItems.length === 0 ? (
+                <p>No movies in this list yet.</p>
+              ) : (
+                <div className="favorites-grid">
+                  {listItems.map((movie) => (
+                    <div
+                      key={movie.item_id}
+                      className="favorite-card"
+                      onClick={() =>
+                        navigate(`/movies/${movie.id}?type=${movie.media_type}`)
+                      }
+                    >
+                      <div className="favorite-card__poster">
+                        {movie.poster_path ? (
+                          <GetImage
+                            path={movie.poster_path}
+                            title={movie.title || movie.name}
+                            size="w342"
+                          />
+                        ) : (
+                          <div className="favorite-card__placeholder">No Image</div>
+                        )}
+                      </div>
+                      <div className="favorite-card__info">
+                        <h4 className="favorite-card__title">
+                          {movie.title || movie.name}
+                        </h4>
+                        <div className="favorite-card__meta">
+                          <span className="favorite-card__type">
+                            {movie.media_type === "tv" ? "TV Show" : "Movie"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <button className="modal-btn cancel" onClick={() => setShowListModal(false)}>
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+
+
 
         {deleteSuccess && (
           <div className="success-toast">
