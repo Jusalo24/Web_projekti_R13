@@ -3,49 +3,48 @@ services:
     image: postgres:16
     restart: always
     environment:
-      - POSTGRES_USER=${POSTGRES_USER:-postgres}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
-      - POSTGRES_DB=${POSTGRES_DB:-moviedb}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql
       - ./init_moviedb.sql:/docker-entrypoint-initdb.d/init_moviedb.sql
     ports:
       - "5432:5432"
 
   server:
-    image: leevimaatta/web_projekti_r13-server:latest
-    restart: always
+    build:
+      context: ./server
+      dockerfile: Dockerfile
     ports:
       - "3001:3001"
     env_file:
       - ./.env
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-moviedb}
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     depends_on:
       - db
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 40s
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    working_dir: /app
 
   client:
-    image: leevimaatta/web_projekti_r13-client:latest
-    restart: always
+    build:
+      context: ./client
+      dockerfile: Dockerfile
     ports:
-      - "80:80"
+      - "5173:5173"
     depends_on:
       - server
+    volumes:
+      - ./client:/app
+      - /app/node_modules
     environment:
-      - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:3001}
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost/"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 20s
+      - VITE_API_BASE_URL=http://localhost:3001
+      - CHOKIDAR_USEPOLLING=true  # Pakottaa Vite seuraamaan tiedostoja
+    command: npm run dev -- --host 0.0.0.0
 
 volumes:
   pgdata:
