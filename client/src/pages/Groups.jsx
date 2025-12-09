@@ -143,7 +143,7 @@ export default function Groups() {
 
           <div className="groups__list-container">
             {loading ? (
-              <p>Loading...</p> // Loading state
+              <div className="spinner" /> // Loading state
             ) : (
               <GroupList groups={groups} onJoin={joinGroup} /> // Public groups with join button
             )}
