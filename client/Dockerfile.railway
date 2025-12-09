@@ -1,8 +1,12 @@
 FROM node:lts-alpine AS build
 WORKDIR /app
 
+# Env-variable to build
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=https://webprojektir13-server-production.up.railway.app
+
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
 COPY . .
 RUN npm run build
