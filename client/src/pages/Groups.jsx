@@ -93,10 +93,10 @@ export default function Groups() {
               joinRequests.map((req) => (
                 <div className="request-card" key={req.id}>
                   <p>
-                    <strong>Group:</strong> {req.groupName}
+                    <strong>Group:</strong> {req.groupName.length > 20 ? req.groupName.substring(0, 35) + "..." : req.groupName}
                   </p>
                   <p>
-                    <strong>User:</strong> {req.username}
+                    <strong>User:</strong> {req.username.length > 20 ? req.username.substring(0, 35) + "..." : req.username}
                   </p>
 
                   <div className="request-actions">
