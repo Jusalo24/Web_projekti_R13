@@ -1,6 +1,8 @@
-FROM node:22-alpine AS builder
-
+FROM node:lts-alpine AS build
 WORKDIR /app
+
+# Env-variable to build
+ARG VITE_API_BASE_URL
 
 COPY package*.json ./
 RUN npm install
@@ -8,11 +10,10 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-FROM nginx:alpine
+FROM caddy:latest
+WORKDIR /app
 
-COPY --from=builder /app/dist /usr/share/nginx/html
-COPY ./nginx.conf /etc/nginx/conf.d/default.conf
+COPY Caddyfile .
+COPY --from=build /app/dist ./dist
 
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["caddy", "run", "--config", "Caddyfile", "--adapter", "caddyfile"]

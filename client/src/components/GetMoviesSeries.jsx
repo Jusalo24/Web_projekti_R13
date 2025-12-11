@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Trash2, PlusCircle, ImageOff } from "lucide-react";
+import { Trash2, PlusCircle, ImageOff, ChevronLeft, ChevronRight } from "lucide-react";
 import GetImage from "./GetImage";
 import { useSearchApi, movieHelpers } from "../hooks/useSearchApi";
 import { useGroupApi } from "../hooks/useGroupApi";
@@ -15,6 +15,7 @@ export default function GetMoviesSeries({
   movieIds = [],         // Specific movie IDs to fetch
   groupId = null,        // Group ID for group-related actions
   onDataChanged,      // Callback when data changes (e.g. movie removed)
+  horizontal = true,  // Whether to enable horizontal scrolling
   ...discoverParams     // Additional parameters for discovery API
 }) {
   const navigate = useNavigate(); // For navigation to detail page
@@ -27,6 +28,22 @@ export default function GetMoviesSeries({
   const loadMoreRef = useRef(null);
   const infiniteScrollEnabled = !limit; // Disable infinite scroll if limit is set
   const hasMounted = useRef(false);
+
+  // Ref for horizontal scrolling
+  const gridRef = useRef(null);
+
+  // Functions to scroll the grid left/right
+  const scrollLeft = () => {
+    if (gridRef.current) {
+      gridRef.current.scrollBy({ left: -400, behavior: "smooth" });
+    }
+  };
+
+  const scrollRight = () => {
+    if (gridRef.current) {
+      gridRef.current.scrollBy({ left: 400, behavior: "smooth" });
+    }
+  };
 
   const {
     addToFavorites,
@@ -125,96 +142,108 @@ export default function GetMoviesSeries({
   // Reset to first page when discover/search parameters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [query, type]);
+  }, [query, type, JSON.stringify(discoverParams)]);
 
   // Display loading, error, or empty states
   if (error) return <div className="movies-error">Error: {error}</div>;
 
   // Render movies/series in a grid
   return (
-    <div className="movies-grid">
-      <AppNotification
-        message={favNotification.message}   // Notification text
-        type={favNotification.type}         // Notification type (success/error)
-        onClose={() => setFavNotification({ message: null })} // Close popup
-      />
-      {listToRender.length === 0 && !loading && (
-        <div className="movies-empty">No results found.</div>
+    <div className={horizontal ? "movies-scroll-wrapper" : ""}>
+      {horizontal && (
+        <button className="scroll-btn scroll-btn--left" onClick={scrollLeft}>
+          <ChevronLeft size={20} />
+        </button>
       )}
-      {listToRender.map((movie, index) => {
-        // Use both media type, ID, and index to ensure uniqueness even for duplicates
-        const uniqueKey = `${movieHelpers.getUniqueKey(movie, media_type)}-${index}`;
+      <div className="movies-grid" ref={horizontal ? gridRef : null}>
+        <AppNotification
+          message={favNotification.message}   // Notification text
+          type={favNotification.type}         // Notification type (success/error)
+          onClose={() => setFavNotification({ message: null })} // Close popup
+        />
+        {listToRender.length === 0 && !loading && (
+          <div className="movies-empty">No results found.</div>
+        )}
+        {listToRender.map((movie, index) => {
+          // Use both media type, ID, and index to ensure uniqueness even for duplicates
+          const uniqueKey = `${movieHelpers.getUniqueKey(movie, media_type)}-${index}`;
 
-        return (
-          <div
-            key={uniqueKey}
-            className="movie-card"
-            onClick={() => handleCardClick(movie)}
-          >
-            {/* Poster image */}
-            <div className="movie-card__poster">
-              {type === "group_movies" && (
-                <button
-                  className="movie-card__delete-from-group"
-                  key={uniqueKey}
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent card click
-                    handleDeleteFromGroupClick(movie);
-                  }}
-                >
-                  <Trash2 size={24} />
-                </button>
-              )}
-              {type != "group_movies" && (
-                <button
-                  className="movie-card__add-to-group"
-                  key={uniqueKey}
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent card click    TÄMÄN KOHDAN VOI MUUTTAA FAVORITE LIST
-                    handleAddToFavoritesClick(movie);
-                  }}
-                >
-                  <PlusCircle size={24} />
-                </button>
-              )}
-              {movie.poster_path ? (
-                <GetImage
-                  path={movie.poster_path}
-                  title={movieHelpers.getTitle(movie)} // Movie/series title for alt text
-                  size={imageSize}
-                />
-              ) : (
-                <div className="movie-card__placeholder">
-                  <ImageOff size={72} />
-                  <span className="movie-card__no-image-text">No Image</span>
-                </div>
-              )
-              }
-            </div>
-
-            {/* Movie/series info */}
-            <div className="movie-card__info">
-              <h3 className="movie-card__title">{movieHelpers.getTitle(movie)}</h3>
-              <div className="movie-card__footer">
-                {/* Show type (Movie or TV Show) */}
-                <span className="movie-card__type">
-                  {movieHelpers.getMediaTypeLabel(movie, media_type)}
-                </span>
-
-                {/* Show release year if available */}
-                {movieHelpers.getReleaseDate(movie) && (
-                  <span className="movie-card__year">
-                    {movieHelpers.getReleaseDate(movie)}
-                  </span>
+          return (
+            <div
+              key={uniqueKey}
+              className="movie-card"
+              onClick={() => handleCardClick(movie)}
+            >
+              {/* Poster image */}
+              <div className="movie-card__poster">
+                {type === "group_movies" && (
+                  <button
+                    className="movie-card__delete-from-group"
+                    key={uniqueKey}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent card click
+                      handleDeleteFromGroupClick(movie);
+                    }}
+                  >
+                    <Trash2 size={24} />
+                  </button>
                 )}
+                {type != "group_movies" && (
+                  <button
+                    className="movie-card__add-to-group"
+                    key={uniqueKey}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent card click    TÄMÄN KOHDAN VOI MUUTTAA FAVORITE LIST
+                      handleAddToFavoritesClick(movie);
+                    }}
+                  >
+                    <PlusCircle size={24} />
+                  </button>
+                )}
+                {movie.poster_path ? (
+                  <GetImage
+                    path={movie.poster_path}
+                    title={movieHelpers.getTitle(movie)} // Movie/series title for alt text
+                    size={imageSize}
+                  />
+                ) : (
+                  <div className="movie-card__placeholder">
+                    <ImageOff size={72} />
+                    <span className="movie-card__no-image-text">No Image</span>
+                  </div>
+                )
+                }
+              </div>
+
+              {/* Movie/series info */}
+              <div className="movie-card__info">
+                <h3 className="movie-card__title">{movieHelpers.getTitle(movie)}</h3>
+                <div className="movie-card__footer">
+                  {/* Show type (Movie or TV Show) */}
+                  <span className="movie-card__type">
+                    {movieHelpers.getMediaTypeLabel(movie, media_type)}
+                  </span>
+
+                  {/* Show release year if available */}
+                  {movieHelpers.getReleaseDate(movie) && (
+                    <span className="movie-card__year">
+                      {movieHelpers.getReleaseDate(movie)}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        );
-      })}
-      <div ref={loadMoreRef} className="infinite-scroll-loader">
-        {loading && <div className="spinner" />}
+          );
+        })}
+        <div ref={loadMoreRef} className="infinite-scroll-loader">
+          {loading && <div className="spinner" />}
+        </div>
       </div>
+      {horizontal && (
+        <button className="scroll-btn scroll-btn--right" onClick={scrollRight}>
+          <ChevronRight size={20} />
+        </button>
+      )}
     </div>
   );
 }
