@@ -47,15 +47,28 @@ export const getListItems = async (req, res) => {
 
 export const addItemToList = async (req, res) => {
   try {
+    console.log("HEADERS:", req.headers["content-type"])
+    console.log("BODY:", req.body)
+    console.log("PARAMS:", req.params)
     const { listId } = req.params
-    const { movieId, position } = req.body
+    const { movie_external_id, position } = req.body
 
-    const item = await addFavoriteItem(listId, movieId, position || 0)
+    if (!movie_external_id) {
+      return res.status(400).json({ error: "movie_external_id is required" })
+    }
+
+    const item = await addFavoriteItem(
+      listId,
+      movie_external_id,
+      position ?? 0
+    )
+
     res.status(201).json(item)
   } catch (err) {
     res.status(400).json({ error: err.message })
   }
 }
+
 
 export const deleteItem = async (req, res) => {
   try {

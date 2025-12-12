@@ -498,3 +498,15 @@
   z-index: 5000;
 }
 
+.clickable-list {
+  cursor: pointer;
+  padding: 0.6rem;
+  background: #2a3251;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  transition: 0.2s;
+}
+
+.clickable-list:hover {
+  background: #4a8ef5;
+}

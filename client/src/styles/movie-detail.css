@@ -716,6 +716,24 @@
     height: 250px;
   }
 }
+
+.favorites-list-select {
+  list-style: none;
+  padding: 0;
+  margin-top: 1rem;
+}
+
+.favorite-list-option {
+  padding: 0.8rem;
+  margin-bottom: 0.5rem;
+  background: #2a3251;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.favorite-list-option:hover {
+  background: #4a8ef5;
 /* Replies styling */
 
 .reply-thread {
