@@ -717,6 +717,7 @@
   }
 }
 
+
 .favorites-list-select {
   list-style: none;
   padding: 0;
@@ -735,6 +736,7 @@
 .favorite-list-option:hover {
   background: #4a8ef5;
 /* Replies styling */
+}
 
 .reply-thread {
   margin-top: 0.5rem;
@@ -864,3 +866,4 @@
   color: #ff6b6b;
   font-size: 0.8rem;
 }
+

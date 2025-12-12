@@ -499,14 +499,26 @@
 }
 
 .clickable-list {
+  padding: clamp(0.5rem, 2vw, 0.8rem)
+           clamp(0.8rem, 3vw, 1.1rem);
   cursor: pointer;
-  padding: 0.6rem;
-  background: #2a3251;
+  background: linear-gradient(135deg, var(--color-accent) 0%, #4a8ef5 100%);
   border-radius: 6px;
   margin-bottom: 0.5rem;
   transition: 0.2s;
+  font-size: clamp(0.85rem, 2.5vw, 0.95rem);
 }
 
 .clickable-list:hover {
-  background: #4a8ef5;
+  background: darkslateblue;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
+
+.modal-box--favorites {
+  width: min(95vw, 900px);
+  max-height: 90vh;
+
+  padding: clamp(1rem, 3vw, 2rem);
+}
+
