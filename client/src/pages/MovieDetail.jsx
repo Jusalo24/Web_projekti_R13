@@ -5,6 +5,7 @@ import { useApi } from "../hooks/useApi";
 import { useFavoritesApi } from "../hooks/useFavoritesApi";
 import GetImage from "../components/GetImage";
 import AddToGroupModal from "../components/AddToGroupModal";
+import ReplyThread from "../components/ReplyThread";
 import "../styles/movie-detail.css";
 
 export default function MovieDetail() {
@@ -448,16 +449,30 @@ export default function MovieDetail() {
 
             <div className="reviews-list">
               {reviews.length === 0 && <p>No reviews yet.</p>}
-              {reviews.map((r) => (
-                <div key={r.id} className="review-card">
-                  <div className="review-card__header">
-                    <strong>{r.username || r.user_id}</strong>
-                    <span className="review-card__rating">{r.rating}/5</span>
+              {reviews.map((r) => {
+                const name = r.username || r.user_id || "?";
+                const initial = name[0]?.toUpperCase() || "?";
+
+                return (
+                  <div key={r.id} className="review-card">
+                    <div className="review-card__header">
+                      <div className="review-card__user">
+                        <div className="reply-avatar">{initial}</div>
+                        <strong className="review-card__author">{name}</strong>
+                      </div>
+                      <span className="review-card__rating">{r.rating}/5</span>
+                    </div>
+
+                    <p>{r.review_text}</p>
+                    <small>{new Date(r.created_at).toLocaleString()}</small>
+
+                    {/* Replies for this review */}
+                    <div className="review-card__replies" style={{ marginTop: "0.5rem" }}>
+                      <ReplyThread reviewId={r.id} />
+                    </div>
                   </div>
-                  <p>{r.review_text}</p>
-                  <small>{new Date(r.created_at).toLocaleString()}</small>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

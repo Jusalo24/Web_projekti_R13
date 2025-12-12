@@ -3,10 +3,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useGroupApi } from "../hooks/useGroupApi";
 import "../styles/groupDetails.css";
 import GetMoviesSeries from "../components/GetMoviesSeries";
+import AppNotification from "../components/AppNotification";
 
 export default function GroupDetails() {
     const { id } = useParams();
-    const { fetchGroupById, loggedInId, fetchMoviesByGroup, removeMemberFromGroup, deleteGroup } = useGroupApi();
+    const { fetchGroupById, loggedInId, fetchMoviesByGroup, removeMemberFromGroup, deleteGroup, leaveGroup, notification, setNotification, showSuccess, showError } = useGroupApi();
     const imageSize = "w342"; // Size of poster images: w780, w500, w342, w185, w154, w92, original
     const [showConfirmDelete, setShowConfirmDelete] = useState(false); // Boolean for modal group deleting
 
@@ -39,6 +40,11 @@ export default function GroupDetails() {
 
     return (
         <main className="group-details">
+            <AppNotification
+                message={notification.message}
+                type={notification.type}
+                onClose={() => setNotification({ message: null })}
+            />
             {/* Group header section */}
             <section className="group-details__header">
                 {group.owner_id === loggedInId && (
@@ -50,6 +56,23 @@ export default function GroupDetails() {
                         }}
                     >
                         Delete group
+                    </button>
+                )}
+                {group.owner_id !== loggedInId && (
+                    <button
+                        className="group-details__leave-group-button"
+                        onClick={async (e) => {
+                            e.stopPropagation();
+                            const ok = await leaveGroup(group.id);
+                            if (ok) {
+                                try { setNotification({ message: "You left the group", type: "success" }); } catch (err) {}
+                                navigate("/groups");
+                            } else {
+                                try { setNotification({ message: "Failed to leave group", type: "error" }); } catch (err) {}
+                            }
+                        }}
+                    >
+                        Leave group
                     </button>
                 )}
                 <h2>{group.name}</h2>

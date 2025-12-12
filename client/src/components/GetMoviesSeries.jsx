@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Trash2, PlusCircle } from "lucide-react";
+import { Trash2, PlusCircle, ImageOff, ChevronLeft, ChevronRight } from "lucide-react";
 import GetImage from "./GetImage";
 import { useSearchApi, movieHelpers } from "../hooks/useSearchApi";
 import { useGroupApi } from "../hooks/useGroupApi";
@@ -9,21 +9,41 @@ import { useFavoritesApi } from "../hooks/useFavoritesApi";
 
 export default function GetMoviesSeries({
   type = "now_playing",  // Type of movies/series to fetch
-  page = 1,              // Current page number
-  pages = 1,             // Total pages to fetch (if paginated)
   imageSize = "w500",    // Size of poster images: w780, w500, w342, w185, w154, w92, original
   limit = null,          // Optional limit on number of results
   query = "",            // Search query
   movieIds = [],         // Specific movie IDs to fetch
   groupId = null,        // Group ID for group-related actions
-  onDataChanged, // Callback when data changes (e.g. movie removed)
+  onDataChanged,      // Callback when data changes (e.g. movie removed)
+  horizontal = true,  // Whether to enable horizontal scrolling
   ...discoverParams     // Additional parameters for discovery API
 }) {
   const navigate = useNavigate(); // For navigation to detail page
-
   const token = localStorage.getItem("token");
 
-  const { removeMovieFromGroup, addMovieToGroup, fetchMyGroups, myGroups } = useGroupApi();
+  const { removeMovieFromGroup } = useGroupApi();
+
+  // Infinite scroll state
+  const [currentPage, setCurrentPage] = useState(1);
+  const loadMoreRef = useRef(null);
+  const infiniteScrollEnabled = !limit; // Disable infinite scroll if limit is set
+  const hasMounted = useRef(false);
+
+  // Ref for horizontal scrolling
+  const gridRef = useRef(null);
+
+  // Functions to scroll the grid left/right
+  const scrollLeft = () => {
+    if (gridRef.current) {
+      gridRef.current.scrollBy({ left: -400, behavior: "smooth" });
+    }
+  };
+
+  const scrollRight = () => {
+    if (gridRef.current) {
+      gridRef.current.scrollBy({ left: 400, behavior: "smooth" });
+    }
+  };
 
   const {
     addToFavorites,
@@ -33,16 +53,16 @@ export default function GetMoviesSeries({
     setNotification: setFavNotification,
   } = useFavoritesApi(token);
 
-
   // Custom hook to fetch movies/series based on params
   const { movies, loading, error } = useSearchApi({
     type,
-    page,
-    pages,
+    page: currentPage,
+    pages: currentPage,
     limit,
     query,
     movieIds,
-    discoverParams
+    discoverParams,
+    append: currentPage > 1
   });
 
   const { media_type } = discoverParams; // Media type (movie or tv)
@@ -89,83 +109,141 @@ export default function GetMoviesSeries({
     });
   };
 
+  // Only include movies & TV shows (multi-search also returns people)
+  const filteredResults = movies.filter(
+    item => item.media_type === 'movie' || item.media_type === 'tv'
+  );
+
+  const listToRender = query ? filteredResults : movies;
+
+  // Infinite scroll effect
+  useEffect(() => {
+    if (!infiniteScrollEnabled || !loadMoreRef.current) return;   // disable infinite scroll if limit exists
+
+    const observer = new IntersectionObserver(
+      entries => {
+        if (!hasMounted.current) {
+          hasMounted.current = true;
+          return;
+        }
+        if (entries[0].isIntersecting) {
+          setCurrentPage(prev => prev + 1);
+        }
+      },
+      {
+        rootMargin: "500px",   // Load when ___px away from viewport
+        threshold: 0.1
+      }
+    );
+    observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [infiniteScrollEnabled]);
+
+  // Reset to first page when discover/search parameters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [query, type, JSON.stringify(discoverParams)]);
 
   // Display loading, error, or empty states
-  if (loading) return <div className="movies-loading">Loading...</div>;
   if (error) return <div className="movies-error">Error: {error}</div>;
-  if (movies.length === 0) return <div className="movies-empty">No results found.</div>;
 
   // Render movies/series in a grid
   return (
-    <div className="movies-grid">
-      <AppNotification
-        message={favNotification.message}   // Notification text
-        type={favNotification.type}         // Notification type (success/error)
-        onClose={() => setFavNotification({ message: null })} // Close popup
-      />
-      {movies.map((movie, index) => {
-        // Use both media type, ID, and index to ensure uniqueness even for duplicates
-        const uniqueKey = `${movieHelpers.getUniqueKey(movie, media_type)}-${index}`;
+    <div className={horizontal ? "movies-scroll-wrapper" : ""}>
+      {horizontal && (
+        <button className="scroll-btn scroll-btn--left" onClick={scrollLeft}>
+          <ChevronLeft size={20} />
+        </button>
+      )}
+      <div className="movies-grid" ref={horizontal ? gridRef : null}>
+        <AppNotification
+          message={favNotification.message}   // Notification text
+          type={favNotification.type}         // Notification type (success/error)
+          onClose={() => setFavNotification({ message: null })} // Close popup
+        />
+        {listToRender.length === 0 && !loading && (
+          <div className="movies-empty">No results found.</div>
+        )}
+        {listToRender.map((movie, index) => {
+          // Use both media type, ID, and index to ensure uniqueness even for duplicates
+          const uniqueKey = `${movieHelpers.getUniqueKey(movie, media_type)}-${index}`;
 
-        return (
-          <div
-            key={uniqueKey}
-            className="movie-card"
-            onClick={() => handleCardClick(movie)}
-          >
-            {/* Poster image */}
-            <div className="movie-card__poster">
-              {type === "group_movies" && (
-                <button
-                  className="movie-card__delete-from-group"
-                  key={uniqueKey}
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent card click
-                    handleDeleteFromGroupClick(movie);
-                  }}
-                >
-                  <Trash2 size={24} />
-                </button>
-              )}
-              {type != "group_movies" && (
-                <button
-                  className="movie-card__add-to-group"
-                  key={uniqueKey}
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent card click    TÄMÄN KOHDAN VOI MUUTTAA FAVORITE LIST
-                    handleAddToFavoritesClick(movie);
-                  }}
-                >
-                  <PlusCircle size={24} />
-                </button>
-              )}
-              <GetImage
-                path={movie.poster_path}
-                title={movieHelpers.getTitle(movie)} // Movie/series title for alt text
-                size={imageSize}
-              />
-            </div>
-
-            {/* Movie/series info */}
-            <div className="movie-card__info">
-              <h3 className="movie-card__title">{movieHelpers.getTitle(movie)}</h3>
-              <div className="movie-card__footer">
-                {/* Show type (Movie or TV Show) */}
-                <span className="movie-card__type">
-                  {movieHelpers.getMediaTypeLabel(movie, media_type)}
-                </span>
-
-                {/* Show release year if available */}
-                {movieHelpers.getReleaseDate(movie) && (
-                  <span className="movie-card__year">
-                    {movieHelpers.getReleaseDate(movie)}
-                  </span>
+          return (
+            <div
+              key={uniqueKey}
+              className="movie-card"
+              onClick={() => handleCardClick(movie)}
+            >
+              {/* Poster image */}
+              <div className="movie-card__poster">
+                {type === "group_movies" && (
+                  <button
+                    className="movie-card__delete-from-group"
+                    key={uniqueKey}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent card click
+                      handleDeleteFromGroupClick(movie);
+                    }}
+                  >
+                    <Trash2 size={24} />
+                  </button>
                 )}
+                {type != "group_movies" && (
+                  <button
+                    className="movie-card__add-to-group"
+                    key={uniqueKey}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent card click    TÄMÄN KOHDAN VOI MUUTTAA FAVORITE LIST
+                      handleAddToFavoritesClick(movie);
+                    }}
+                  >
+                    <PlusCircle size={24} />
+                  </button>
+                )}
+                {movie.poster_path ? (
+                  <GetImage
+                    path={movie.poster_path}
+                    title={movieHelpers.getTitle(movie)} // Movie/series title for alt text
+                    size={imageSize}
+                  />
+                ) : (
+                  <div className="movie-card__placeholder">
+                    <ImageOff size={72} />
+                    <span className="movie-card__no-image-text">No Image</span>
+                  </div>
+                )
+                }
+              </div>
+
+              {/* Movie/series info */}
+              <div className="movie-card__info">
+                <h3 className="movie-card__title">{movieHelpers.getTitle(movie)}</h3>
+                <div className="movie-card__footer">
+                  {/* Show type (Movie or TV Show) */}
+                  <span className="movie-card__type">
+                    {movieHelpers.getMediaTypeLabel(movie, media_type)}
+                  </span>
+
+                  {/* Show release year if available */}
+                  {movieHelpers.getReleaseDate(movie) && (
+                    <span className="movie-card__year">
+                      {movieHelpers.getReleaseDate(movie)}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+        <div ref={loadMoreRef} className="infinite-scroll-loader">
+          {loading && <div className="spinner" />}
+        </div>
+      </div>
+      {horizontal && (
+        <button className="scroll-btn scroll-btn--right" onClick={scrollRight}>
+          <ChevronRight size={20} />
+        </button>
+      )}
     </div>
   );
 }
