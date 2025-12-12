@@ -32,7 +32,9 @@ export default function MovieDetail() {
   const [checkingFavorite, setCheckingFavorite] = useState(true);
   //const [showListModal, setShowListModal] = useState(false);
   //const [userLists, setUserLists] = useState([]);
-  const [showChooseList, setShowChooseList] = useState[(false)];
+  const [showChooseList, setShowChooseList] = useState(false);
+  const [favoriteLists, setFavoriteLists] = useState([]);
+
 
 
   // Review state
@@ -81,6 +83,21 @@ export default function MovieDetail() {
   useEffect(() => {
     if (details) loadReviews();
   }, [details]);
+
+  
+  useEffect(() => {
+    if (showChooseList) fetchFavoriteLists();
+  }, [showChooseList]);
+
+  const fetchFavoriteLists = async () => {
+    const res = await fetch(`${baseURL}/api/favorite-lists`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (res.ok) {
+      setFavoriteLists(await res.json());
+    }
+  };
 
   const fetchDetails = async () => {
     try {
@@ -164,7 +181,7 @@ export default function MovieDetail() {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`
       },
-      body: JSON.stringify({ movie_external_id: movieId, position: 0 })
+      body: JSON.stringify({ movie_external_id: `${mediaType}:${id}`, position: 0 })
     });
 
     const data = await res.json();
@@ -177,36 +194,6 @@ export default function MovieDetail() {
     setNotification({ message: "Added to list!", type: "success" });
   };
 
-
-  const addMovieToList = async (listId, listName) => {
-    try {
-      const res = await fetch(`${baseURL}/api/favorite-lists/${listId}/items`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          movieId: id,   // <- sinun API käyttää movieId
-          position: 0
-        }),
-      });
-
-      if (!res.ok) throw new Error("Failed to add movie");
-
-      setShowListModal(false);
-      setIsFavorite(true);
-
-      setNotification({
-        message: `Added to "${listName}"`,
-        type: "success",
-      });
-
-    } catch (err) {
-      console.error(err);
-      setNotification({ message: "Error adding movie", type: "error" });
-    }
-  };
 
 
   const handleRemoveFromFavorites = async () => {
