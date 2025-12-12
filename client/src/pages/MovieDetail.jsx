@@ -540,7 +540,7 @@ export default function MovieDetail() {
             {favoriteLists.map(list => (
               <button 
                 key={list.id}
-                className="modal-btn"
+                className="modal-btn modal-btn--favorite"
                 onClick={() => {
                   handleAddToSpecificList(list.id);
                   setShowChooseList(false);

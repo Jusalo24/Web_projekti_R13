@@ -358,7 +358,7 @@ export default function Account() {
         {/* FAVORITE LISTS INFO */}
         {favoriteLists.length > 0 && (
           <section className="info-box">
-            <h3>Your Lists ({favoriteLists.length})</h3>
+            <h3>Your Favorite Lists ({favoriteLists.length})</h3>
             <ul className="list">
               {favoriteLists.map(list => (
                 <li key={list.id} className="clickable-list"onClick={() => openList(list)}>
@@ -368,60 +368,6 @@ export default function Account() {
             </ul>
           </section>
         )}
-
-        {/* FAVORITES SECTION */}
-        <section className="info-box favorites-section">
-          <h3>Your Favorite Movies & Shows</h3>
-
-          {loadingFavorites ? (
-            <div className="favorites-loading">Loading favorites...</div>
-          ) : favoriteMovies.length === 0 ? (
-            <div className="favorites-empty">
-              <p>No favorites yet.</p>
-              <p className="favorites-empty-hint">
-                Start adding movies and shows to your favorites from their detail pages!
-              </p>
-            </div>
-          ) : (
-            <div className="favorites-grid">
-              {favoriteMovies.map((movie) => (
-                <div key={movie.item_id} className="favorite-card">
-                  <div 
-                    className="favorite-card__poster"
-                    onClick={() => handleMovieClick(movie)}
-                  >
-                    {movie.poster_path ? (
-                      <GetImage
-                        path={movie.poster_path}
-                        title={movie.title || movie.name}
-                        size="w342"
-                      />
-                    ) : (
-                      <div className="favorite-card__placeholder">No Image</div>
-                    )}
-                  </div>
-                  <div className="favorite-card__info">
-                    <h4 className="favorite-card__title">
-                      {movie.title || movie.name}
-                    </h4>
-                    <div className="favorite-card__meta">
-                      <span className="favorite-card__type">
-                        {movie.media_type === "tv" ? "TV Show" : "Movie"}
-                      </span>
-                      <span className="favorite-card__list">{movie.list_name}</span>
-                    </div>
-                    <button 
-                      className="favorite-card__remove"
-                      onClick={() => handleRemoveFromFavorites(movie.item_id)}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
       </main>
 
       {/* CREATE LIST MODAL */}
@@ -502,7 +448,7 @@ export default function Account() {
 
       {showListModal && (
           <div className="modal-overlay" onClick={() => setShowListModal(false)}>
-            <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-box modal-box--favorites" onClick={(e) => e.stopPropagation()}>
               <h3>{selectedList?.title}</h3>
 
               {listItems.length === 0 ? (
