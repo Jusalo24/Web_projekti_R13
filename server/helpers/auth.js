@@ -1,26 +1,66 @@
 import jwt from 'jsonwebtoken'
 
-const { verify } = jwt
+// Token blacklist (in production, use Redis instead)
+const tokenBlacklist = new Set()
 
-const auth = (req, res, next) => {
-    const authHeader = req.headers['authorization']
-    const token = authHeader && authHeader.split(' ')[1]
-
-    // Check if token exists
-    if (!token) {
-        return res.status(401).json({ error: 'No token provided' })
-    }
-
-    // Verify token
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(401).json({ error: 'Failed to authenticate token' })
-        }
+export const auth = (req, res, next) => {
+    try {
+        const authHeader = req.headers['authorization']
         
-        // Attach decoded user info to request for use in controllers
-        req.user = decoded
-        next()
-    })
+        if (!authHeader) {
+            return res.status(401).json({ error: 'Authentication required' })
+        }
+
+        const token = authHeader.split(' ')[1]
+        
+        if (!token) {
+            return res.status(401).json({ error: 'Authentication required' })
+        }
+
+        // Check if token is blacklisted (logout functionality)
+        if (tokenBlacklist.has(token)) {
+            return res.status(401).json({ error: 'Token has been revoked' })
+        }
+
+        // Verify token
+        jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+            if (err) {
+                if (err.name === 'TokenExpiredError') {
+                    return res.status(401).json({ error: 'Token expired' })
+                }
+                if (err.name === 'JsonWebTokenError') {
+                    return res.status(401).json({ error: 'Invalid token' })
+                }
+                return res.status(401).json({ error: 'Authentication failed' })
+            }
+            
+            // Additional security: Check token age
+            const tokenAge = Date.now() - (decoded.iat * 1000)
+            const maxAge = 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
+            
+            if (tokenAge > maxAge) {
+                return res.status(401).json({ error: 'Token too old, please login again' })
+            }
+            
+            // Attach user info to request
+            req.user = decoded
+            next()
+        })
+    } catch (err) {
+        console.error('Auth middleware error:', err)
+        return res.status(500).json({ error: 'Authentication failed' })
+    }
 }
 
-export { auth }
+// Function to blacklist tokens (for logout)
+export const blacklistToken = (token) => {
+    tokenBlacklist.add(token)
+    
+    // Auto-remove token from blacklist after expiry (7 days)
+    setTimeout(() => {
+        tokenBlacklist.delete(token)
+    }, 7 * 24 * 60 * 60 * 1000)
+}
+
+// Get blacklist size for monitoring
+export const getBlacklistSize = () => tokenBlacklist.size
