@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movie App R13 - API Documentation</title>
+
+  <!-- Swagger UI CSS from CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.10.5/swagger-ui.css">
+  
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+    .topbar {
+      display: none;
+    }
+    #swagger-ui .info .title {
+      font-size: 36px;
+    }
+  </style>
+</head>
+
+<body>
+<div id="swagger-ui"></div>
+
+<!-- YAML parser from CDN -->
+<script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+
+<!-- Swagger UI Bundle from CDN -->
+<script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.10.5/swagger-ui-bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.10.5/swagger-ui-standalone-preset.js"></script>
+
+<script>
+  const spec = `openapi: 3.0.0
+info:
+  title: Movie App R13 - Production API
+  version: 1.0.0
+  description: |
+    Comprehensive API for Movie App R13 with TMDB integration, user reviews, groups, and favorites.
+    
+    ## Features
+    - **Authentication**: User registration, login, and JWT token management
+    - **Movies & TV Shows**: Browse, search, and discover content from TMDB
+    - **Reviews**: Create, read, update, and delete movie/TV reviews
+    - **Groups**: Create and manage movie watch groups
+    - **Favorites**: Organize content into custom lists
+    - **Genres**: Browse by movie and TV genres
+    
+    ## Authentication
+    Most endpoints require a Bearer token. Use the **Authorize** button to add your token.
+    
+servers:
+  - url: https://your-api-domain.com
+    description: Production server
+  - url: http://localhost:3000
+    description: Local development server
+
+paths:
+  /api/users/register:
+    post:
+      summary: Register New User
+      description: Create a new user account with email, username, and password
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - username
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "testuser1234567890@example.com"
+                username:
+                  type: string
+                  minLength: 3
+                  example: "testuser1234567890"
+                password:
+                  type: string
+                  format: password
+                  minLength: 6
+                  example: "Testi123"
+      responses:
+        "201":
+          description: User successfully created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  email:
+                    type: string
+                  username:
+                    type: string
+              example:
+                id: "7f5b715e-5c21-464d-8fdf-b359a6dfe3da"
+                email: "testuser1765309258@example.com"
+                username: "testuser1765309258"
+        "400":
+          description: Bad request - validation error
+        "409":
+          description: User already exists
+
+  /api/users/login:
+    post:
+      summary: Login User
+      description: Authenticate user and receive JWT token
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+            example:
+              email: "testuser@example.com"
+              password: "Testi123"
+      responses:
+        "200":
+          description: Login successful - returns user info and JWT token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      email:
+                        type: string
+                      username:
+                        type: string
+                  token:
+                    type: string
+                    description: JWT token for authentication
+        "401":
+          description: Invalid credentials
+
+  /api/users/me:
+    get:
+      summary: Get Current User
+      description: Get information about the currently authenticated user
+      tags:
+        - Authentication
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Current user information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  email:
+                    type: string
+                  username:
+                    type: string
+        "401":
+          description: Unauthorized - invalid or missing token
+
+  /api/users/{userId}:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: User ID
+    get:
+      summary: Get User by ID
+      description: Retrieve user information by user ID
+      tags:
+        - User Profile
+      responses:
+        "200":
+          description: User information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  email:
+                    type: string
+                  username:
+                    type: string
+        "404":
+          description: User not found
+    put:
+      summary: Update User Profile
+      description: Update username and/or email for the user
+      tags:
+        - User Profile
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                  format: email
+            example:
+              username: "updated_username"
+              email: "newemail@example.com"
+      responses:
+        "200":
+          description: User profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  email:
+                    type: string
+                  username:
+                    type: string
+        "401":
+          description: Unauthorized
+        "404":
+          description: User not found
+
+  /api/users/{userId}/password:
+    put:
+      summary: Change Password
+      description: Change user password (requires old password verification)
+      tags:
+        - User Profile
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - oldPassword
+                - newPassword
+              properties:
+                oldPassword:
+                  type: string
+                  format: password
+                newPassword:
+                  type: string
+                  format: password
+                  minLength: 6
+            example:
+              oldPassword: "Testi123"
+              newPassword: "NewPassword123"
+      responses:
+        "200":
+          description: Password changed successfully
+        "400":
+          description: Invalid old password
+        "401":
+          description: Unauthorized
+
+  /api/movies/popular:
+    get:
+      summary: Get Popular Movies
+      description: Retrieve a list of currently popular movies from TMDB
+      tags:
+        - Movies - TMDB
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+          example: 1
+          description: Page number for pagination
+      responses:
+        "200":
+          description: List of popular movies
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  page:
+                    type: integer
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Movie'
+                  total_pages:
+                    type: integer
+                  total_results:
+                    type: integer
+
+  /api/movies/byId/{movieId}:
+    get:
+      summary: Get Movie by ID
+      description: Get detailed information about a specific movie
+      tags:
+        - Movies - TMDB
+      parameters:
+        - name: movieId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "550"
+          description: TMDB Movie ID
+      responses:
+        "200":
+          description: Detailed movie information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovieDetails'
+        "404":
+          description: Movie not found
+
+  /api/movies/search:
+    get:
+      summary: Search Movies
+      description: Search for movies by title or keywords
+      tags:
+        - Movies - TMDB
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "fight club"
+          description: Search query
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          example: 1
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  page:
+                    type: integer
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Movie'
+                  total_pages:
+                    type: integer
+                  total_results:
+                    type: integer
+
+  /api/movies/{movieId}/credits:
+    get:
+      summary: Get Movie Credits
+      description: Get cast and crew information for a movie
+      tags:
+        - Movies - TMDB
+      parameters:
+        - name: movieId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "550"
+      responses:
+        "200":
+          description: Movie cast and crew information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  cast:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CastMember'
+                  crew:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CrewMember'
+
+  /api/movies/discover:
+    get:
+      summary: Discover Movies with Filters
+      description: Discover movies using various filters like genre, year, and sorting options
+      tags:
+        - Movies - TMDB
+      parameters:
+        - name: with_genres
+          in: query
+          schema:
+            type: integer
+          example: 28
+          description: Filter by genre ID (28 = Action)
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum:
+              - popularity.desc
+              - popularity.asc
+              - release_date.desc
+              - release_date.asc
+              - vote_average.desc
+              - vote_average.asc
+          example: "popularity.desc"
+          description: Sort order
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          example: 1
+        - name: year
+          in: query
+          schema:
+            type: integer
+          example: 2024
+          description: Filter by release year
+      responses:
+        "200":
+          description: Filtered movie results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  page:
+                    type: integer
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Movie'
+                  total_pages:
+                    type: integer
+                  total_results:
+                    type: integer
+
+  /api/reviews:
+    post:
+      summary: Create Review
+      description: Create a new review for a movie or TV show
+      tags:
+        - Reviews
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_id
+                - media_type
+                - movie_external_id
+                - rating
+              properties:
+                user_id:
+                  type: string
+                  format: uuid
+                media_type:
+                  type: string
+                  enum: [movie, tv]
+                movie_external_id:
+                  type: string
+                  description: TMDB ID of the movie or TV show
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                  description: Rating from 1 to 5 stars
+                review_text:
+                  type: string
+                  description: Optional review text
+            example:
+              user_id: "473560aa-d28f-44fc-96a8-00f335ab2c04"
+              media_type: "movie"
+              movie_external_id: "1180831"
+              rating: 5
+              review_text: "Absolutely amazing movie! A masterpiece of cinema."
+      responses:
+        "201":
+          description: Review created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        "409":
+          description: User has already reviewed this movie
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "You have already reviewed this movie"
+
+  /api/reviews/movie/{movieId}:
+    get:
+      summary: Get Reviews for Movie
+      description: Get all reviews for a specific movie with pagination
+      tags:
+        - Reviews
+      parameters:
+        - name: movieId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "1083637"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          example: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+          example: 20
+        - name: media_type
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [movie, tv]
+          example: "movie"
+      responses:
+        "200":
+          description: List of reviews for the movie
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reviews:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReviewWithUser'
+                  pagination:
+                    type: object
+                    properties:
+                      currentPage:
+                        type: integer
+                      totalPages:
+                        type: integer
+                      totalReviews:
+                        type: integer
+                      limit:
+                        type: integer
+
+  /api/reviews/movie/{movieId}/average:
+    get:
+      summary: Get Movie Average Rating
+      description: Calculate the average rating for a movie based on all reviews
+      tags:
+        - Reviews
+      parameters:
+        - name: movieId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "550"
+        - name: media_type
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [movie, tv]
+          example: "movie"
+      responses:
+        "200":
+          description: Average rating and review count
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  movie_external_id:
+                    type: string
+                  average_rating:
+                    type: number
+                    format: float
+                  total_reviews:
+                    type: integer
+              example:
+                movie_external_id: "550"
+                average_rating: 5
+                total_reviews: 1
+
+  /api/reviews/{reviewId}:
+    parameters:
+      - name: reviewId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    put:
+      summary: Update Review
+      description: Update an existing review (rating and/or text)
+      tags:
+        - Reviews
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                review_text:
+                  type: string
+            example:
+              rating: 4
+              review_text: "Great movie, but rewatching made me notice some flaws. Still highly recommend!"
+      responses:
+        "200":
+          description: Review updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        "401":
+          description: Unauthorized
+        "404":
+          description: Review not found
+    delete:
+      summary: Delete Review
+      description: Delete a review (only by the review author)
+      tags:
+        - Reviews
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Review deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  id:
+                    type: string
+                    format: uuid
+        "401":
+          description: Unauthorized
+        "404":
+          description: Review not found
+
+  /api/groups:
+    post:
+      summary: Create Group
+      description: Create a new movie/TV watch group
+      tags:
+        - Groups
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+            example:
+              name: "Test Movie Club 1234567890"
+              description: "A group for testing movie features and discussing films"
+      responses:
+        "201":
+          description: Group created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+
+  /api/groups/{groupId}/movies:
+    parameters:
+      - name: groupId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      summary: Add Movie to Group
+      description: Add a movie or TV show to a group
+      tags:
+        - Groups
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: movieId
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "550"
+          description: TMDB ID of the movie/TV show
+        - name: mediaType
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [movie, tv]
+          example: "movie"
+      responses:
+        "201":
+          description: Movie added to group successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Movie added successfully"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Group not found
+    get:
+      summary: Get Group Movies
+      description: Get all movies/TV shows in a group
+      tags:
+        - Groups
+      responses:
+        "200":
+          description: List of movies in the group
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GroupMovie'
+
+  /api/search/multi:
+    get:
+      summary: Multi-Search
+      description: Search across movies, TV shows, and people simultaneously
+      tags:
+        - Search & Discovery
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "breaking bad"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          example: 1
+      responses:
+        "200":
+          description: Multi-search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  page:
+                    type: integer
+                  results:
+                    type: array
+                    items:
+                      oneOf:
+                        - $ref: '#/components/schemas/Movie'
+                        - $ref: '#/components/schemas/TVShow'
+                        - $ref: '#/components/schemas/Person'
+                  total_pages:
+                    type: integer
+                  total_results:
+                    type: integer
+
+  /api/trending/{mediaType}/{timeWindow}:
+    get:
+      summary: Get Trending Content
+      description: Get trending movies, TV shows, or people for a specific time window
+      tags:
+        - Search & Discovery
+      parameters:
+        - name: mediaType
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [all, movie, tv, person]
+          example: "all"
+          description: Type of media to get trends for
+        - name: timeWindow
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [day, week]
+          example: "day"
+          description: Time window for trending content
+      responses:
+        "200":
+          description: Trending content
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  page:
+                    type: integer
+                  results:
+                    type: array
+                    items:
+                      type: object
+                  total_pages:
+                    type: integer
+                  total_results:
+                    type: integer
+
+  /api/genres/movie:
+    get:
+      summary: Get Movie Genres
+      description: Get list of all available movie genres from TMDB
+      tags:
+        - Genres
+      responses:
+        "200":
+          description: List of movie genres
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  genres:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Genre'
+
+  /api/genres/tv:
+    get:
+      summary: Get TV Genres
+      description: Get list of all available TV show genres from TMDB
+      tags:
+        - Genres
+      responses:
+        "200":
+          description: List of TV genres
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  genres:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Genre'
+
+  /api/tv/popular:
+    get:
+      summary: Get Popular TV Shows
+      description: Retrieve a list of currently popular TV shows from TMDB
+      tags:
+        - TV Shows - TMDB
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        "200":
+          description: List of popular TV shows
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  page:
+                    type: integer
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TVShow'
+                  total_pages:
+                    type: integer
+                  total_results:
+                    type: integer
+
+  /api/tv/byId/{tvId}:
+    get:
+      summary: Get TV Show by ID
+      description: Get detailed information about a specific TV show
+      tags:
+        - TV Shows - TMDB
+      parameters:
+        - name: tvId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: TMDB TV Show ID
+      responses:
+        "200":
+          description: Detailed TV show information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TVShowDetails'
+
+  /api/tv/search:
+    get:
+      summary: Search TV Shows
+      description: Search for TV shows by title or keywords
+      tags:
+        - TV Shows - TMDB
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        "200":
+          description: TV show search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  page:
+                    type: integer
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TVShow'
+                  total_pages:
+                    type: integer
+                  total_results:
+                    type: integer
+
+  /api/favorite-lists:
+    post:
+      summary: Create Favorite List
+      description: Create a new custom favorite list
+      tags:
+        - Favorite Lists
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+      responses:
+        "201":
+          description: Favorite list created successfully
+
+  /api/favorite-lists/{userId}/items:
+    get:
+      summary: Get My Favorite Lists
+      description: Get all favorite lists for a specific user
+      tags:
+        - Favorite Lists
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: User's favorite lists
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+  /api/favorite-lists/{listId}/items:
+    get:
+      summary: Get List Items
+      description: Get all items (movies/TV shows) in a specific favorite list
+      tags:
+        - Favorite Lists
+      parameters:
+        - name: listId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Items in the favorite list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+    post:
+      summary: Add Movie to List
+      description: Add a movie or TV show to a favorite list
+      tags:
+        - Favorite Lists
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: listId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - movieId
+                - mediaType
+              properties:
+                movieId:
+                  type: string
+                mediaType:
+                  type: string
+                  enum: [movie, tv]
+      responses:
+        "201":
+          description: Item added to list successfully
+
+  /api/favorite-lists/{listId}/items/{itemId}:
+    delete:
+      summary: Remove Movie from List
+      description: Remove a movie or TV show from a favorite list
+      tags:
+        - Favorite Lists
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: listId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Item removed from list successfully
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Enter your JWT token in the format **Bearer &lt;token&gt;**
+
+  schemas:
+    Movie:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: TMDB Movie ID
+        title:
+          type: string
+        original_title:
+          type: string
+        overview:
+          type: string
+        poster_path:
+          type: string
+          nullable: true
+        backdrop_path:
+          type: string
+          nullable: true
+        release_date:
+          type: string
+          format: date
+        genre_ids:
+          type: array
+          items:
+            type: integer
+        adult:
+          type: boolean
+        original_language:
+          type: string
+        popularity:
+          type: number
+        vote_average:
+          type: number
+        vote_count:
+          type: integer
+        video:
+          type: boolean
+
+    MovieDetails:
+      allOf:
+        - $ref: '#/components/schemas/Movie'
+        - type: object
+          properties:
+            belongs_to_collection:
+              type: object
+              nullable: true
+            budget:
+              type: integer
+            genres:
+              type: array
+              items:
+                $ref: '#/components/schemas/Genre'
+            homepage:
+              type: string
+            imdb_id:
+              type: string
+            production_companies:
+              type: array
+              items:
+                type: object
+            production_countries:
+              type: array
+              items:
+                type: object
+            revenue:
+              type: integer
+            runtime:
+              type: integer
+            spoken_languages:
+              type: array
+              items:
+                type: object
+            status:
+              type: string
+            tagline:
+              type: string
+
+    TVShow:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        original_name:
+          type: string
+        overview:
+          type: string
+        poster_path:
+          type: string
+          nullable: true
+        backdrop_path:
+          type: string
+          nullable: true
+        first_air_date:
+          type: string
+          format: date
+        genre_ids:
+          type: array
+          items:
+            type: integer
+        origin_country:
+          type: array
+          items:
+            type: string
+        original_language:
+          type: string
+        popularity:
+          type: number
+        vote_average:
+          type: number
+        vote_count:
+          type: integer
+
+    TVShowDetails:
+      allOf:
+        - $ref: '#/components/schemas/TVShow'
+        - type: object
+          properties:
+            created_by:
+              type: array
+              items:
+                type: object
+            episode_run_time:
+              type: array
+              items:
+                type: integer
+            genres:
+              type: array
+              items:
+                $ref: '#/components/schemas/Genre'
+            homepage:
+              type: string
+            in_production:
+              type: boolean
+            languages:
+              type: array
+              items:
+                type: string
+            last_air_date:
+              type: string
+              format: date
+            number_of_episodes:
+              type: integer
+            number_of_seasons:
+              type: integer
+            seasons:
+              type: array
+              items:
+                type: object
+            status:
+              type: string
+            tagline:
+              type: string
+            type:
+              type: string
+
+    Person:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        known_for_department:
+          type: string
+        profile_path:
+          type: string
+          nullable: true
+        popularity:
+          type: number
+        known_for:
+          type: array
+          items:
+            type: object
+
+    Genre:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+
+    CastMember:
+      type: object
+      properties:
+        adult:
+          type: boolean
+        gender:
+          type: integer
+        id:
+          type: integer
+        known_for_department:
+          type: string
+        name:
+          type: string
+        original_name:
+          type: string
+        popularity:
+          type: number
+        profile_path:
+          type: string
+          nullable: true
+        cast_id:
+          type: integer
+        character:
+          type: string
+        credit_id:
+          type: string
+        order:
+          type: integer
+
+    CrewMember:
+      type: object
+      properties:
+        adult:
+          type: boolean
+        gender:
+          type: integer
+        id:
+          type: integer
+        known_for_department:
+          type: string
+        name:
+          type: string
+        original_name:
+          type: string
+        popularity:
+          type: number
+        profile_path:
+          type: string
+          nullable: true
+        credit_id:
+          type: string
+        department:
+          type: string
+        job:
+          type: string
+
+    Review:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        movie_external_id:
+          type: string
+        media_type:
+          type: string
+          enum: [movie, tv]
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        review_text:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    ReviewWithUser:
+      allOf:
+        - $ref: '#/components/schemas/Review'
+        - type: object
+          properties:
+            username:
+              type: string
+
+    Group:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        owner_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        is_visible:
+          type: boolean
+
+    GroupMovie:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        group_id:
+          type: string
+          format: uuid
+        movie_external_id:
+          type: string
+        media_type:
+          type: string
+          enum: [movie, tv]
+        added_at:
+          type: string
+          format: date-time
+        added_by:
+          type: string
+          format: uuid`;
+
+  // Initialize Swagger UI
+  window.onload = function() {
+    const ui = SwaggerUIBundle({
+      spec: jsyaml.load(spec),
+      dom_id: '#swagger-ui',
+      deepLinking: true,
+      presets: [
+        SwaggerUIBundle.presets.apis,
+        SwaggerUIStandalonePreset
+      ],
+      plugins: [
+        SwaggerUIBundle.plugins.DownloadUrl
+      ],
+      layout: "StandaloneLayout",
+      defaultModelsExpandDepth: 1,
+      defaultModelExpandDepth: 1,
+      docExpansion: "list",
+      filter: true,
+      showRequestHeaders: true,
+      tryItOutEnabled: true
+    });
+
+    window.ui = ui;
+  };
+</script>
+
+</body>
+</html>

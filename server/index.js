@@ -22,14 +22,15 @@ import { apiLimiter } from './helpers/rateLimiter.js'
 dotenv.config()
 
 // Validate required environment variables
-if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
-    console.error('ERROR: JWT_SECRET must be at least 32 characters long')
+if (process.env.NODE_ENV !== "test") {
+  if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+    console.error("ERROR: JWT_SECRET must be at least 32 characters long")
     process.exit(1)
-}
-
-if (!process.env.TMDB_API_KEY) {
-    console.error('ERROR: TMDB_API_KEY is required')
+  }
+  if (!process.env.TMDB_API_KEY) {
+    console.error("ERROR: TMDB_API_KEY missing")
     process.exit(1)
+  }
 }
 
 // Create Express app
@@ -149,15 +150,14 @@ app.use((err, req, res, next) => {
     })
 })
 
-// Start server
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`)
-    console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`)
-    console.log(`🔒 Security: Helmet enabled, Rate limiting active`)
-    console.log(`🎬 TMDB API: ${process.env.TMDB_API_KEY ? 'Configured ✓' : 'Missing ✗'}`)
-    console.log(`🔑 JWT Secret: ${process.env.JWT_SECRET ? 'Configured ✓' : 'Missing ✗'}`)
-    console.log(`🗄️  Database: ${process.env.POSTGRES_HOST}:${process.env.POSTGRES_PORT}/${process.env.POSTGRES_DB}`)
-    console.log(`🔗 Health check: http://localhost:${PORT}/health`)
-})
+if (process.env.NODE_ENV !== "test") {// Start server
+    app.listen(PORT, () => {
+        console.log(`🚀 Server running on port ${PORT}`)
+        console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`)
+        console.log(`🎬 TMDB API: ${process.env.TMDB_API_KEY ? 'Configured ✓' : 'Missing ✗'}`)
+        console.log(`🗄️  Database: ${process.env.POSTGRES_HOST}:${process.env.POSTGRES_PORT}/${process.env.POSTGRES_DB}`)
+        console.log(`🔗 Health check: http://localhost:${PORT}/health`)
+    })
+}
 
 export default app
