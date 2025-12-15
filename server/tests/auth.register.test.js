@@ -37,9 +37,10 @@ describe("POST /api/users/register", () => {
             })
             .expect(201)
 
-        expect(res.body).toHaveProperty("id")
-        expect(res.body.email).toBe("test@test.com")
-        expect(res.body.username).toBe("testuser")
+        expect(res.body).toHaveProperty("user")
+        expect(res.body.user).toHaveProperty("id")
+        expect(res.body.user.email).toBe("test@test.com")
+        expect(res.body.user.username).toBe("testuser")
     })
 
     test("fails if user already exists", async () => {

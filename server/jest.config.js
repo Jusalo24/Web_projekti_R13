@@ -3,5 +3,5 @@ export default {
   testMatch: ["**/?(*.)+(test).js"],
   clearMocks: true,
   restoreMocks: true,
-  verbose: true,
+  verbose: true
 }
