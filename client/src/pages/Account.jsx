@@ -23,7 +23,7 @@ export default function Account() {
   const [selectedList, setSelectedList] = useState(null);
   const [listItems, setListItems] = useState([]);
   const [showListModal, setShowListModal] = useState(false);
-
+  const [confirmMessage, setConfirmMessage] = useState(null);
 
 
   const baseURL = import.meta.env.VITE_API_BASE_URL;
@@ -166,20 +166,6 @@ export default function Account() {
     }
   };
 
-  const handleRemoveFromFavorites = async (itemId) => {
-    try {
-      const res = await fetch(`${API}/api/favorite-lists/items/${itemId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (res.ok) {
-        setFavoriteMovies(prev => prev.filter(movie => movie.item_id !== itemId));
-      }
-    } catch (err) {
-      console.error("Error removing from favorites:", err);
-    }
-  };
 
   const handleMovieClick = (movie) => {
     const mediaType = movie.media_type || "movie";
@@ -335,6 +321,9 @@ export default function Account() {
       setListItems((prev) =>
         prev.filter((item) => item.item_id !== itemId)
       );
+
+      setConfirmMessage("Delete confirmed");
+      setTimeout(() => setConfirmMessage(null), 2500);
     } catch (err) {
       console.error("Failed to remove item", err);
     }
@@ -359,6 +348,12 @@ export default function Account() {
           Delete Account
         </button>
       </aside>
+
+    {confirmMessage && (
+        <div className="toast toast--success">
+          {confirmMessage}
+        </div>
+      )}
 
       {/* MAIN CONTENT */}
       <main className="account-main">
