@@ -66,13 +66,14 @@ app.use((err, req, res, next) => {
     })
 })
 
-// Start server
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`)
-    console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`)
-    console.log(`🎬 TMDB API: ${process.env.TMDB_API_KEY ? 'Configured ✓' : 'Missing ✗'}`)
-    console.log(`🗄️  Database: ${process.env.POSTGRES_HOST}:${process.env.POSTGRES_PORT}/${process.env.POSTGRES_DB}`)
-    console.log(`🔗 Health check: http://localhost:${PORT}/health`)
-})
+if (process.env.NODE_ENV !== "test") {// Start server
+    app.listen(PORT, () => {
+        console.log(`🚀 Server running on port ${PORT}`)
+        console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`)
+        console.log(`🎬 TMDB API: ${process.env.TMDB_API_KEY ? 'Configured ✓' : 'Missing ✗'}`)
+        console.log(`🗄️  Database: ${process.env.POSTGRES_HOST}:${process.env.POSTGRES_PORT}/${process.env.POSTGRES_DB}`)
+        console.log(`🔗 Health check: http://localhost:${PORT}/health`)
+    })
+}
 
 export default app
