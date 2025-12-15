@@ -28,11 +28,34 @@ export default function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar__container">
+        {/* Row 1: left spacer | centered logo | right auth */}
+        <div className="navbar__spacer" />
 
         <Link to="/" className="navbar__logo">
           <h1>Movie Project</h1>
         </Link>
 
+        <div className="navbar__auth">
+         {/* Auth buttons */}
+{token ? (
+  <button
+    className="navbar__logout-btn"
+    onClick={handleLogout}
+  >
+    Logout
+  </button>
+) : (
+  <button
+    className="navbar__login-btn"
+    onClick={() => navigate("/login")}
+  >
+    Login
+  </button>
+)}
+
+        </div>
+
+        {/* Row 2: links */}
         <ul className="navbar__links">
           <li className="navbar__link-item">
             <Link to="/" className="navbar__link">Home</Link>
@@ -48,39 +71,10 @@ export default function Navbar() {
           </li>
         </ul>
 
+        {/* Row 3: search */}
         <div className="navbar__search">
           <SearchBar onSearch={handleSearch} />
         </div>
-
-        {/* Login-button always appears FIRST if no token */}
-        {!token && (
-          <button 
-            className="navbar__login-btn" 
-            onClick={() => navigate("/login")}
-          >
-            Login
-          </button>
-        )}
-
-        {/* Logout-button appears to the RIGHT of Login when logged in */}
-        {token && (
-          <>
-            <button 
-              className="navbar__login-btn" 
-              onClick={() => navigate("/login")}
-            >
-              Login
-            </button>
-
-            <button 
-              className="navbar__logout-btn" 
-              onClick={handleLogout}
-            >
-              Logout
-            </button>
-          </>
-        )}
-
       </div>
 
       {showLogoutToast && (
