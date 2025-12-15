@@ -55,6 +55,9 @@ export default function Groups() {
         type={notification.type}         // Notification type (success/error)
         onClose={() => setNotification({ message: null })} // Close popup
       />
+      {!loggedInId ? (
+        <p className="groups__not-logged">Please log in to see groups.</p>
+      ) : (
       <section className="groups__section">
         <h2 className="groups__title">Groups</h2>
 
@@ -150,6 +153,7 @@ export default function Groups() {
           </div>
         </section>
       </section>
+      )}
     </main>
   );
 }
