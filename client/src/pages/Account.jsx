@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import GetImage from "../components/GetImage";
 import "../styles/Account.css";
+import { Trash2 } from "lucide-react";
 
 export default function Account() {
   const [profile, setProfile] = useState(null);
@@ -25,7 +26,7 @@ export default function Account() {
 
 
 
-
+  const baseURL = import.meta.env.VITE_API_BASE_URL;
   const navigate = useNavigate();
   const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
   const token = localStorage.getItem("token");
@@ -321,6 +322,25 @@ export default function Account() {
     }
   };
 
+  const handleRemoveFromList = async (itemId) => {
+    try {
+      await fetch(`${baseURL}/api/favorite-lists/items/${itemId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // päivitä lista heti UI:ssa
+      setListItems((prev) =>
+        prev.filter((item) => item.item_id !== itemId)
+      );
+    } catch (err) {
+      console.error("Failed to remove item", err);
+    }
+  };
+
+
 
 
 
@@ -463,6 +483,17 @@ export default function Account() {
                         navigate(`/movies/${movie.id}?type=${movie.media_type}`)
                       }
                     >
+                      <button
+                        className="favorite-card__remove"
+                        onClick={(e) => {
+                          e.stopPropagation(); // 🔥 estää navigoinnin
+                          console.log("REMOVE CLICKED", movie.item_id);
+                          handleRemoveFromList(movie.item_id);
+                        }}
+                      >
+                        <Trash2 size={24}/>
+                      </button>
+
                       <div className="favorite-card__poster">
                         {movie.poster_path ? (
                           <GetImage
