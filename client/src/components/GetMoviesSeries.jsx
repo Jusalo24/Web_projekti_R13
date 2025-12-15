@@ -26,7 +26,7 @@ export default function GetMoviesSeries({
   // Infinite scroll state
   const [currentPage, setCurrentPage] = useState(1);
   const loadMoreRef = useRef(null);
-  const infiniteScrollEnabled = !limit; // Disable infinite scroll if limit is set
+  const infiniteScrollEnabled = !limit || !query; // Disable infinite scroll if limit is set
   const hasMounted = useRef(false);
 
   // Ref for horizontal scrolling

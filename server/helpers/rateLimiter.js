@@ -27,7 +27,7 @@ export const registerLimiter = rateLimit({
 // General API rate limiter
 export const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 500, // 500 requests per window
+    max: 5000, // 500 requests per window
     message: { 
         error: 'Too many requests from this IP, please try again later' 
     },
