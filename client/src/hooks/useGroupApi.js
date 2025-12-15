@@ -218,6 +218,37 @@ export function useGroupApi() {
     }
   };
 
+  // DELETE /api/groups/:id/leave  - member leaves group themself
+  const leaveGroup = async (groupId) => {
+    try {
+      const res = await fetch(`${baseURL}/api/groups/${groupId}/leave`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // 204 No Content indicates success
+      if (res.status === 204) {
+        showSuccess("You left the group");
+        // Refresh my groups list
+        await fetchMyGroups();
+        return true;
+      }
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        showError(data.error || "Failed to leave group");
+        return null;
+      }
+
+      return data;
+    } catch (err) {
+      showError("Network error");
+      console.error("Failed to leave group", err);
+      return null;
+    }
+  };
+
   // POST /api/groups/:id/movies | query: { movieId, mediaType }
   const addMovieToGroup = async (groupId, movieId, mediaType) => { // Add movie to group
     try {
@@ -335,6 +366,7 @@ export function useGroupApi() {
     removeMovieFromGroup, // Remove movie from group
     fetchMoviesByGroup, // List movies in group
     removeMemberFromGroup, // Remove member from group
+    leaveGroup,           // As a member leave from group
     deleteGroup // Delete
   };
 }

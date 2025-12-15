@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "../styles/groups.css";
+import '../styles/App.css'
 import { useGroupApi } from "../hooks/useGroupApi";
 import GroupList from "../components/GroupList";
 import AppNotification from "../components/AppNotification";
@@ -19,7 +20,8 @@ export default function Groups() {
     setNotification,       // Setter for notification
     fetchGroups,           // Refresh public groups
     fetchMyGroups,         // Refresh user's groups
-    fetchJoinRequests      // Refresh join requests  
+    fetchJoinRequests,     // Refresh join requests  
+    loggedInId             // Current logged-in user ID
   } = useGroupApi();
 
   const [form, setForm] = useState({ name: "", description: "" }); // Create-group form state
@@ -45,7 +47,6 @@ export default function Groups() {
     fetchMyGroups();
     fetchJoinRequests();
   }, []);
-
 
   return (
     <main className="groups">
@@ -92,10 +93,10 @@ export default function Groups() {
               joinRequests.map((req) => (
                 <div className="request-card" key={req.id}>
                   <p>
-                    <strong>Group:</strong> {req.groupName}
+                    <strong>Group:</strong> {req.groupName.length > 20 ? req.groupName.substring(0, 35) + "..." : req.groupName}
                   </p>
                   <p>
-                    <strong>User:</strong> {req.username}
+                    <strong>User:</strong> {req.username.length > 20 ? req.username.substring(0, 35) + "..." : req.username}
                   </p>
 
                   <div className="request-actions">
@@ -142,7 +143,7 @@ export default function Groups() {
 
           <div className="groups__list-container">
             {loading ? (
-              <p>Loading...</p> // Loading state
+              <div className="spinner" /> // Loading state
             ) : (
               <GroupList groups={groups} onJoin={joinGroup} /> // Public groups with join button
             )}

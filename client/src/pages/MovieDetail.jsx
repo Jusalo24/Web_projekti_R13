@@ -5,6 +5,7 @@ import { useApi } from "../hooks/useApi";
 import { useFavoritesApi } from "../hooks/useFavoritesApi";
 import GetImage from "../components/GetImage";
 import AddToGroupModal from "../components/AddToGroupModal";
+import ReplyThread from "../components/ReplyThread";
 import "../styles/movie-detail.css";
 
 export default function MovieDetail() {
@@ -32,7 +33,9 @@ export default function MovieDetail() {
   const [checkingFavorite, setCheckingFavorite] = useState(true);
   //const [showListModal, setShowListModal] = useState(false);
   //const [userLists, setUserLists] = useState([]);
-  const [showChooseList, setShowChooseList] = useState[(false)];
+  const [showChooseList, setShowChooseList] = useState(false);
+  const [favoriteLists, setFavoriteLists] = useState([]);
+
 
 
   // Review state
@@ -81,6 +84,21 @@ export default function MovieDetail() {
   useEffect(() => {
     if (details) loadReviews();
   }, [details]);
+
+  
+  useEffect(() => {
+    if (showChooseList) fetchFavoriteLists();
+  }, [showChooseList]);
+
+  const fetchFavoriteLists = async () => {
+    const res = await fetch(`${baseURL}/api/favorite-lists`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (res.ok) {
+      setFavoriteLists(await res.json());
+    }
+  };
 
   const fetchDetails = async () => {
     try {
@@ -164,7 +182,7 @@ export default function MovieDetail() {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`
       },
-      body: JSON.stringify({ movie_external_id: movieId, position: 0 })
+      body: JSON.stringify({ movie_external_id: `${mediaType}:${id}`, position: 0 })
     });
 
     const data = await res.json();
@@ -177,36 +195,6 @@ export default function MovieDetail() {
     setNotification({ message: "Added to list!", type: "success" });
   };
 
-
-  const addMovieToList = async (listId, listName) => {
-    try {
-      const res = await fetch(`${baseURL}/api/favorite-lists/${listId}/items`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          movieId: id,   // <- sinun API käyttää movieId
-          position: 0
-        }),
-      });
-
-      if (!res.ok) throw new Error("Failed to add movie");
-
-      setShowListModal(false);
-      setIsFavorite(true);
-
-      setNotification({
-        message: `Added to "${listName}"`,
-        type: "success",
-      });
-
-    } catch (err) {
-      console.error(err);
-      setNotification({ message: "Error adding movie", type: "error" });
-    }
-  };
 
 
   const handleRemoveFromFavorites = async () => {
@@ -461,16 +449,30 @@ export default function MovieDetail() {
 
             <div className="reviews-list">
               {reviews.length === 0 && <p>No reviews yet.</p>}
-              {reviews.map((r) => (
-                <div key={r.id} className="review-card">
-                  <div className="review-card__header">
-                    <strong>{r.username || r.user_id}</strong>
-                    <span className="review-card__rating">{r.rating}/5</span>
+              {reviews.map((r) => {
+                const name = r.username || r.user_id || "?";
+                const initial = name[0]?.toUpperCase() || "?";
+
+                return (
+                  <div key={r.id} className="review-card">
+                    <div className="review-card__header">
+                      <div className="review-card__user">
+                        <div className="reply-avatar">{initial}</div>
+                        <strong className="review-card__author">{name}</strong>
+                      </div>
+                      <span className="review-card__rating">{r.rating}/5</span>
+                    </div>
+
+                    <p>{r.review_text}</p>
+                    <small>{new Date(r.created_at).toLocaleString()}</small>
+
+                    {/* Replies for this review */}
+                    <div className="review-card__replies" style={{ marginTop: "0.5rem" }}>
+                      <ReplyThread reviewId={r.id} />
+                    </div>
                   </div>
-                  <p>{r.review_text}</p>
-                  <small>{new Date(r.created_at).toLocaleString()}</small>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
@@ -538,7 +540,7 @@ export default function MovieDetail() {
             {favoriteLists.map(list => (
               <button 
                 key={list.id}
-                className="modal-btn"
+                className="modal-btn modal-btn--favorite"
                 onClick={() => {
                   handleAddToSpecificList(list.id);
                   setShowChooseList(false);

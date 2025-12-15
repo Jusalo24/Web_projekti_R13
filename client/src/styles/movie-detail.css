@@ -396,10 +396,45 @@
 .review-card__header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: 0.75rem;
   font-weight: 600;
   margin-bottom: 0.35rem;
 }
+
+/* Review-käyttäjän avatar + header-layout */
+
+.review-card__user {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* sama tyyli kuin reply-avatarilla, mutta omalla nimellä */
+.review-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #b51b1b, #e04c4c);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.review-card__user-info strong {
+  display: block;
+  color: #fff;
+}
+
+.review-card__user-info small {
+  display: block;
+  color: #9aa0a6;
+  font-size: 0.8rem;
+}
+
 
 .review-card__rating {
   background: rgba(229, 9, 20, 0.18);
@@ -682,6 +717,7 @@
   }
 }
 
+
 .favorites-list-select {
   list-style: none;
   padding: 0;
@@ -699,4 +735,135 @@
 
 .favorite-list-option:hover {
   background: #4a8ef5;
+/* Replies styling */
 }
+
+.reply-thread {
+  margin-top: 0.5rem;
+  border-top: 1px solid #2a2a2a;
+  padding-top: 0.5rem;
+}
+
+.reply-row {
+  margin-bottom: 0.65rem;
+}
+
+.reply-card {
+  display: flex;
+  gap: 0.65rem;
+  padding: 0.75rem 0.9rem;
+
+  background: #181818;
+  border: 1px solid #2c2c2c;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.reply-card--child {
+  margin-left: 0rem;
+}
+
+.reply-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #b51b1b, #e04c4c);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.reply-body {
+  flex: 1;
+}
+
+.reply-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: #c8c8c8;
+}
+
+.reply-author {
+  color: #fff;
+}
+
+.reply-dot {
+  opacity: 0.6;
+}
+
+.reply-time {
+  opacity: 0.75;
+  font-size: 0.8rem;
+}
+
+.reply-content {
+  margin: 0.25rem 0 0.35rem;
+  line-height: 1.45;
+  color: #e8e8e8;
+}
+
+.reply-actions button {
+  background: transparent;
+  border: none;
+  color: #b7b7b7;
+  font-size: 0.85rem;
+  padding: 0;
+  cursor: pointer;
+}
+
+.reply-actions button:hover {
+  color: #fff;
+}
+
+.reply-form {
+  margin-top: 0.35rem;
+}
+
+.reply-form textarea {
+  width: 100%;
+  background: #111;
+  color: #fff;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.95rem;
+  resize: vertical;
+}
+
+.reply-form textarea:focus {
+  outline: 1px solid #b51b1b;
+  border-color: #b51b1b;
+}
+
+.reply-form__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.35rem;
+}
+
+.reply-form button {
+  background: #b51b1b;
+  color: #fff;
+  border: none;
+  border-radius: 18px;
+  padding: 0.35rem 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.reply-form button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.reply-form__error {
+  color: #ff6b6b;
+  font-size: 0.8rem;
+}
+

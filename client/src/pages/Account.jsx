@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import GetImage from "../components/GetImage";
 import "../styles/Account.css";
+import { Trash2 } from "lucide-react";
 
 export default function Account() {
   const [profile, setProfile] = useState(null);
@@ -22,10 +23,10 @@ export default function Account() {
   const [selectedList, setSelectedList] = useState(null);
   const [listItems, setListItems] = useState([]);
   const [showListModal, setShowListModal] = useState(false);
+  const [confirmMessage, setConfirmMessage] = useState(null);
 
 
-
-
+  const baseURL = import.meta.env.VITE_API_BASE_URL;
   const navigate = useNavigate();
   const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
   const token = localStorage.getItem("token");
@@ -165,20 +166,6 @@ export default function Account() {
     }
   };
 
-  const handleRemoveFromFavorites = async (itemId) => {
-    try {
-      const res = await fetch(`${API}/api/favorite-lists/items/${itemId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (res.ok) {
-        setFavoriteMovies(prev => prev.filter(movie => movie.item_id !== itemId));
-      }
-    } catch (err) {
-      console.error("Error removing from favorites:", err);
-    }
-  };
 
   const handleMovieClick = (movie) => {
     const mediaType = movie.media_type || "movie";
@@ -321,6 +308,28 @@ export default function Account() {
     }
   };
 
+  const handleRemoveFromList = async (itemId) => {
+    try {
+      await fetch(`${baseURL}/api/favorite-lists/items/${itemId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // päivitä lista heti UI:ssa
+      setListItems((prev) =>
+        prev.filter((item) => item.item_id !== itemId)
+      );
+
+      setConfirmMessage("Delete confirmed");
+      setTimeout(() => setConfirmMessage(null), 2500);
+    } catch (err) {
+      console.error("Failed to remove item", err);
+    }
+  };
+
+
 
 
 
@@ -340,6 +349,12 @@ export default function Account() {
         </button>
       </aside>
 
+    {confirmMessage && (
+        <div className="toast toast--success">
+          {confirmMessage}
+        </div>
+      )}
+
       {/* MAIN CONTENT */}
       <main className="account-main">
         <h1>Your Profile</h1>
@@ -358,7 +373,7 @@ export default function Account() {
         {/* FAVORITE LISTS INFO */}
         {favoriteLists.length > 0 && (
           <section className="info-box">
-            <h3>Your Lists ({favoriteLists.length})</h3>
+            <h3>Your Favorite Lists ({favoriteLists.length})</h3>
             <ul className="list">
               {favoriteLists.map(list => (
                 <li key={list.id} className="clickable-list"onClick={() => openList(list)}>
@@ -368,60 +383,6 @@ export default function Account() {
             </ul>
           </section>
         )}
-
-        {/* FAVORITES SECTION */}
-        <section className="info-box favorites-section">
-          <h3>Your Favorite Movies & Shows</h3>
-
-          {loadingFavorites ? (
-            <div className="favorites-loading">Loading favorites...</div>
-          ) : favoriteMovies.length === 0 ? (
-            <div className="favorites-empty">
-              <p>No favorites yet.</p>
-              <p className="favorites-empty-hint">
-                Start adding movies and shows to your favorites from their detail pages!
-              </p>
-            </div>
-          ) : (
-            <div className="favorites-grid">
-              {favoriteMovies.map((movie) => (
-                <div key={movie.item_id} className="favorite-card">
-                  <div 
-                    className="favorite-card__poster"
-                    onClick={() => handleMovieClick(movie)}
-                  >
-                    {movie.poster_path ? (
-                      <GetImage
-                        path={movie.poster_path}
-                        title={movie.title || movie.name}
-                        size="w342"
-                      />
-                    ) : (
-                      <div className="favorite-card__placeholder">No Image</div>
-                    )}
-                  </div>
-                  <div className="favorite-card__info">
-                    <h4 className="favorite-card__title">
-                      {movie.title || movie.name}
-                    </h4>
-                    <div className="favorite-card__meta">
-                      <span className="favorite-card__type">
-                        {movie.media_type === "tv" ? "TV Show" : "Movie"}
-                      </span>
-                      <span className="favorite-card__list">{movie.list_name}</span>
-                    </div>
-                    <button 
-                      className="favorite-card__remove"
-                      onClick={() => handleRemoveFromFavorites(movie.item_id)}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
       </main>
 
       {/* CREATE LIST MODAL */}
@@ -502,7 +463,7 @@ export default function Account() {
 
       {showListModal && (
           <div className="modal-overlay" onClick={() => setShowListModal(false)}>
-            <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-box modal-box--favorites" onClick={(e) => e.stopPropagation()}>
               <h3>{selectedList?.title}</h3>
 
               {listItems.length === 0 ? (
@@ -517,6 +478,17 @@ export default function Account() {
                         navigate(`/movies/${movie.id}?type=${movie.media_type}`)
                       }
                     >
+                      <button
+                        className="favorite-card__remove"
+                        onClick={(e) => {
+                          e.stopPropagation(); // 🔥 estää navigoinnin
+                          console.log("REMOVE CLICKED", movie.item_id);
+                          handleRemoveFromList(movie.item_id);
+                        }}
+                      >
+                        <Trash2 size={24}/>
+                      </button>
+
                       <div className="favorite-card__poster">
                         {movie.poster_path ? (
                           <GetImage

@@ -42,14 +42,14 @@ export default function Discover() {
       isInitialRender.current = false;
       return;
     }
-
-    // Use timeout to ensure state updates have completed
-    const timeoutId = setTimeout(() => {
-      handleFilterChange();
-    }, 0);
-
-    return () => clearTimeout(timeoutId);
-  }, [selectedGenre, selectedReleaseYear, withCast, selectedSortBy, selectedMediaType]);
+    handleFilterChange();
+  }, [
+    selectedGenre,
+    selectedReleaseYear,
+    withCast,
+    selectedSortBy,
+    selectedMediaType
+  ]);
 
   // Initial filter setup
   useEffect(() => {
@@ -165,6 +165,7 @@ export default function Discover() {
           <label className="filter-group__label">Cast</label>
           <GetCast
             onSelect={setWithCast}
+            value={withCast}
             disabled={selectedMediaType === "tv"}
           />
         </div>
@@ -180,8 +181,7 @@ export default function Discover() {
         <GetMoviesSeries
           type="discover"
           {...queryParams}
-          page={1}
-          pages={2}
+          horizontal={false}
           imageSize={imageSize}
         />
       </div>

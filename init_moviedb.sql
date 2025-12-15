@@ -4,6 +4,7 @@ DROP TABLE IF EXISTS
   favorite_list_items,
   favorite_lists,
   reviews,
+  comments,
   group_movies,
   group_join_requests,
   group_members,
@@ -77,6 +78,20 @@ CREATE TABLE reviews (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 CREATE INDEX idx_reviews_movieid ON reviews (movie_external_id, media_type);
+
+-- Comments on reviews (supports threaded replies)
+CREATE TABLE comments (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  review_id UUID NOT NULL REFERENCES reviews(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  content TEXT NOT NULL,
+  parent_comment_id UUID REFERENCES comments(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+CREATE INDEX idx_comments_review_id ON comments(review_id);
+CREATE INDEX idx_comments_parent ON comments(parent_comment_id);
+
 
 -- Favorite lists
 CREATE TABLE favorite_lists (

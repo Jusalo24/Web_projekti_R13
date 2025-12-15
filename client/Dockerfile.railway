@@ -1,0 +1,19 @@
+FROM node:lts-alpine AS build
+WORKDIR /app
+
+# Env-variable to build
+ARG VITE_API_BASE_URL
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+RUN npm run build
+
+FROM caddy:latest
+WORKDIR /app
+
+COPY Caddyfile .
+COPY --from=build /app/dist ./dist
+
+CMD ["caddy", "run", "--config", "Caddyfile", "--adapter", "caddyfile"]
