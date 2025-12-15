@@ -15,7 +15,7 @@ export default function SearchResult() {
         </h2>
       </div>
       <div className="search-result__movies">
-        <GetMoviesSeries query={search} />
+        <GetMoviesSeries query={search} horizontal={false}/>
       </div>
     </div>
   );
