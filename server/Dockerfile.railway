@@ -9,7 +9,7 @@ WORKDIR /app
 COPY . ./
 
 # Install packages
-RUN npm ci
+RUN npm install
 
 # Serve the app
 CMD ["npm", "run", "start"]
