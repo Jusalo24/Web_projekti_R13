@@ -12,6 +12,7 @@ import MovieDetail from "./pages/MovieDetail"
 import Login from "./pages/Login"
 import Register from "./pages/Register"
 import GroupDetails from "./pages/GroupDetails"
+import SharedList from "./pages/SharedList"
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/groupDetails/:id" element={<GroupDetails />} />
+        <Route path="/shared/:shareToken" element={<SharedList />} />
       </Routes>
     </>
   )
