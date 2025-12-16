@@ -16,13 +16,17 @@ export function useGroupApi() {
 
   useEffect(() => {
     if (token) {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      setloggedInId(payload.id);  // Save logged-in user ID
-      console.log("Logged-in user ID:", payload.id);
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        setloggedInId(payload.id);  // Save logged-in user ID
+        console.log("Logged-in user ID:", payload.id);
+      } catch (err) {
+        console.error("Failed to decode token:", err);
+      }
     }
   }, [token]);
 
-  // Call fetchOwnerInfo, when loggedInId is known
+   // Call fetchOwnerInfo, when loggedInId is known
   useEffect(() => {
     if (loggedInId) {
       fetchOwnerInfo(loggedInId);
@@ -72,6 +76,11 @@ export function useGroupApi() {
   };
 
   const createGroup = async (name, description) => { // Create a new group
+    if (!token) {
+      showError("Please login to create a group");
+      return { error: "Not authenticated" };
+    }
+
     try {
       const res = await fetch(`${baseURL}/api/groups`, {
         method: "POST",
@@ -88,6 +97,11 @@ export function useGroupApi() {
   };
 
   const joinGroup = async (groupId) => { // Send join request to group
+    if (!token) {
+      showError("Please login to join groups");
+      return null;
+    }
+
     try {
       const res = await fetch(`${baseURL}/api/groups/${groupId}/join-request`, {
         method: "POST",
@@ -111,6 +125,11 @@ export function useGroupApi() {
   };
 
   const fetchMyGroups = async () => { // Fetch groups user belongs to
+    if (!token) {
+      console.log("No token, skipping fetchMyGroups");
+      return;
+    }
+
     try {
       const payload = JSON.parse(atob(token.split(".")[1])); // Decode JWT
       const userId = payload.id;
@@ -127,6 +146,11 @@ export function useGroupApi() {
   };
 
   const fetchJoinRequests = async () => { // Fetch all pending join requests for owned groups
+    if (!token) {
+      console.log("No token, skipping fetchJoinRequests");
+      return;
+    }
+
     try {
       const res = await fetch(`${baseURL}/api/groups`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -169,6 +193,11 @@ export function useGroupApi() {
   };
 
   const acceptJoin = async (groupId, requestId) => { // Accept join request
+    if (!token) {
+      showError("Please login");
+      return null;
+    }
+
     try {
       const res = await fetch(
         `${baseURL}/api/groups/${groupId}/join-requests/${requestId}/accept`,
@@ -186,6 +215,11 @@ export function useGroupApi() {
   };
 
   const rejectJoin = async (groupId, requestId) => { // Reject join request
+    if (!token) {
+      showError("Please login");
+      return null;
+    }
+
     try {
       const res = await fetch(
         `${baseURL}/api/groups/${groupId}/join-requests/${requestId}/reject`,
@@ -203,6 +237,11 @@ export function useGroupApi() {
   };
 
   const removeMemberFromGroup = async (groupId, userId) => { // Kick member from group
+    if (!token) {
+      showError("Please login");
+      return null;
+    }
+
     try {
       const res = await fetch(
         `${baseURL}/api/groups/${groupId}/members?userId=${userId}`,
@@ -220,6 +259,11 @@ export function useGroupApi() {
 
   // DELETE /api/groups/:id/leave  - member leaves group themself
   const leaveGroup = async (groupId) => {
+    if (!token) {
+      showError("Please login");
+      return null;
+    }
+
     try {
       const res = await fetch(`${baseURL}/api/groups/${groupId}/leave`, {
         method: "DELETE",
@@ -251,6 +295,11 @@ export function useGroupApi() {
 
   // POST /api/groups/:id/movies | query: { movieId, mediaType }
   const addMovieToGroup = async (groupId, movieId, mediaType) => { // Add movie to group
+    if (!token) {
+      showError("Please login");
+      return { error: "Not authenticated" };
+    }
+
     try {
       const res = await fetch(
         `${baseURL}/api/groups/${groupId}/movies?movieId=${movieId}&mediaType=${mediaType}`,
@@ -271,6 +320,11 @@ export function useGroupApi() {
 
   // DELETE /api/groups/:id/movies | query: { movieId, mediaType }
   const removeMovieFromGroup = async (groupId, movieId, mediaType) => { // Remove movie from group
+    if (!token) {
+      showError("Please login");
+      return { error: "Not authenticated" };
+    }
+
     try {
       const res = await fetch(
         `${baseURL}/api/groups/${groupId}/movies?movieId=${movieId}&mediaType=${mediaType}`,
@@ -292,6 +346,11 @@ export function useGroupApi() {
 
   // DELETE /api/groups/:id
   const deleteGroup = async (groupId) => {
+    if (!token) {
+      showError("Please login");
+      return { error: "Not authenticated" };
+    }
+
     try {
       const res = await fetch(
         `${baseURL}/api/groups/${groupId}`,
@@ -307,8 +366,13 @@ export function useGroupApi() {
     }
   }
 
-  // GET /api/groups/:id/movies
+    // GET /api/groups/:id/movies
   const fetchMoviesByGroup = async (groupId) => { // List movies in group
+    if (!token) {
+      console.log("No token, skipping fetchMoviesByGroup");
+      return [];
+    }
+
     try {
       const res = await fetch(
         `${baseURL}/api/groups/${groupId}/movies`,
@@ -338,9 +402,11 @@ export function useGroupApi() {
 
   useEffect(() => {
     fetchGroups(); // Load public groups
-    fetchMyGroups(); // Load user's groups
-    fetchJoinRequests(); // Load join requests
-  }, []);
+    if (token) {
+      fetchMyGroups(); // Load user's groups
+      fetchJoinRequests(); // Load join requests
+    }
+  }, [token]);
 
   return {
     groups, // All public groups
