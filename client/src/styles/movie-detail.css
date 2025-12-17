@@ -393,6 +393,14 @@
   color: #f1f1f1;
 }
 
+.review-card p,
+.review-card small {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.45;
+}
+
 .review-card__header {
   display: flex;
   justify-content: space-between;
@@ -749,7 +757,7 @@
 }
 
 .reply-card {
-  display: flex;
+  display: block;
   gap: 0.65rem;
   padding: 0.75rem 0.9rem;
 
@@ -778,6 +786,7 @@
 
 .reply-body {
   flex: 1;
+  min-width: 0;
 }
 
 .reply-meta {
@@ -805,6 +814,9 @@
   margin: 0.25rem 0 0.35rem;
   line-height: 1.45;
   color: #e8e8e8;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .reply-actions button {
@@ -867,3 +879,28 @@
   font-size: 0.8rem;
 }
 
+.reply-thread__toggle {
+  background: transparent;
+  border: 1px solid #2c2c2c;
+  color: #e8e8e8;
+  border-radius: 12px;
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+}
+.reply-thread__toggle:hover { border-color: #b51b1b; color: #fff; }
+.reply-thread__content { margin-top: 0.5rem; }
+.reply-thread__loading { color: #b7b7b7; font-size: 0.9rem; margin: 0.25rem 0; }
+
+.replying-to {
+  display: inline-block;
+  font-size: 0.8rem;
+  color: #9aa0a6;
+  margin-bottom: 0.25rem;
+}
+
+.reply-form__counter {
+  display: block;
+  font-size: 0.75rem;
+  color: #9aa0a6;
+  margin-top: 0.25rem;
+}

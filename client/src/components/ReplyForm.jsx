@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useApi } from "../hooks/useApi";
 import { useAuth } from "../context/AuthContext";
 
+const REPLY_CHAR_LIMIT = 280;
+
 export default function ReplyForm({ reviewId, parentId = null, onPosted }) {
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -18,10 +20,13 @@ export default function ReplyForm({ reviewId, parentId = null, onPosted }) {
     e.preventDefault();
     if (!content.trim()) return;
 
+    const trimmed = content.trim();
+    if (!trimmed) return;
+
     const payload = {
       review_id: reviewId,
       user_id: user.id,
-      content: content.trim(),
+      content: trimmed,
       parent_comment_id: parentId,
     };
 
@@ -48,10 +53,14 @@ export default function ReplyForm({ reviewId, parentId = null, onPosted }) {
     <form onSubmit={handleSubmit} className="reply-form">
       <textarea
         value={content}
-        onChange={(e) => setContent(e.target.value)}
+        maxLength={REPLY_CHAR_LIMIT}
+        onChange={(e) => setContent(e.target.value.slice(0, REPLY_CHAR_LIMIT))}
         placeholder={parentId ? "Reply..." : "Add a comment..."}
         rows={parentId ? 2 : 3}
       />
+      <small className="reply-form__counter">
+        {content.length}/{REPLY_CHAR_LIMIT}
+      </small>
       <div className="reply-form__actions">
         <button type="submit" disabled={submitting || !content.trim()}>
           {submitting ? "Sending..." : "Reply"}

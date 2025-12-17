@@ -8,6 +8,8 @@ import AddToGroupModal from "../components/AddToGroupModal";
 import ReplyThread from "../components/ReplyThread";
 import "../styles/movie-detail.css";
 
+const REVIEW_CHAR_LIMIT = 280;
+
 export default function MovieDetail() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
@@ -220,7 +222,7 @@ export default function MovieDetail() {
         if (mine) {
           setMyReviewId(mine.id);
           setRating(mine.rating);
-          setText(mine.review_text || "");
+          setText((mine.review_text || "").slice(0, REVIEW_CHAR_LIMIT));
         } else {
           setMyReviewId(null);
           setRating(5);
@@ -432,9 +434,13 @@ export default function MovieDetail() {
                   </label>
                   <textarea
                     value={text}
-                    onChange={(e) => setText(e.target.value)}
+                    maxLength={REVIEW_CHAR_LIMIT}
+                    onChange={(e) => setText(e.target.value.slice(0, REVIEW_CHAR_LIMIT))}
                     placeholder="Write your thoughts..."
                   />
+                  <small className="review-form__counter">
+                    {text.length}/{REVIEW_CHAR_LIMIT}
+                  </small>
                   <div style={{ display: "flex", gap: "0.5rem" }}>
                     <button onClick={submitReview}>
                       {myReviewId ? "Update Review" : "Post Review"}
