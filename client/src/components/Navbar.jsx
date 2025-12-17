@@ -4,9 +4,11 @@ import SearchBar from "./SearchBar";
 import { useAuth } from "../context/AuthContext";
 import "../styles/index.css";
 import "../styles/Navbar.css";
+import { useAuth } from "../context/AuthContext";
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const { token, logout } = useAuth();
   const { token, logout } = useAuth();
 
   const [showLogoutToast, setShowLogoutToast] = useState(false);

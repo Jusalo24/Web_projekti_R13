@@ -21,6 +21,7 @@
     "supertest": "^7.1.4"
   },
   "dependencies": {
+  "cookie-parser": "^1.4.6",
     "axios": "^1.13.2",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",

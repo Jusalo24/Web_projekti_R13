@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
 
 export function useGroupApi() {
   const [groups, setGroups] = useState([]); // All visible/public groups
@@ -12,19 +13,14 @@ export function useGroupApi() {
 
 
   const baseURL = import.meta.env.VITE_API_BASE_URL; // API base URL
-  const token = localStorage.getItem("token");
+  const { token, user } = useAuth();
 
   useEffect(() => {
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        setloggedInId(payload.id);  // Save logged-in user ID
-        console.log("Logged-in user ID:", payload.id);
-      } catch (err) {
-        console.error("Failed to decode token:", err);
-      }
+    if (user) {
+      setloggedInId(user.id)
+      setloggedInName(user.username)
     }
-  }, [token]);
+  }, [user]);
 
    // Call fetchOwnerInfo, when loggedInId is known
   useEffect(() => {

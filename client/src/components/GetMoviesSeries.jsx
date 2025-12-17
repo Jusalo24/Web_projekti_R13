@@ -5,7 +5,10 @@ import GetImage from "./GetImage";
 import { useSearchApi, movieHelpers } from "../hooks/useSearchApi";
 import { useGroupApi } from "../hooks/useGroupApi";
 import AppNotification from "../components/AppNotification";
-import { useFavoritesApi } from "../hooks/useFavoritesApi";
+import QuickActionModal from "./QuickActionModal";
+import AddToGroupModal from "./AddToGroupModal";
+import AddToFavoriteModal from "./AddToFavoriteModal";
+import { useAuth } from "../context/AuthContext";
 
 export default function GetMoviesSeries({
   type = "now_playing",  // Type of movies/series to fetch
@@ -19,7 +22,7 @@ export default function GetMoviesSeries({
   ...discoverParams     // Additional parameters for discovery API
 }) {
   const navigate = useNavigate(); // For navigation to detail page
-  const token = localStorage.getItem("token");
+  const { token } = useAuth();
 
   const { removeMovieFromGroup } = useGroupApi();
 
@@ -32,7 +35,13 @@ export default function GetMoviesSeries({
   // Ref for horizontal scrolling
   const gridRef = useRef(null);
 
-  // Functions to scroll the grid left/right
+  // Modal states
+  const [showQuickAction, setShowQuickAction] = useState(false);
+  const [showGroupModal, setShowGroupModal] = useState(false);
+  const [showFavoriteModal, setShowFavoriteModal] = useState(false);
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [notification, setNotification] = useState({ message: null, type: "success" });
+
   const scrollLeft = () => {
     if (gridRef.current) {
       gridRef.current.scrollBy({ left: -400, behavior: "smooth" });
@@ -45,15 +54,7 @@ export default function GetMoviesSeries({
     }
   };
 
-  const {
-    addToFavorites,
-    removeFromFavorites,
-    isFavorite,
-    notification: favNotification,
-    setNotification: setFavNotification,
-  } = useFavoritesApi(token);
-
-  // Custom hook to fetch movies/series based on params
+    // Custom hook to fetch movies/series based on params
   const { movies, loading, error } = useSearchApi({
     type,
     page: currentPage,
@@ -83,33 +84,28 @@ export default function GetMoviesSeries({
 
     // If backend returns an error
     if (!result || result.error) {
-      showError(result?.error || `Failed to remove movie`);
+      showNotification(result?.error || `Failed to remove movie`, "error");
       return;
     }
     if (onDataChanged) onDataChanged(); // reload site
   }
 
-  // Handle clicking on a movie/TV show plus button
-  const handleAddToFavoritesClick = async (movie) => {
-    const itemMediaType = movie.media_type || media_type || "movie";
-
-    const result = await addToFavorites(itemMediaType, movie.id);
-
-    if (result?.error) {
-      setFavNotification({
-        message: "Already in favorites!",
-        type: "error"
-      });
+  // Open quick action menu
+  const handlePlusClick = (movie) => {
+    if (!token) {
+      showNotification("Please login to add movies", "error");
       return;
     }
-
-    setFavNotification({
-      message: "Added to favorites!",
-      type: "success"
-    });
+    setSelectedMovie(movie);
+    setShowQuickAction(true);
   };
 
-  // Only include movies & TV shows (multi-search also returns people)
+  // Helper to show notifications
+  const showNotification = (message, type = "success") => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification({ message: null }), 3000);
+  };
+
   const filteredResults = movies.filter(
     item => item.media_type === 'movie' || item.media_type === 'tv'
   );
@@ -157,9 +153,9 @@ export default function GetMoviesSeries({
       )}
       <div className="movies-grid" ref={horizontal ? gridRef : null}>
         <AppNotification
-          message={favNotification.message}   // Notification text
-          type={favNotification.type}         // Notification type (success/error)
-          onClose={() => setFavNotification({ message: null })} // Close popup
+          message={notification.message}   // Notification text
+          type={notification.type}         // Notification type (success/error)
+          onClose={() => setNotification({ message: null })} // Close popup
         />
         {listToRender.length === 0 && !loading && (
           <div className="movies-empty">No results found.</div>
@@ -174,12 +170,10 @@ export default function GetMoviesSeries({
               className="movie-card"
               onClick={() => handleCardClick(movie)}
             >
-              {/* Poster image */}
               <div className="movie-card__poster">
                 {type === "group_movies" && (
                   <button
                     className="movie-card__delete-from-group"
-                    key={uniqueKey}
                     onClick={(e) => {
                       e.stopPropagation(); // Prevent card click
                       handleDeleteFromGroupClick(movie);
@@ -188,13 +182,12 @@ export default function GetMoviesSeries({
                     <Trash2 size={24} />
                   </button>
                 )}
-                {type != "group_movies" && (
+                {type !== "group_movies" && (
                   <button
                     className="movie-card__add-to-group"
-                    key={uniqueKey}
                     onClick={(e) => {
-                      e.stopPropagation(); // Prevent card click    TÄMÄN KOHDAN VOI MUUTTAA FAVORITE LIST
-                      handleAddToFavoritesClick(movie);
+                      e.stopPropagation();
+                      handlePlusClick(movie);
                     }}
                   >
                     <PlusCircle size={24} />
@@ -203,7 +196,7 @@ export default function GetMoviesSeries({
                 {movie.poster_path ? (
                   <GetImage
                     path={movie.poster_path}
-                    title={movieHelpers.getTitle(movie)} // Movie/series title for alt text
+                    title={movieHelpers.getTitle(movie)}
                     size={imageSize}
                   />
                 ) : (
@@ -211,20 +204,16 @@ export default function GetMoviesSeries({
                     <ImageOff size={72} />
                     <span className="movie-card__no-image-text">No Image</span>
                   </div>
-                )
-                }
+                )}
               </div>
 
-              {/* Movie/series info */}
               <div className="movie-card__info">
                 <h3 className="movie-card__title">{movieHelpers.getTitle(movie)}</h3>
                 <div className="movie-card__footer">
-                  {/* Show type (Movie or TV Show) */}
                   <span className="movie-card__type">
                     {movieHelpers.getMediaTypeLabel(movie, media_type)}
                   </span>
 
-                  {/* Show release year if available */}
                   {movieHelpers.getReleaseDate(movie) && (
                     <span className="movie-card__year">
                       {movieHelpers.getReleaseDate(movie)}
@@ -243,6 +232,70 @@ export default function GetMoviesSeries({
         <button className="scroll-btn scroll-btn--right" onClick={scrollRight}>
           <ChevronRight size={20} />
         </button>
+      )}
+
+      {/* Quick Action Modal - Choose between Group or Favorite */}
+      {showQuickAction && selectedMovie && (
+        <QuickActionModal
+          onClose={() => {
+            setShowQuickAction(false);
+            setSelectedMovie(null);
+          }}
+          onSelectGroup={() => {
+            setShowQuickAction(false);
+            setShowGroupModal(true);
+          }}
+          onSelectFavorite={() => {
+            setShowQuickAction(false);
+            setShowFavoriteModal(true);
+          }}
+        />
+      )}
+
+      {/* Add to Group Modal */}
+      {showGroupModal && selectedMovie && (
+        <AddToGroupModal
+          movieId={selectedMovie.id}
+          mediaType={selectedMovie.media_type || media_type || "movie"}
+          movieTitle={movieHelpers.getTitle(selectedMovie)}
+          onClose={() => {
+            setShowGroupModal(false);
+            setSelectedMovie(null);
+          }}
+          onSuccess={(groupName) => {
+            setShowGroupModal(false);
+            setSelectedMovie(null);
+            showNotification(`Added to group "${groupName}"!`, "success");
+          }}
+          onError={(errorMessage) => {
+            setShowGroupModal(false);
+            setSelectedMovie(null);
+            showNotification(errorMessage, "error");
+          }}
+        />
+      )}
+
+      {/* Add to Favorite List Modal */}
+      {showFavoriteModal && selectedMovie && (
+        <AddToFavoriteModal
+          movieId={selectedMovie.id}
+          mediaType={selectedMovie.media_type || media_type || "movie"}
+          movieTitle={movieHelpers.getTitle(selectedMovie)}
+          onClose={() => {
+            setShowFavoriteModal(false);
+            setSelectedMovie(null);
+          }}
+          onSuccess={(listTitle) => {
+            setShowFavoriteModal(false);
+            setSelectedMovie(null);
+            showNotification(`Added to "${listTitle}"!`, "success");
+          }}
+          onError={(errorMessage) => {
+            setShowFavoriteModal(false);
+            setSelectedMovie(null);
+            showNotification(errorMessage, "error");
+          }}
+        />
       )}
     </div>
   );

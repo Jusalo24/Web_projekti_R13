@@ -34,17 +34,9 @@ export const auth = (req, res, next) => {
                 return res.status(401).json({ error: 'Authentication failed' })
             }
             
-            // Additional security: Check token age
-            const tokenAge = Date.now() - (decoded.iat * 1000)
-            const maxAge = 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
-            
-            if (tokenAge > maxAge) {
-                return res.status(401).json({ error: 'Token too old, please login again' })
-            }
-            
-            // Attach user info to request
-            req.user = decoded
-            next()
+                // Attach user info to request
+                req.user = decoded
+                next()
         })
     } catch (err) {
         console.error('Auth middleware error:', err)

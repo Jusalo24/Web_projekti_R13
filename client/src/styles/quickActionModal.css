@@ -1,0 +1,86 @@
+/* Quick Action Modal Styles */
+
+.quick-action-modal {
+  max-width: 400px;
+}
+
+.quick-action-modal .modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg) 0;
+}
+
+.quick-action-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background: var(--color-bg-tertiary);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  text-align: left;
+  width: 100%;
+}
+
+.quick-action-btn:hover {
+  border-color: var(--color-accent);
+  background: var(--color-bg-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.quick-action-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.quick-action-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.quick-action-text strong {
+  font-size: 1rem;
+  color: var(--color-text-primary);
+}
+
+.quick-action-text small {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+/* Specific button colors */
+.quick-action-btn--group:hover {
+  border-color: #5c9eff;
+}
+
+.quick-action-btn--favorite:hover {
+  border-color: #ff6b6b;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .quick-action-modal {
+    max-width: 90vw;
+  }
+
+  .quick-action-btn {
+    padding: var(--spacing-md);
+  }
+
+  .quick-action-icon {
+    font-size: 1.5rem;
+  }
+
+  .quick-action-text strong {
+    font-size: 0.95rem;
+  }
+
+  .quick-action-text small {
+    font-size: 0.8rem;
+  }
+}

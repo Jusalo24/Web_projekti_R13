@@ -367,7 +367,7 @@ docker-compose down -v
 
 **ER Diagram:**
 
-<img width="855" height="771" alt="ER Diagram" src="https://github.com/user-attachments/assets/ae9d8636-b424-4235-95f0-07a0e5bb5268" />
+<img width="837" height="815" alt="image" src="https://github.com/user-attachments/assets/b1c52093-045b-4a97-a285-c8090fe6a7c0" />
 
 ### Core Tables
 
@@ -475,6 +475,7 @@ Rate limit headers are returned in responses:
   - Body: `{ email, password }`
   - Returns: `{ user, token }` (JWT token for authorization)
   - Token expires in 7 days
+  - Refresh tokens: Implemented — the server issues a long-lived HttpOnly refresh token (7d) in a cookie and a short-lived access token (15m). Use `POST /api/users/refresh` to obtain a new access token; logout blacklists tokens and clears the refresh cookie. For production consider rotating refresh tokens and storing them server-side (e.g., Redis) for safer revocation/rotation.
 
 - `POST /api/users/logout` - Logout user (blacklist token)
   - Headers: `Authorization: Bearer <token>`
@@ -704,13 +705,19 @@ Web_projekti_R13/
 │   │   ├── assets/
 │   │   │   └── favicon.ico
 │   │   ├── components/               # Reusable UI components
+│   │   │   ├── AddToGroupModal.jsx   # Modal to add movies to groups
+│   │   │   ├── AppNotification.jsx   # Global notification component
 │   │   │   ├── GetCast.jsx           # Cast search with debounce                         Props: onSelect (callback), disabled (boolean)
 │   │   │   ├── GetGenre.jsx          # Genre dropdown component.                         Props: onSelect (callback), selectedGenre (id), mediaType ('movie'|'tv')
 │   │   │   ├── GetImage.jsx          # TMDB image component with configurable size.      Props: path (string), title (string), size (string), style (object), onClick (function)
 │   │   │   ├── GetMoviesSeries.jsx   # Grid/list component for movies/TV shows.     (1/2)Props: type (string), page (number), pages (number),
 │   │   │   │                                                                        (2/2)Props: imageSize (string), limit (number), query (string), discoverParams (object)
-│   │   │   ├── navbar.jsx            # Main navigation bar with search
-│   │   │   └── SearchBar.jsx         # Search input with dropdown suggestions.           Props: onSearch (callback)
+│   │   │   ├── GroupList.jsx         # Group list / preview component
+│   │   │   ├── Navbar.jsx            # Main navigation bar with search
+│   │   │   ├── ReplyForm.jsx         # Form for replying to reviews/comments
+│   │   │   ├── ReplyThread.jsx       # Nested reply display component
+│   │   │   ├── SearchBar.jsx         # Search input with dropdown suggestions.           Props: onSearch (callback)
+│   │   │   └── ShareModal.jsx        # Modal to share favorite lists or links
 │   │   ├── hooks/
 │   │   │   └── useSearchApi.js       # Custom hook for TMDB API calls.                   Params: type, page, pages, limit, query, discoverParams.       Returns: { movies, loading, error }
 │   │   ├── pages/                    # Page components

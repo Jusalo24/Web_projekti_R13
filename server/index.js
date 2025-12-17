@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import helmet from 'helmet'
+import cookieParser from 'cookie-parser'
 
 // Import routers
 import userRouter from './routes/userRouter.js'
@@ -116,6 +117,8 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }))
 
+// Cookie parser (for refresh token cookie)
+app.use(cookieParser())
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
