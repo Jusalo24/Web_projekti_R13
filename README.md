@@ -367,7 +367,7 @@ docker-compose down -v
 
 **ER Diagram:**
 
-<img width="855" height="771" alt="ER Diagram" src="https://github.com/user-attachments/assets/ae9d8636-b424-4235-95f0-07a0e5bb5268" />
+<img width="837" height="815" alt="image" src="https://github.com/user-attachments/assets/b1c52093-045b-4a97-a285-c8090fe6a7c0" />
 
 ### Core Tables
 
