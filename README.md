@@ -475,7 +475,7 @@ Rate limit headers are returned in responses:
   - Body: `{ email, password }`
   - Returns: `{ user, token }` (JWT token for authorization)
   - Token expires in 7 days
-  - Refresh tokens: Not currently implemented. The server issues a single JWT access token (7d) and uses token blacklisting on logout. For production we recommend implementing rotating refresh tokens (stored in a secure httpOnly cookie and persisted server-side, e.g., Redis) to issue short-lived access tokens and support safe token rotation/revocation.
+  - Refresh tokens: Implemented — the server issues a long-lived HttpOnly refresh token (7d) in a cookie and a short-lived access token (15m). Use `POST /api/users/refresh` to obtain a new access token; logout blacklists tokens and clears the refresh cookie. For production consider rotating refresh tokens and storing them server-side (e.g., Redis) for safer revocation/rotation.
 
 - `POST /api/users/logout` - Logout user (blacklist token)
   - Headers: `Authorization: Bearer <token>`
