@@ -1,14 +1,15 @@
 import React from "react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Trash2, Share2 } from "lucide-react";
 import GetImage from "../components/GetImage";
+import ShareModal from "../components/ShareModal";
+import { useShareApi } from "../hooks/useShareApi";
 import "../styles/Account.css";
-import { Trash2 } from "lucide-react";
 
 export default function Account() {
   const [profile, setProfile] = useState(null);
   const [favoriteLists, setFavoriteLists] = useState([]);
-  const [favoriteMovies, setFavoriteMovies] = useState([]);
   const [loadingFavorites, setLoadingFavorites] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [newListTitle, setNewListTitle] = useState("");
@@ -24,12 +25,17 @@ export default function Account() {
   const [listItems, setListItems] = useState([]);
   const [showListModal, setShowListModal] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState(null);
-
+  
+  // Share functionality
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [listToShare, setListToShare] = useState(null);
 
   const baseURL = import.meta.env.VITE_API_BASE_URL;
   const navigate = useNavigate();
   const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
   const token = localStorage.getItem("token");
+
+  const { notification: shareNotification, setNotification: setShareNotification } = useShareApi(token);
 
   const authHeaders = {
     "Content-Type": "application/json",
@@ -52,6 +58,8 @@ export default function Account() {
         setShowChangePassword(false);
         setShowDeleteConfirm(false);
         setModalOpen(false);
+        setShowListModal(false);
+        setShowShareModal(false);
       }
     };
 
@@ -80,7 +88,6 @@ export default function Account() {
     try {
       setLoadingFavorites(true);
       
-      // Fetch user's favorite lists
       const listsRes = await fetch(`${API}/api/favorite-lists`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -92,46 +99,6 @@ export default function Account() {
 
       const lists = await listsRes.json();
       setFavoriteLists(lists);
-
-      // Fetch all favorite movies from all lists
-      const allMovies = [];
-      for (const list of lists) {
-        const itemsRes = await fetch(`${API}/api/favorite-lists/${list.id}/items`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (itemsRes.ok) {
-          const items = await itemsRes.json();
-          
-          // Fetch movie details from TMDB for each item
-          for (const item of items) {
-            const movieId = item.movie_external_id; 
-            const mediaType = item.media_type || "movie"; 
-
-            
-            try {
-              const endpoint = mediaType === "tv" 
-                ? `${API}/api/tv/${movieId}`
-                : `${API}/api/movies/byId/${movieId}`;
-              
-              const movieRes = await fetch(endpoint);
-              if (movieRes.ok) {
-                const movieData = await movieRes.json();
-                allMovies.push({
-                  ...movieData,
-                  media_type: mediaType,
-                  list_name: list.title,
-                  item_id: item.id
-                });
-              }
-            } catch (err) {
-              console.error("Error fetching movie details:", err);
-            }
-          }
-        }
-      }
-
-      setFavoriteMovies(allMovies);
     } catch (err) {
       console.error("Favorites error:", err);
     } finally {
@@ -164,12 +131,6 @@ export default function Account() {
     } catch (err) {
       console.error("Create list error", err);
     }
-  };
-
-
-  const handleMovieClick = (movie) => {
-    const mediaType = movie.media_type || "movie";
-    navigate(`/movies/${movie.id}?type=${mediaType}`);
   };
 
   const handlePasswordChange = async () => {
@@ -205,10 +166,8 @@ export default function Account() {
         return;
       }
 
-      // Success!
       setPasswordSuccess(true);
 
-      // Clear fields & close modal
       setTimeout(() => {
         setShowChangePassword(false);
         setPasswordSuccess(false);
@@ -222,7 +181,6 @@ export default function Account() {
       setPasswordError("Server error while updating password");
     }
   };
-
 
   const handleDeleteAccount = async () => {
     if (!profile) return;
@@ -242,11 +200,8 @@ export default function Account() {
 
       setDeleteSuccess(true);
 
-
-      // Poista kaikki istuntotiedot
       localStorage.removeItem("token");
 
-      // Vie käyttäjä login-sivulle
       setTimeout(() => {
         setDeleteSuccess(false);
         navigate("/login");
@@ -254,7 +209,6 @@ export default function Account() {
 
     } catch (err) {
       console.error("Delete error:", err);
-
     }
 
     setShowDeleteConfirm(false);
@@ -276,7 +230,6 @@ export default function Account() {
 
       const items = await res.json();
 
-      // 🔥 HAE TMDB-TIEDOT JOKAISELLE ITEMILLE
       const detailedItems = [];
 
       for (const item of items) {
@@ -317,7 +270,6 @@ export default function Account() {
         },
       });
 
-      // päivitä lista heti UI:ssa
       setListItems((prev) =>
         prev.filter((item) => item.item_id !== itemId)
       );
@@ -329,13 +281,27 @@ export default function Account() {
     }
   };
 
+  // Share functionality handlers
+  const handleShareClick = (list) => {
+    setListToShare(list);
+    setShowShareModal(true);
+  };
 
-
-
+  const handleCloseShareModal = () => {
+    setShowShareModal(false);
+    setListToShare(null);
+  };
 
   return (
     <div className="account-container">
-      {/* SIDEBAR */}
+      
+      {/* Share Notification */}
+      {shareNotification.message && (
+        <div className={`toast toast--${shareNotification.type}`}>
+          {shareNotification.message}
+        </div>
+      )}
+
       <aside className="account-sidebar">
         <h2>Settings</h2>
         <button className="side-btn" onClick={() => setModalOpen(true)}>
@@ -349,17 +315,15 @@ export default function Account() {
         </button>
       </aside>
 
-    {confirmMessage && (
+      {confirmMessage && (
         <div className="toast toast--success">
           {confirmMessage}
         </div>
       )}
 
-      {/* MAIN CONTENT */}
       <main className="account-main">
         <h1>Your Profile</h1>
 
-        {/* PROFILE INFO */}
         <section className="info-box">
           <h3>Username:</h3>
           <p>{profile ? profile.username : "Loading..."}</p>
@@ -370,14 +334,26 @@ export default function Account() {
           <p>{profile ? profile.email : "Loading..."}</p>
         </section>
 
-        {/* FAVORITE LISTS INFO */}
         {favoriteLists.length > 0 && (
           <section className="info-box">
             <h3>Your Favorite Lists ({favoriteLists.length})</h3>
             <ul className="list">
               {favoriteLists.map(list => (
-                <li key={list.id} className="clickable-list"onClick={() => openList(list)}>
-                  {list.title}
+                <li key={list.id} className="favorite-list-item">
+                  <span 
+                    className="clickable-list"
+                    onClick={() => openList(list)}
+                  >
+                    {list.title}
+                  </span>
+                  <button
+                    className="share-list-btn"
+                    onClick={() => handleShareClick(list)}
+                    title="Share this list"
+                  >
+                    <Share2 size={18} />
+                    Share
+                  </button>
                 </li>
               ))}
             </ul>
@@ -461,84 +437,89 @@ export default function Account() {
         </div>
       )}
 
+      {/* LIST ITEMS MODAL */}
       {showListModal && (
-          <div className="modal-overlay" onClick={() => setShowListModal(false)}>
-            <div className="modal-box modal-box--favorites" onClick={(e) => e.stopPropagation()}>
-              <h3>{selectedList?.title}</h3>
+        <div className="modal-overlay" onClick={() => setShowListModal(false)}>
+          <div className="modal-box modal-box--favorites" onClick={(e) => e.stopPropagation()}>
+            <h3>{selectedList?.title}</h3>
 
-              {listItems.length === 0 ? (
-                <p>No movies in this list yet.</p>
-              ) : (
-                <div className="favorites-grid">
-                  {listItems.map((movie) => (
-                    <div
-                      key={movie.item_id}
-                      className="favorite-card"
-                      onClick={() =>
-                        navigate(`/movies/${movie.id}?type=${movie.media_type}`)
-                      }
+            {listItems.length === 0 ? (
+              <p>No movies in this list yet.</p>
+            ) : (
+              <div className="favorites-grid">
+                {listItems.map((movie) => (
+                  <div
+                    key={movie.item_id}
+                    className="favorite-card"
+                    onClick={() =>
+                      navigate(`/movies/${movie.id}?type=${movie.media_type}`)
+                    }
+                  >
+                    <button
+                      className="favorite-card__remove"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveFromList(movie.item_id);
+                      }}
                     >
-                      <button
-                        className="favorite-card__remove"
-                        onClick={(e) => {
-                          e.stopPropagation(); // 🔥 estää navigoinnin
-                          console.log("REMOVE CLICKED", movie.item_id);
-                          handleRemoveFromList(movie.item_id);
-                        }}
-                      >
-                        <Trash2 size={24}/>
-                      </button>
+                      <Trash2 size={24}/>
+                    </button>
 
-                      <div className="favorite-card__poster">
-                        {movie.poster_path ? (
-                          <GetImage
-                            path={movie.poster_path}
-                            title={movie.title || movie.name}
-                            size="w342"
-                          />
-                        ) : (
-                          <div className="favorite-card__placeholder">No Image</div>
-                        )}
-                      </div>
-                      <div className="favorite-card__info">
-                        <h4 className="favorite-card__title">
-                          {movie.title || movie.name}
-                        </h4>
-                        <div className="favorite-card__meta">
-                          <span className="favorite-card__type">
-                            {movie.media_type === "tv" ? "TV Show" : "Movie"}
-                          </span>
-                        </div>
+                    <div className="favorite-card__poster">
+                      {movie.poster_path ? (
+                        <GetImage
+                          path={movie.poster_path}
+                          title={movie.title || movie.name}
+                          size="w342"
+                        />
+                      ) : (
+                        <div className="favorite-card__placeholder">No Image</div>
+                      )}
+                    </div>
+                    <div className="favorite-card__info">
+                      <h4 className="favorite-card__title">
+                        {movie.title || movie.name}
+                      </h4>
+                      <div className="favorite-card__meta">
+                        <span className="favorite-card__type">
+                          {movie.media_type === "tv" ? "TV Show" : "Movie"}
+                        </span>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
+                  </div>
+                ))}
+              </div>
+            )}
 
-              <button className="modal-btn cancel" onClick={() => setShowListModal(false)}>
-                Close
-              </button>
-            </div>
+            <button className="modal-btn cancel" onClick={() => setShowListModal(false)}>
+              Close
+            </button>
           </div>
-        )}
+        </div>
+      )}
 
+      {/* SHARE MODAL */}
+      {showShareModal && listToShare && (
+        <ShareModal
+          list={listToShare}
+          onClose={handleCloseShareModal}
+          token={token}
+        />
+      )}
 
+      {deleteSuccess && (
+        <div className="success-toast">
+          Account deleted successfully!
+        </div>
+      )}
 
-        {deleteSuccess && (
-          <div className="success-toast">
-            Account deleted successfully!
-          </div>
-        )}
+      {passwordSuccess && (
+         <div className="success-toast">Password updated successfully!</div>
+      )}
 
-        {passwordSuccess && (
-           <div className="success-toast">Password updated successfully!</div>
-        )}
-
-        {passwordError && (
-           <div className="error-toast">{passwordError}</div>
-        )}
-
-
+      {passwordError && (
+         <div className="error-toast">{passwordError}</div>
+      )}
     </div>
   );
 }

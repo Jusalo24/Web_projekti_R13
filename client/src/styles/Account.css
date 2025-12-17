@@ -585,3 +585,92 @@
     top: 7rem;
   }
 }
+
+/* Favorite List Item with Share Button */
+.favorite-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-md);
+  background: #2a3251;
+  padding: 0.6rem;
+  margin-bottom: 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.favorite-list-item:hover {
+  background: #353d5d;
+  transform: translateX(2px);
+}
+
+/* Make the list title clickable */
+.favorite-list-item .clickable-list {
+  flex: 1;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.favorite-list-item .clickable-list:hover {
+  color: var(--color-accent);
+  transform: none; /* Override the default hover transform */
+}
+
+/* Share Button */
+.share-list-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
+  background: linear-gradient(135deg, var(--color-accent) 0%, #4a8ef5 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.share-list-btn:hover {
+  background: linear-gradient(135deg, var(--color-accent-hover) 0%, var(--color-accent) 100%);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.share-list-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Responsive adjustments for share button */
+@media (max-width: 768px) {
+  .favorite-list-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+
+  .share-list-btn {
+    width: 100%;
+    justify-content: center;
+    padding: var(--spacing-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  .share-list-btn {
+    font-size: 0.85rem;
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+
+  .share-list-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+}

@@ -31,6 +31,24 @@ if (process.env.NODE_ENV !== "test") {
     console.error("ERROR: TMDB_API_KEY missing")
     process.exit(1)
   }
+  
+  // Validate CLIENT_URL for share link functionality
+  if (!process.env.CLIENT_URL) {
+    console.error("ERROR: CLIENT_URL is required for share link functionality")
+    console.error("Set CLIENT_URL in your .env file:")
+    console.error("  Development: CLIENT_URL=http://localhost:5173")
+    console.error("  Production:  CLIENT_URL=https://webprojektir13-client-production.up.railway.app")
+    process.exit(1)
+  }
+  
+  // Validate CLIENT_URL format
+  try {
+    new URL(process.env.CLIENT_URL);
+  } catch (err) {
+    console.error("ERROR: CLIENT_URL must be a valid URL")
+    console.error(`Current value: ${process.env.CLIENT_URL}`)
+    process.exit(1)
+  }
 }
 
 // Create Express app
@@ -150,12 +168,14 @@ app.use((err, req, res, next) => {
     })
 })
 
-if (process.env.NODE_ENV !== "test") {// Start server
+if (process.env.NODE_ENV !== "test") {
+    // Start server
     app.listen(PORT, () => {
         console.log(`🚀 Server running on port ${PORT}`)
         console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`)
         console.log(`🎬 TMDB API: ${process.env.TMDB_API_KEY ? 'Configured ✓' : 'Missing ✗'}`)
         console.log(`🗄️  Database: ${process.env.POSTGRES_HOST}:${process.env.POSTGRES_PORT}/${process.env.POSTGRES_DB}`)
+        console.log(`🌐 Client URL: ${process.env.CLIENT_URL}`)
         console.log(`🔗 Health check: http://localhost:${PORT}/health`)
     })
 }
