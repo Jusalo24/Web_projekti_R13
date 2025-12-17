@@ -1,5 +1,9 @@
 .navbar {
-  background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-bg-tertiary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-bg-secondary) 0%,
+    var(--color-bg-tertiary) 100%
+  );
   border-bottom: 1px solid var(--color-border);
   box-shadow: var(--shadow-md);
   position: sticky;
@@ -8,39 +12,30 @@
   backdrop-filter: blur(10px);
 }
 
-/* GRID LAYOUT:
-   Row 1: spacer | logo | auth
-   Row 2: links (full width)
-   Row 3: search (full width)
-*/
+/* ===== DESKTOP/TABLET: GRID ===== */
 .navbar__container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: var(--spacing-lg) var(--spacing-xl);
+
+  /* tiiviimpi kuin ennen */
+  padding: var(--spacing-md) var(--spacing-xl);
 
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  grid-template-rows: auto auto auto;
+  grid-template-columns: auto 1fr auto; /* logo | center | auth */
+  grid-template-rows: auto auto;        /* links | search */
   align-items: center;
 
   column-gap: var(--spacing-xl);
-  row-gap: var(--spacing-md);
+  row-gap: var(--spacing-sm);
 }
 
-/* Row 1 placements */
-.navbar__spacer {
-  grid-column: 1;
-  grid-row: 1;
-}
-
+/* ===== LOGO (LEFT, spans rows) ===== */
 .navbar__logo {
-  grid-column: 2;
-  grid-row: 1;
-  justify-self: center;
-  text-align: center;
+  grid-column: 1;
+  grid-row: 1 / 3;
+  justify-self: start;
 
   text-decoration: none;
-  color: var(--color-text-primary);
   transition: transform var(--transition-fast);
 }
 
@@ -49,34 +44,27 @@
 }
 
 .navbar__logo h1 {
-  font-size: 1.75rem;
+  margin: 0;
+  font-size: 1.65rem; /* vähän pienempi = tiiviimpi */
   font-weight: 700;
-  background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-accent) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-text-primary) 0%,
+    var(--color-accent) 100%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
-.navbar__auth {
-  grid-column: 3;
-  grid-row: 1;
-  justify-self: end;
-
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  flex-wrap: wrap;
-}
-
-/* Row 2: links full width */
+/* ===== NAV LINKS (CENTER TOP) ===== */
 .navbar__links {
-  grid-column: 1 / -1;
-  grid-row: 2;
+  grid-column: 2;
+  grid-row: 1;
 
   display: flex;
-  list-style: none;
-  gap: var(--spacing-md);
   justify-content: center;
+  gap: var(--spacing-md);
+  list-style: none;
   padding: 0;
   margin: 0;
 }
@@ -89,14 +77,17 @@
   text-decoration: none;
   color: var(--color-text-secondary);
   font-weight: 500;
-  padding: var(--spacing-sm) var(--spacing-md);
+
+  /* tiiviimpi */
+  padding: var(--spacing-xs) var(--spacing-sm);
+
   border-radius: var(--radius-sm);
-  transition: all var(--transition-normal);
   position: relative;
+  transition: color var(--transition-normal);
 }
 
 .navbar__link::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 50%;
@@ -115,52 +106,73 @@
   width: 80%;
 }
 
-/* Row 3: search full width */
+/* ===== SEARCH (CENTER BOTTOM) ===== */
 .navbar__search {
-  grid-column: 1 / -1;
-  grid-row: 3;
+  grid-column: 2;
+  grid-row: 2;
   justify-self: center;
 
-  min-width: 300px;
-  width: min(700px, 100%);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+
+  width: min(650px, 100%);
+  min-width: 260px;
 }
 
-/* Buttons */
+/* jos inputissa ei ole omaa luokkaa, tämä auttaa tiiviyteen */
+.navbar__search input {
+  height: 38px;
+  padding: 0 var(--spacing-md);
+}
+
+/* ===== AUTH / LOGOUT (RIGHT, spans rows) ===== */
+.navbar__auth {
+  grid-column: 3;
+  grid-row: 1 / 3;
+  justify-self: end;
+  align-self: center;
+
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: nowrap;
+}
+
+/* ===== BUTTONS (tiiviimpi) ===== */
 .search__button,
 .navbar__login-btn {
-  padding: var(--spacing-sm) var(--spacing-lg);
-  background: linear-gradient(135deg, var(--color-accent) 0%, #4a8ef5 100%);
+  padding: var(--spacing-xs) var(--spacing-md);
+  height: 38px;
+
+  background: linear-gradient(
+    135deg,
+    var(--color-accent) 0%,
+    #4a8ef5 100%
+  );
   color: var(--color-text-primary);
   border: none;
   border-radius: var(--radius-md);
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-normal);
-  white-space: nowrap;
-
-  /* Responsive sizing */
-  font-size: clamp(0.8rem, 1vw, 1rem);
-  height: 44px;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .search__button:hover,
 .navbar__login-btn:hover {
-  background: linear-gradient(135deg, var(--color-accent-hover) 0%, var(--color-accent) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-accent-hover) 0%,
+    var(--color-accent) 100%
+  );
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
 
-.search__button:active,
-.navbar__login-btn:active {
-  transform: translateY(0);
-}
-
 .navbar__logout-btn {
-  padding: var(--spacing-sm) var(--spacing-lg);
+  padding: var(--spacing-xs) var(--spacing-md);
+  height: 38px;
+
   background: #ff0000;
   color: var(--color-text-primary);
   border: none;
@@ -168,15 +180,6 @@
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-normal);
-  white-space: nowrap;
-
-  /* Match login sizing */
-  font-size: clamp(0.8rem, 1vw, 1rem);
-  height: 44px;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .navbar__logout-btn:hover {
@@ -185,98 +188,84 @@
   box-shadow: var(--shadow-sm);
 }
 
-/* Tablet */
+/* ===== TABLET ===== */
 @media (max-width: 1024px) {
   .navbar__container {
-    padding: var(--spacing-md) var(--spacing-lg);
+    padding: var(--spacing-sm) var(--spacing-lg);
     column-gap: var(--spacing-lg);
   }
 
   .navbar__logo h1 {
-    font-size: 1.5rem;
+    font-size: 1.45rem;
   }
 
   .navbar__search {
+    width: min(560px, 100%);
     min-width: 220px;
-  }
-
-  .search__button,
-  .navbar__login-btn,
-  .navbar__logout-btn {
-    padding: var(--spacing-sm) var(--spacing-md);
-    height: 40px;
   }
 }
 
-/* Mobile */
+/* ===== MOBILE: FLEX + ORDER (LINKIT AINA ENNEN HAKUA) ===== */
 @media (max-width: 768px) {
   .navbar__container {
-    padding: var(--spacing-md) var(--spacing-lg);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+
+    /* tiiviimpi mobiilissa */
+    padding: var(--spacing-sm) var(--spacing-md);
+    gap: var(--spacing-sm);
   }
 
-  .navbar__logo h1 {
-    font-size: 1.4rem;
+  /* rivi 1: logo vasen */
+  .navbar__logo {
+    order: 1;
+    flex: 1 1 auto;
   }
 
+  /* rivi 1: auth oikea */
+  .navbar__auth {
+    order: 2;
+    flex: 0 0 auto;
+  }
+
+  /* rivi 2: linkit */
   .navbar__links {
+    order: 3;
+    flex: 1 1 100%;
+    justify-content: center;
     flex-wrap: wrap;
     gap: var(--spacing-sm);
   }
 
-  .navbar__link {
-    padding: var(--spacing-xs) var(--spacing-sm);
-    font-size: 0.9rem;
-  }
-
+  /* rivi 3: haku (aina linkkien alla) */
   .navbar__search {
+    order: 4;
+    flex: 1 1 100%;
     width: 100%;
     min-width: 0;
+    justify-content: center;
+    gap: var(--spacing-sm);
   }
 
-  .search__button,
-  .navbar__login-btn,
-  .navbar__logout-btn {
+  .navbar__search input {
+    flex: 1;
+    min-width: 0;
     height: 38px;
-    font-size: 0.9rem;
   }
 }
 
-/* Small Mobile */
+/* ===== SMALL MOBILE ===== */
 @media (max-width: 480px) {
-  .navbar__container {
-    padding: var(--spacing-sm) var(--spacing-md);
-  }
-
   .navbar__logo h1 {
     font-size: 1.25rem;
-  }
-
-  .navbar__links {
-    gap: var(--spacing-xs);
-  }
-
-  .navbar__link {
-    font-size: 0.85rem;
   }
 
   .search__button,
   .navbar__login-btn,
   .navbar__logout-btn {
     height: 36px;
-    font-size: 0.85rem;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.9rem;
   }
-}
-
-.logout-toast {
-  position: fixed;
-  left: 20px;
-  bottom: 20px;
-  background: #28a745;
-  color: white;
-  padding: 14px 20px;
-  border-radius: 6px;
-  font-weight: 600;
-  box-shadow: 0 0 10px rgba(0,0,0,0.3);
-  animation: fadeIn 0.3s ease-out;
-  z-index: 5000;
 }
