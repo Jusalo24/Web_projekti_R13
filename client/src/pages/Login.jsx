@@ -16,6 +16,7 @@ export default function Login() {
       const res = await fetch(`${baseURL}/api/users/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include', // receive HttpOnly refresh cookie
         body: JSON.stringify({ email, password }),
       });
 
@@ -26,14 +27,14 @@ export default function Login() {
         return;
       }
 
-      // Oletus: backend palauttaa { user: {...}, token: "..." }
-      if (!data.user || !data.token) {
+      // Expect: backend returns { user: {...}, accessToken: "..." }
+      if (!data.user || !data.accessToken) {
         alert("Invalid login response from server.");
         return;
       }
 
-      // ⭐ TÄRKEÄ: käytä AuthContextia
-      login(data.user, data.token);
+      // Use AuthContext to store access token in memory
+      login(data.user, data.accessToken);
 
       navigate("/account"); // tai "/" jos haluat etusivulle
     } catch (err) {

@@ -5,6 +5,7 @@ import { Trash2, Share2 } from "lucide-react";
 import GetImage from "../components/GetImage";
 import ShareModal from "../components/ShareModal";
 import { useShareApi } from "../hooks/useShareApi";
+import { useAuth } from "../context/AuthContext";
 import "../styles/Account.css";
 
 export default function Account() {
@@ -33,24 +34,30 @@ export default function Account() {
   const baseURL = import.meta.env.VITE_API_BASE_URL;
   const navigate = useNavigate();
   const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
-  const token = localStorage.getItem("token");
+  const { token, refreshAccessToken, logout } = useAuth();
 
   const { notification: shareNotification, setNotification: setShareNotification } = useShareApi(token);
 
-  const authHeaders = {
+  const authHeaders = token ? {
     "Content-Type": "application/json",
     Authorization: `Bearer ${token}`,
-  };
+  } : { "Content-Type": "application/json" };
 
   useEffect(() => {
-    if (!token) {
-      navigate("/login");
-      return;
-    }
+    (async () => {
+      if (!token) {
+        await refreshAccessToken()
+      }
 
-    fetchProfile();
-    fetchFavorites();
-  }, []);
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      fetchProfile();
+      fetchFavorites();
+    })()
+  }, [token]);
 
   useEffect(() => {
     const handleEsc = (event) => {
@@ -200,7 +207,7 @@ export default function Account() {
 
       setDeleteSuccess(true);
 
-      localStorage.removeItem("token");
+      await logout();
 
       setTimeout(() => {
         setDeleteSuccess(false);
