@@ -58,25 +58,37 @@ export const loginUser = async (email, password) => {
             throw new Error('Invalid credentials')
         }
 
-        // Generate JWT token with proper claims
-        const token = jwt.sign(
-            { 
-                id: user.id, 
-                email: user.email, 
+        // Generate short-lived access token and long-lived refresh token
+        const accessToken = jwt.sign(
+            {
+                id: user.id,
+                email: user.email,
                 username: user.username,
-                iat: Math.floor(Date.now() / 1000) // Issued at timestamp
+                iat: Math.floor(Date.now() / 1000)
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: '15m' }
+        )
+
+        const refreshToken = jwt.sign(
+            {
+                id: user.id,
+                email: user.email,
+                username: user.username,
+                iat: Math.floor(Date.now() / 1000)
             },
             process.env.JWT_SECRET,
             { expiresIn: '7d' }
         )
 
         return {
-            user: { 
-                id: user.id, 
-                email: user.email, 
-                username: user.username 
+            user: {
+                id: user.id,
+                email: user.email,
+                username: user.username
             },
-            token
+            accessToken,
+            refreshToken
         }
     } catch (err) {
         // Always return generic error message

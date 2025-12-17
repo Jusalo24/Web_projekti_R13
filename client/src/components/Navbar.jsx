@@ -3,10 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import SearchBar from "./SearchBar";
 import "../styles/index.css";
 import "../styles/Navbar.css";
+import { useAuth } from "../context/AuthContext";
 
 export default function Navbar() {
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
+  const { token, logout } = useAuth();
 
   const [showLogoutToast, setShowLogoutToast] = useState(false);
 
@@ -15,15 +16,15 @@ export default function Navbar() {
     navigate(`/SearchResult?search=${encodeURIComponent(query)}`);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    setShowLogoutToast(true);
+  const handleLogout = async () => {
+    await logout()
+    setShowLogoutToast(true)
 
     setTimeout(() => {
-      navigate("/login");
-      setShowLogoutToast(false);
-    }, 1500);
-  };
+      navigate("/login")
+      setShowLogoutToast(false)
+    }, 1500)
+  }
 
   return (
     <nav className="navbar">

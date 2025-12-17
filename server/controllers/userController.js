@@ -1,5 +1,6 @@
 import { registerUser, loginUser, getUserProfile, updateUserProfile, changeUserPassword, deleteUserFromDb } from '../services/userService.js'
 import { sanitizeString } from '../helpers/validation.js'
+import jwt from 'jsonwebtoken'
 
 
 
@@ -47,12 +48,59 @@ export const userLogin = async (req, res) => {
 
         // Attempt login
         const data = await loginUser(email, password)
-        
-        res.status(200).json(data)
+
+        // Set refresh token as HttpOnly cookie
+        const cookieOptions = {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        }
+
+        res.cookie('refreshToken', data.refreshToken, cookieOptions)
+
+        // Return access token and user info (access token is kept in memory on client)
+        res.status(200).json({
+            user: data.user,
+            accessToken: data.accessToken
+        })
     } catch (err) {
         console.error('Login error:', err.message)
         // Use 401 for authentication failures
         res.status(401).json({ error: err.message })
+    }
+}
+
+export const refreshToken = async (req, res) => {
+    try {
+        const refreshToken = req.cookies?.refreshToken
+
+        if (!refreshToken) return res.status(401).json({ error: 'No refresh token' })
+
+        // Verify refresh token
+        jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
+            if (err) return res.status(401).json({ error: 'Invalid refresh token' })
+
+            // Issue new access token
+            const accessToken = jwt.sign(
+                {
+                    id: decoded.id,
+                    email: decoded.email,
+                    username: decoded.username,
+                    iat: Math.floor(Date.now() / 1000)
+                },
+                process.env.JWT_SECRET,
+                { expiresIn: '15m' }
+            )
+
+            res.status(200).json({
+                accessToken,
+                user: { id: decoded.id, email: decoded.email, username: decoded.username }
+            })
+        })
+    } catch (err) {
+        console.error('Refresh token error:', err.message)
+        res.status(401).json({ error: 'Could not refresh token' })
     }
 }
 

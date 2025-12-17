@@ -6,6 +6,7 @@ import { useSearchApi, movieHelpers } from "../hooks/useSearchApi";
 import { useGroupApi } from "../hooks/useGroupApi";
 import AppNotification from "../components/AppNotification";
 import { useFavoritesApi } from "../hooks/useFavoritesApi";
+import { useAuth } from "../context/AuthContext";
 
 export default function GetMoviesSeries({
   type = "now_playing",  // Type of movies/series to fetch
@@ -19,7 +20,7 @@ export default function GetMoviesSeries({
   ...discoverParams     // Additional parameters for discovery API
 }) {
   const navigate = useNavigate(); // For navigation to detail page
-  const token = localStorage.getItem("token");
+  const { token } = useAuth();
 
   const { removeMovieFromGroup } = useGroupApi();
 
