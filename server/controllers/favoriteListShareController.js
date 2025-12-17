@@ -88,13 +88,10 @@ export const getShared = async (req, res) => {
             })
         }
 
-        // Optional: Hide owner username for privacy (uncomment if needed)
-        // delete sharedList.owner_username
-
+        // Return list WITHOUT owner username for privacy
         res.status(200).json({
             title: sharedList.title,
             description: sharedList.description,
-            ownerUsername: sharedList.owner_username,  // Remove if privacy concern
             items: sharedList.items,
             sharedAt: sharedList.shared_at,
             expiresAt: sharedList.expires_at
