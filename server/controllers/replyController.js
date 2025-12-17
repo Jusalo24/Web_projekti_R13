@@ -2,22 +2,20 @@ import pool from '../helpers/db.js';
 
 export const createReply = async (req, res) => {
   try {
-    const { review_id, user_id, content, parent_comment_id } = req.body;
-
-    if (!review_id || !user_id || !content) {
-      return res.status(400).json({
-        error: 'review_id, user_id and content are required',
-      });
+    const { review_id, content, parent_comment_id } = req.body;
+    const userId = req.user?.id;
+    if (!review_id || !userId || !content) {
+      return res.status(400).json({ error: 'review_id, user_id and content are required' });
     }
-
     const result = await pool.query(
       `
-      INSERT INTO comments (review_id, user_id, content, parent_comment_id, created_at)
-      VALUES ($1, $2, $3, $4, NOW())
-      RETURNING id, review_id, user_id, content, parent_comment_id, created_at
-      `,
-      [review_id, user_id, content, parent_comment_id || null]
+  INSERT INTO comments (review_id, user_id, content, parent_comment_id, created_at)
+  VALUES ($1, $2, $3, $4, NOW())
+  RETURNING id, review_id, user_id, content, parent_comment_id, created_at
+  `,
+      [review_id, userId, content, parent_comment_id || null]
     );
+
 
     return res.status(201).json(result.rows[0]);
   } catch (err) {

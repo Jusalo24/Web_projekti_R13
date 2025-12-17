@@ -25,10 +25,10 @@ export default function ReplyForm({ reviewId, parentId = null, onPosted }) {
 
     const payload = {
       review_id: reviewId,
-      user_id: user.id,
       content: trimmed,
       parent_comment_id: parentId,
     };
+
 
     try {
       setSubmitting(true);
